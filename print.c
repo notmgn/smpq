@@ -34,9 +34,11 @@ void printError(const char * archive, const char * message, const char * file, i
 
 	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, errnum, 0, error, 0, NULL);
 
-#elif defined(MAC)
+#elif defined(__APPLE__)
 
-	// TODO
+	// TODO: Convert errnum to message
+	error = malloc(20 * sizeof(char));
+	sprintf(error, "Error code %d", errnum);
 
 #else
 
@@ -56,6 +58,16 @@ void printError(const char * archive, const char * message, const char * file, i
 #endif
 
 	fprintf(stderr, "%s: %s: Error: %s `%s': %s\n", app, archive, message, file, error);
+
+#if defined(WIN32) || defined(_MSC_VER)
+
+	LocalFree(error);
+
+#elif defined (__APPLE__)
+
+	free(error);
+
+#endif
 
 }
 

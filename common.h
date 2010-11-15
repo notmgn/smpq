@@ -17,21 +17,11 @@
 
 */
 
-#if defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)
-#define WINDOWS
-#endif
+#if defined(WIN32) || defined(_MSC_VER)
 
-#if defined(__APPLE__)
-#define MAC
-#endif
-
-///
-
-#ifdef WINDOWS
 #include <windows.h>
-#endif
 
-#ifndef WINDOWS
+#else
 
 #include <sys/types.h>
 #include <time.h>
@@ -47,7 +37,9 @@ typedef struct _FILETIME {
 #define append _smpq_append
 #define extract _smpq_extract
 
-///
+/**
+ * Flags
+ */
 
 #define CREATE		1
 #define LIST		1
@@ -81,16 +73,21 @@ int append(const char * archive, const char * const files[], int flags);
 /// Extract or print list files from archive
 int extract(const char * archive, const char * const files[], int flags);
 
+/// Remove file(s) fro archive
 int remove(const char * archive, const char * const files[], int flags);
 
 /**
- * Functions needed for other
+ * Functions for output
  */
 
 /// Print formatted error
 void printError(const char * archive, const char * file, const char * message, int errnum);
 
 void printVerbose(const char * archive, const char * message, const char * file);
+
+/**
+ * Function for disk operations
+ */
 
 /// Recursive create directory
 int mkpath(const char * s, mode_t mode);
@@ -105,9 +102,14 @@ int GetTimeFromFileTime(const FILETIME fileTime, time_t * time);
 /// Convert time_t to FILETIME
 void GetFileTimeFromTime(const time_t time, FILETIME * fileTime);
 
+/**
+ * Path conversation in archive
+ */
+
+/// Replace all chars '/' in path to '\\'
 static inline void convertPathToArchive(char * out, const char * in) {
 
-#ifdef WINDOWS
+#if defined(WIN32) || defined(_MSC_VER)
 
 	strcpy(out, in);
 	return;
@@ -129,9 +131,10 @@ static inline void convertPathToArchive(char * out, const char * in) {
 
 }
 
+/// Replace all chars '\\' in path to '/'
 static inline void convertPathFromArchive(char * out, const char * in) {
 
-#ifdef WINDOWS
+#if defined(WIN32) || defined(_MSC_VER)
 
 	strcpy(out, in);
 	return;
