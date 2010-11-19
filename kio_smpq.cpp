@@ -81,29 +81,20 @@ SMPQSlave::~SMPQSlave() {
 
 }
 
-///
-
-void SMPQSlave::openConnection() {}
-void SMPQSlave::closeConnection() {}
-
-///
-
-void SMPQSlave::get(const KUrl &url) {}
-void SMPQSlave::put(const KUrl &url, int permissions, KIO::JobFlags flags) {}
-void SMPQSlave::del(const KUrl &url, bool isfile) {}
-void SMPQSlave::copy(const KUrl &src, const KUrl &dest, int permissions, KIO::JobFlags flags) {}
-void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {}
-
-///
-
 bool SMPQSlave::parseUrl(const KUrl &url, QString &fileName, QByteArray &archivePath) {
 
 	kDebug(KIO_SMPQ);
 
 	QString path = url.path();
 
-	if ( path.at(path.size() - 1) != '/' )
+	bool appended = false;
+
+	if ( path.at(path.size() - 1) != '/' ) {
+
 		path.append('/');
+		appended = true;
+
+	}
 
 	int pos = 0;
 	int nextPos = 0;
@@ -121,6 +112,9 @@ bool SMPQSlave::parseUrl(const KUrl &url, QString &fileName, QByteArray &archive
 
 	if ( pos == 0 )
 		return false;
+
+	if ( appended )
+		path.chop(1);
 
 	fileName = path.left(pos);
 
@@ -182,6 +176,81 @@ void SMPQSlave::fromArchivePath(QString &to, const QByteArray &from) {
 
 }
 
+///
+
+void SMPQSlave::openConnection() {}
+void SMPQSlave::closeConnection() {}
+
+///
+
+void SMPQSlave::get(const KUrl &url) {}
+void SMPQSlave::put(const KUrl &url, int permissions, KIO::JobFlags flags) {}
+void SMPQSlave::del(const KUrl &url, bool isfile) {}
+void SMPQSlave::copy(const KUrl &src, const KUrl &dest, int permissions, KIO::JobFlags flags) {}
+
+void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
+
+	kDebug(KIO_SMPQ);
+
+	QString srcFileName;
+	QByteArray srcArchivePath;
+
+	QString destFileName;
+	QByteArray destArchivePath;
+
+	if ( ! parseUrl(src, srcFileName, srcArchivePath) ) {
+
+		error(KIO::ERR_DOES_NOT_EXIST, src.path());
+		return;
+
+	}
+
+	if ( ! parseUrl(dest, destFileName, destArchivePath) ) {
+
+		error(KIO::ERR_DOES_NOT_EXIST, dest.path());
+		return;
+
+	}
+
+	if ( srcFileName != destFileName ) {
+
+		error(KIO::ERR_UNSUPPORTED_ACTION, "");
+		return;
+
+	}
+
+	if ( srcArchivePath.isEmpty() || srcArchivePath.at(srcArchivePath.size() - 1) == '\\' ) {
+
+		error(0, ""); // TODO: Implement rename directory
+		return;
+
+	}
+
+	if ( ! openArchive(srcFileName) ) {
+
+		error(0, ""); // TODO: Better error
+		return;
+
+	}
+
+	if ( ! SFileRenameFile(archive->SArchive, srcArchivePath, destArchivePath) ) {
+
+		// TODO: Do not auto overwrite
+
+//		if ( GetLastError() == ERROR_ALREADY_EXISTS )
+//			error(KIO::ERR_FILE_ALREADY_EXIST, destArchivePath);
+//		else
+			error(0, ""); // TODO: Better error
+
+		return;
+
+	}
+
+	SFileFlushArchive(archive->SArchive);
+	finished();
+
+}
+
 void SMPQSlave::listDir(const KUrl &url) {
 
 	kDebug(KIO_SMPQ);
@@ -230,32 +299,31 @@ void SMPQSlave::listDir(const KUrl &url) {
 		else
 			fileName = filePath.mid(archivePath.size(), -1);
 
-		KIO::UDSEntry entry;
-
 		if ( fileName.contains('\\') ) {
 
 			QString dirName = fileName.section('\\', 0, 0);
 
-			if ( directories.contains(dirName) )
-				goto next;
+			if ( ! directories.contains(dirName) ) {
 
-			entry.insert(KIO::UDSEntry::UDS_NAME, QFile::decodeName(dirName.toUtf8()));
-			entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
+				KIO::UDSEntry entry;
+				entry.insert(KIO::UDSEntry::UDS_NAME, QFile::decodeName(dirName.toUtf8()));
+				entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
+				listEntry(entry, false);
 
-			directories.insert(dirName);
+				directories.insert(dirName);
+
+			}
 
 		} else {
 
+			KIO::UDSEntry entry;
 			entry.insert(KIO::UDSEntry::UDS_NAME, QFile::decodeName(fileName.toUtf8()));
 			entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFREG);
 			entry.insert(KIO::UDSEntry::UDS_SIZE, SFileFindData.dwFileSize);
 //			entry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, 0); // TODO: Add time
+			listEntry(entry, false);
 
 		}
-
-		listEntry(entry, false);
-
-next:
 
 		if ( ! SFileFindNextFile(SFileFind, &SFileFindData) )
 			break;
@@ -298,6 +366,9 @@ void SMPQSlave::stat(const KUrl &url) {
 	SFILE_FIND_DATA SFileFindData;
 	HANDLE SFileFind = SFileFindFirstFile(archive->SArchive, archivePath, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
 
+	if ( ! SFileFind )
+		SFileFind = SFileFindFirstFile(archive->SArchive, archivePath + "\\*", &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+
 	if ( SFileFind ) {
 
 		KIO::UDSEntry entry;
@@ -329,6 +400,9 @@ void SMPQSlave::stat(const KUrl &url) {
 }
 
 void SMPQSlave::mkdir(const KUrl &url, int permissions) {}
+
+///
+
 void SMPQSlave::setModificationTime(const KUrl &url, const QDateTime &mtime) {}
 void SMPQSlave::slave_status() {}
 
