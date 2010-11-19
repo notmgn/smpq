@@ -25,22 +25,26 @@
 
 #include "common.h"
 
-#define EPOCH_OFFSET 116444736000000000ULL// Number of 100 ns units between 01/01/1601 and 01/01/1970
+/* Number of 100 ns units between 01/01/1601 and 01/01/1970 */
+#define EPOCH_OFFSET 116444736000000000ULL
 
 int GetTimeFromFileTime(const FILETIME fileTime, time_t * time)
 {
-	// The FILETIME represents a 64-bit integer: the number of 100 ns units since January 1, 1601
+	/* The FILETIME represents a 64-bit integer: the number of 100 ns units since January 1, 1601 */
 	unsigned long long nTime = ((unsigned long long)fileTime.dwHighDateTime << 32) + fileTime.dwLowDateTime;
 
 	if (nTime < EPOCH_OFFSET)
 		return 0;
 
-	nTime -= EPOCH_OFFSET;	// Convert the time base from 01/01/1601 to 01/01/1970
-	nTime /= 10000000ULL;	// Convert 100 ns to sec
+	/* Convert the time base from 01/01/1601 to 01/01/1970 */
+	nTime -= EPOCH_OFFSET;
+
+	/* Convert 100 ns to sec */
+	nTime /= 10000000ULL;
 
 	time_t timeT = (time_t)nTime;
 
-	// Test for overflow (FILETIME is 64 bits, time_t is 32 bits)
+	/* Test for overflow (FILETIME is 64 bits, time_t is 32 bits) */
 	if ((nTime - (unsigned long long)timeT) > 0)
 		return 0;
 

@@ -36,7 +36,7 @@ void printError(const char * archive, const char * message, const char * file, i
 
 #elif defined(__APPLE__)
 
-	// TODO: Convert errnum to message
+	/* TODO: Convert errnum to message */
 	error = malloc(20 * sizeof(char));
 	sprintf(error, "Error code %d", errnum);
 

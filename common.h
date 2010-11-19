@@ -17,6 +17,10 @@
 
 */
 
+#ifdef __STRICT_ANSI__
+#define inline __inline__
+#endif
+
 #if defined(WIN32) || defined(_MSC_VER)
 
 #include <windows.h>
@@ -51,62 +55,63 @@ typedef struct _FILETIME {
  * Variables
  */
 
-/// Application name
+/* Application name */
 extern char * app;
 
-/// Set if output is verbose
+/* Set if output is verbose */
 extern int verbose;
 
-/// Set if files can be overwrite
+/* Set if files can be overwrite */
 extern int overwrite;
 
-/// Specify action
+/* Specify action */
 extern int action;
 
 /**
  * Functions for manipulating with MPQ archive
  */
 
-/// Create new archive and/or append files to archive
+/* Create new archive and/or append files to archive */
 int append(const char * archive, const char * const files[], int flags);
 
-/// Extract or print list files from archive
+/* Extract or print list files from archive */
 int extract(const char * archive, const char * const files[], int flags);
 
-/// Remove file(s) fro archive
+/* Remove file(s) fro archive */
 int remove(const char * archive, const char * const files[], int flags);
 
 /**
  * Functions for output
  */
 
-/// Print formatted error
+/* Print formatted error */
 void printError(const char * archive, const char * file, const char * message, int errnum);
 
+/* Print verbose message */
 void printVerbose(const char * archive, const char * message, const char * file);
 
 /**
  * Function for disk operations
  */
 
-/// Recursive create directory
+/* Recursive create directory */
 int mkpath(const char * s, mode_t mode);
 
 /**
  * Functions for FILETIME conversion
  */
 
-/// Convert FILETIME to time_t
+/* Convert FILETIME to time_t */
 int GetTimeFromFileTime(const FILETIME fileTime, time_t * time);
 
-/// Convert time_t to FILETIME
+/* Convert time_t to FILETIME */
 void GetFileTimeFromTime(const time_t time, FILETIME * fileTime);
 
 /**
  * Path conversation in archive
  */
 
-/// Replace all chars '/' in path to '\\'
+/* Replace all chars '/' in path to '\\' */
 static inline void convertPathToArchive(char * out, const char * in) {
 
 #if defined(WIN32) || defined(_MSC_VER)
@@ -131,7 +136,7 @@ static inline void convertPathToArchive(char * out, const char * in) {
 
 }
 
-/// Replace all chars '\\' in path to '/'
+/* Replace all chars '\\' in path to '/' */
 static inline void convertPathFromArchive(char * out, const char * in) {
 
 #if defined(WIN32) || defined(_MSC_VER)
