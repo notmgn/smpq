@@ -44,16 +44,16 @@ void printError(const char * archive, const char * message, const char * file, i
 
 	if ( errnum < 105 )
 		error = strerror(errnum);
-	else if ( errnum = 105 )
-		error = "Bad format";
-	else if ( errnum = 106 )
-		error = "No more files";
-	else if ( errnum = 107 )
-		error = "Handle EOF";
-	else if ( errnum = 108 )
-		error = "Cannot compile";
-	else if ( errnum = 109 )
-		error = "File corrupted";
+	else if ( errnum == 105 )
+		error = (char *)"Bad format";
+	else if ( errnum == 106 )
+		error = (char *)"No more files";
+	else if ( errnum == 107 )
+		error = (char *)"Handle EOF";
+	else if ( errnum == 108 )
+		error = (char *)"Cannot compile";
+	else if ( errnum == 109 )
+		error = (char *)"File corrupted";
 
 #endif
 

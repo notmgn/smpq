@@ -54,7 +54,7 @@ int extract(const char * archive, const char * const files[], int flags /*const 
 			FILE * file = NULL;
 			char fileName[strlen(SFileFindData.cFileName)+1];
 			char fileDir[strlen(SFileFindData.cFileName)+1];
-			size_t fileSize = SFileFindData.dwFileSize;
+			//size_t fileSize = SFileFindData.dwFileSize; // TODO: Use it
 			time_t fileTime = 0;
 
 			HANDLE SFile = NULL;
@@ -171,6 +171,8 @@ next:
 	}
 
 	SFileCloseArchive(SArchive);
+
+	return 0;
 
 }
 

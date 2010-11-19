@@ -180,7 +180,7 @@ int main(int argc, char * argv[]) {
 
 		}
 
-		for ( j = 1; j < strlen(argv[i]); ++j )
+		for ( j = 1; j < (int)strlen(argv[i]); ++j )
 			parse(argv[i][j]);
 
 	}
@@ -218,7 +218,7 @@ int main(int argc, char * argv[]) {
 		if ( filesc == 0 ) {
 
 			filesc = 1;
-			files[0] = "*";
+			files[0] = (char *)"*";
 
 		}
 

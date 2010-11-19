@@ -27,7 +27,7 @@ extern "C" {
 
 int remove(const char * archive, const char * const files[], int flags) {
 
-	int i, j;
+	int i;
 	int needCompact = 0;
 	HANDLE SArchive = NULL;
 
@@ -42,8 +42,6 @@ int remove(const char * archive, const char * const files[], int flags) {
 	for ( i = 0; files[i]; ++i ) {
 
 		const char * fileName = files[i];
-
-		HANDLE SFile = NULL;
 		char SFileName[strlen(fileName)+1];
 
 		convertPathToArchive(SFileName, fileName);

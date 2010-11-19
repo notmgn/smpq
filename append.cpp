@@ -31,7 +31,7 @@ extern "C" {
 
 int append(const char * archive, const char * const files[], int flags) {
 
-	int i, j;
+	int i;
 	int needCompact = 0;
 	HANDLE SArchive = NULL;
 
