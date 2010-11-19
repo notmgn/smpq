@@ -1,0 +1,16 @@
+[Protocol]
+exec=kio_smpq
+protocol=mpq
+input=none
+listing=Name,Type,Size,Date
+output=filesystem
+reading=true
+writing=true
+makedir=true
+deleting=true
+moving=true
+opening=true
+#Icon=folder-remote
+Description=A kioslave for smpq
+#X-DocPath=kioslave/smpq/index.html
+#Class=:internet
