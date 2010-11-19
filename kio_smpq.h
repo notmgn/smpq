@@ -22,17 +22,21 @@
 
 #define KIO_SMPQ 0
 
-//#include <QObject>
-
 #include <KIO/SlaveBase>
 #include <KIO/FileCopyJob>
 
-class SMPQSlave : /*public QObject,*/ public KIO::SlaveBase
+class SMPQSlavePrivate;
+
+class SMPQSlave : public KIO::SlaveBase
 {
 
-//	Q_OBJECT
-
 	private:
+		SMPQSlavePrivate * archive;
+		bool openArchive(const QString &archive);
+		void closeArchive();
+		bool parseUrl(const KUrl &url, QString &fileName, QByteArray &archivePath);
+		void toArchivePath(QByteArray &to, const QString &from);
+		void fromArchivePath(QString &to, const QByteArray &from);
 
 	public:
 		SMPQSlave(const QByteArray &protocol, const QByteArray &pool_socket, const QByteArray &app_socket);
@@ -46,10 +50,10 @@ class SMPQSlave : /*public QObject,*/ public KIO::SlaveBase
 		virtual void del(const KUrl &url, bool isfile);
 		virtual void copy(const KUrl &src, const KUrl &dest, int permissions, KIO::JobFlags flags);
 		virtual void rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags);
-
 		virtual void listDir(const KUrl &url);
 		virtual void stat(const KUrl &url);
 		virtual void mkdir(const KUrl &url, int permissions);
+
 		virtual void setModificationTime(const KUrl &url, const QDateTime &mtime);
 		virtual void slave_status();
 

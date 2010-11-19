@@ -1,16 +1,16 @@
 [Protocol]
 exec=kio_smpq
 protocol=mpq
-input=none
-listing=Name,Type,Size,Date
+input=filesystem
 output=filesystem
+listing=Name,Type,Size,Date
 reading=true
 writing=true
 makedir=true
 deleting=true
 moving=true
 opening=true
-#Icon=folder-remote
+Icon=package-x-generic
 Description=A kioslave for smpq
 #X-DocPath=kioslave/smpq/index.html
-#Class=:internet
+Class=:local
