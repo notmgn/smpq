@@ -31,8 +31,8 @@ class SMPQSlave : public KIO::SlaveBase
 {
 
 	private:
-		SMPQSlavePrivate * archive;
-		bool openArchive(const QString &archive);
+		SMPQSlavePrivate * p;
+		bool openArchive(const QString &archive, unsigned int flags = 0);
 		void closeArchive();
 		bool parseUrl(const KUrl &url, QString &fileName, QByteArray &archivePath);
 		void toArchivePath(QByteArray &to, const QString &from);

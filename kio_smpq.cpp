@@ -19,11 +19,14 @@
 
 #include <QCoreApplication>
 #include <QFile>
+#include <QByteArray>
+#include <QVarLengthArray>
 #include <QString>
 #include <QSet>
 
 #include <KComponentData>
 #include <KDebug>
+#include <KMimeType>
 #include <kde_file.h>
 
 #include <StormLib.h>
@@ -59,9 +62,15 @@ class SMPQSlavePrivate
 {
 
 	public:
-		QString fileName;
+		SMPQSlavePrivate() : SArchive(NULL), flags(0), SFile(NULL) { }
+
 		HANDLE SArchive;
+		QString archive;
+		unsigned int flags;
+
 		HANDLE SFile;
+		QByteArray file;
+		KUrl url;
 
 };
 
@@ -69,8 +78,7 @@ SMPQSlave::SMPQSlave(const QByteArray &protocol, const QByteArray &pool_socket, 
 
 	kDebug(KIO_SMPQ);
 
-	archive = new SMPQSlavePrivate;
-	archive->SArchive = NULL;
+	p = new SMPQSlavePrivate;
 
 }
 
@@ -78,7 +86,7 @@ SMPQSlave::~SMPQSlave() {
 
 	kDebug(KIO_SMPQ);
 
-	delete archive;
+	delete p;
 
 }
 
@@ -119,25 +127,25 @@ bool SMPQSlave::parseUrl(const KUrl &url, QString &fileName, QByteArray &archive
 
 	fileName = path.left(pos);
 
-	QString temp = path.mid(pos + 1, -1);
-	toArchivePath(archivePath, temp);
+	toArchivePath(archivePath, path.mid(pos + 1, -1));
 
 	return true;
 
 }
 
-bool SMPQSlave::openArchive(const QString &fileName) {
+bool SMPQSlave::openArchive(const QString &archive, unsigned int flags) {
 
 	kDebug(KIO_SMPQ);
 
-	if ( archive->fileName != fileName ) {
+	if ( p->archive != archive || p->flags != flags || ! p->SArchive ) {
 
 		closeArchive();
 
-		if ( ! SFileOpenArchive(fileName.toUtf8(), 0, 0, &archive->SArchive) )
+		if ( ! SFileOpenArchive(archive.toUtf8(), 0, flags, &p->SArchive) )
 			return false;
 
-		archive->fileName = fileName;
+		p->archive = archive;
+		p->flags = flags;
 
 	}
 
@@ -149,11 +157,15 @@ void SMPQSlave::closeArchive() {
 
 	kDebug(KIO_SMPQ);
 
-	if ( archive->SArchive )
-		SFileCloseArchive(archive->SArchive);
+	if ( p->SArchive )
+		SFileCloseArchive(p->SArchive);
 
-	archive->SArchive = NULL;
-	archive->fileName.clear();
+	p->archive.clear();
+	p->SArchive = NULL;
+	p->flags = 0;
+
+	p->file.clear();
+	p->SFile = NULL;
 
 }
 
@@ -198,7 +210,7 @@ void SMPQSlave::get(const KUrl &url) {
 
 	}
 
-	if ( ! openArchive(fileName) ) {
+	if ( ! openArchive(fileName, MPQ_OPEN_READ_ONLY) ) {
 
 		error(0, ""); // TODO: Better error
 		return;
@@ -206,7 +218,7 @@ void SMPQSlave::get(const KUrl &url) {
 	}
 
 	SFILE_FIND_DATA SFileFindData;
-	HANDLE SFileFind = SFileFindFirstFile(archive->SArchive, archivePath, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+	HANDLE SFileFind = SFileFindFirstFile(p->SArchive, archivePath, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
 
 	if ( ! SFileFind ) {
 
@@ -220,14 +232,15 @@ void SMPQSlave::get(const KUrl &url) {
 
 	SFileFindClose(SFileFind);
 
-	if ( strcmp(SFileName, "(listfile)") == 0 || strcmp(SFileName, "(signature)") == 0 || strcmp(SFileName, "(attributes)") == 0 ) {
+	// Skip internal MPQ files
+	if ( SFileName == "(listfile)" || SFileName == "(signature)" || SFileName == "(attributes)" ) {
 
 		error(0, ""); // TODO: Better error
 		return;
 
 	}
 
-	if ( ! SFileOpenFileEx(archive->SArchive, SFileName, 0, &SFile) ) {
+	if ( ! SFileOpenFileEx(p->SArchive, SFileName, 0, &SFile) ) {
 
 		error(0, ""); // TODO: Better error
 		return;
@@ -235,12 +248,24 @@ void SMPQSlave::get(const KUrl &url) {
 	}
 
 	int eof = 0;
-	char buffer[0x10000];
-	size_t bytes = 1;
+	size_t bytes = 1024;
+	QVarLengthArray <char> buffer(bytes);
+
+	SFileReadFile(SFile, buffer.data(), buffer.size(), &bytes, NULL);
+
+	QByteArray fileData = QByteArray::fromRawData(buffer.data(), bytes);
+	KMimeType::Ptr fileMimeType = KMimeType::findByNameAndContent(url.fileName(), fileData);
+	mimeType(fileMimeType->name());
+
+	int low = 0;
+	int high = 0;
+	SFileSetFilePointer(SFile, low, &high, FILE_BEGIN);
+
+	buffer.resize(0x10000);
 
 	while ( 1 ) {
 
-		if ( ! SFileReadFile(SFile, buffer, sizeof(buffer), &bytes, NULL) ) {
+		if ( ! SFileReadFile(SFile, buffer.data(), buffer.size(), &bytes, NULL) ) {
 
 			eof = GetLastError() == ERROR_HANDLE_EOF;
 
@@ -254,7 +279,7 @@ void SMPQSlave::get(const KUrl &url) {
 
 		}
 
-		data(QByteArray(buffer, bytes));
+		data(QByteArray::fromRawData(buffer.data(), bytes));
 
 		if ( eof )
 			break;
@@ -262,7 +287,9 @@ void SMPQSlave::get(const KUrl &url) {
 	}
 
 	SFileCloseFile(SFile);
+
 	data(QByteArray());
+
 	finished();
 
 }
@@ -290,15 +317,15 @@ void SMPQSlave::del(const KUrl &url, bool isfile) {
 
 	}
 
-	if ( ! SFileRemoveFile(archive->SArchive, archivePath, SFILE_OPEN_FROM_MPQ) ) {
+	if ( ! SFileRemoveFile(p->SArchive, archivePath, SFILE_OPEN_FROM_MPQ) ) {
 
 		error(0, "");  // TODO: Better error
 		return;
 
 	}
 
-	SFileCompactArchive(archive->SArchive, NULL, 0);
-	SFileFlushArchive(archive->SArchive);
+	SFileCompactArchive(p->SArchive, NULL, 0);
+	SFileFlushArchive(p->SArchive);
 
 	finished();
 
@@ -352,7 +379,7 @@ void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
 	}
 
 	SFILE_FIND_DATA SFileFindData;
-	HANDLE SFileFind = SFileFindFirstFile(archive->SArchive, destArchivePath, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+	HANDLE SFileFind = SFileFindFirstFile(p->SArchive, destArchivePath, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
 
 	if ( SFileFind && ! ( flags & KIO::Overwrite ) ) {
 
@@ -364,25 +391,25 @@ void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
 
 	if ( SFileFind && ( flags & KIO::Overwrite ) ) {
 
-		if ( ! SFileRemoveFile(archive->SArchive, destArchivePath, SFILE_OPEN_FROM_MPQ) ) {
+		if ( ! SFileRemoveFile(p->SArchive, destArchivePath, SFILE_OPEN_FROM_MPQ) ) {
 
 			error(0, "");  // TODO: Better error
 			return;
 
 		}
 
-		SFileCompactArchive(archive->SArchive, NULL, 0);
+		SFileCompactArchive(p->SArchive, NULL, 0);
 
 	}
 
-	if ( ! SFileRenameFile(archive->SArchive, srcArchivePath, destArchivePath) ) {
+	if ( ! SFileRenameFile(p->SArchive, srcArchivePath, destArchivePath) ) {
 
 		error(0, ""); // TODO: Better error
 		return;
 
 	}
 
-	SFileFlushArchive(archive->SArchive);
+	SFileFlushArchive(p->SArchive);
 	finished();
 
 }
@@ -420,15 +447,15 @@ void SMPQSlave::listDir(const KUrl &url) {
 
 	}
 
-	QSet <QString> directories;
+	QSet <QByteArray> directories;
 
 	SFILE_FIND_DATA SFileFindData;
-	HANDLE SFileFind = SFileFindFirstFile(archive->SArchive, archivePath + '*', &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+	HANDLE SFileFind = SFileFindFirstFile(p->SArchive, archivePath + '*', &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
 
 	while ( SFileFind ) {
 
-		QString filePath = SFileFindData.cFileName;
-		QString fileName;
+		QByteArray filePath = SFileFindData.cFileName;
+		QByteArray fileName;
 
 		if ( archivePath.isEmpty() )
 			fileName = filePath;
@@ -437,12 +464,12 @@ void SMPQSlave::listDir(const KUrl &url) {
 
 		if ( fileName.contains('\\') ) {
 
-			QString dirName = fileName.section('\\', 0, 0);
+			QByteArray dirName = fileName.split('\\').first();
 
 			if ( ! directories.contains(dirName) ) {
 
 				KIO::UDSEntry entry;
-				entry.insert(KIO::UDSEntry::UDS_NAME, QFile::decodeName(dirName.toUtf8()));
+				entry.insert(KIO::UDSEntry::UDS_NAME, QFile::decodeName(dirName));
 				entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
 				listEntry(entry, false);
 
@@ -453,7 +480,7 @@ void SMPQSlave::listDir(const KUrl &url) {
 		} else {
 
 			KIO::UDSEntry entry;
-			entry.insert(KIO::UDSEntry::UDS_NAME, QFile::decodeName(fileName.toUtf8()));
+			entry.insert(KIO::UDSEntry::UDS_NAME, QFile::decodeName(fileName));
 			entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFREG);
 			entry.insert(KIO::UDSEntry::UDS_SIZE, SFileFindData.dwFileSize);
 //			entry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, 0); // TODO: Add time
@@ -500,10 +527,10 @@ void SMPQSlave::stat(const KUrl &url) {
 	}
 
 	SFILE_FIND_DATA SFileFindData;
-	HANDLE SFileFind = SFileFindFirstFile(archive->SArchive, archivePath, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+	HANDLE SFileFind = SFileFindFirstFile(p->SArchive, archivePath, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
 
 	if ( ! SFileFind )
-		SFileFind = SFileFindFirstFile(archive->SArchive, archivePath + "\\*", &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+		SFileFind = SFileFindFirstFile(p->SArchive, archivePath + "\\*", &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
 
 	if ( SFileFind ) {
 
@@ -559,19 +586,52 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 
 	}
 
-	if ( ! openArchive(fileName) ) {
+	unsigned int flags = 0;
+
+	if ( mode & QIODevice::ReadOnly )
+		flags = MPQ_OPEN_READ_ONLY;
+
+	if ( ! openArchive(fileName, flags) ) {
 
 		error(0, ""); // TODO: Better error
 		return;
 
 	}
 
-	archive->SFile = NULL;
-
-	if ( ! SFileOpenFileEx(archive->SArchive, archivePath, 0, &archive->SFile) ) {
+	if ( ! SFileOpenFileEx(p->SArchive, archivePath, 0, &p->SFile) ) {
 
 		error(0, ""); // TODO: Better error
 		return;
+
+	}
+
+	p->file = archivePath;
+	p->url = url;
+
+	if ( mode & QIODevice::ReadOnly ) {
+
+		size_t bytes = 1024;
+		QVarLengthArray <char> buffer(bytes);
+
+		if ( ! SFileReadFile(p->SFile, buffer.data(), buffer.size(), &bytes, NULL) ) {
+
+			if ( GetLastError() != ERROR_HANDLE_EOF ) {
+
+				error(KIO::ERR_COULD_NOT_READ, p->url.prettyUrl());
+				close();
+				return;
+
+			}
+
+		}
+
+		QByteArray fileData = QByteArray::fromRawData(buffer.data(), bytes);
+		KMimeType::Ptr fileMimeType = KMimeType::findByNameAndContent(url.fileName(), fileData);
+		mimeType(fileMimeType->name());
+
+		int low = 0;
+		int high = 0;
+		SFileSetFilePointer(p->SFile, low, &high, FILE_BEGIN);
 
 	}
 
@@ -579,30 +639,36 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 
 void SMPQSlave::close() {
 
-	SFileCloseFile(archive->SFile);
+	SFileCloseFile(p->SFile);
+
+	if ( p->SFile )
+		p->SFile = NULL;
+
+	p->file.clear();
+	p->url.clear();
 
 }
 
 void SMPQSlave::read(KIO::filesize_t size) {
 
-	char buffer[size];
-	size_t bytes = 1;
+	size_t bytes = size;
+	QVarLengthArray <char> buffer(bytes);
 
-	if ( ! SFileReadFile(archive->SFile, buffer, sizeof(buffer), &bytes, NULL) ) {
+	if ( ! SFileReadFile(p->SFile, buffer.data(), buffer.size(), &bytes, NULL) ) {
 
 		if ( GetLastError() != ERROR_HANDLE_EOF ) {
 
-			error(KIO::ERR_COULD_NOT_READ, "");
+			error(KIO::ERR_COULD_NOT_READ, p->url.prettyUrl());
 			return;
 
 		}
 
-		data(QByteArray(buffer, bytes));
+		data(QByteArray::fromRawData(buffer.data(), bytes));
 		data(QByteArray());
 
 	} else {
 
-		data(QByteArray(buffer, bytes));
+		data(QByteArray::fromRawData(buffer.data(), bytes));
 
 	}
 
@@ -612,17 +678,18 @@ void SMPQSlave::write(const QByteArray &data) {}
 
 void SMPQSlave::seek(KIO::filesize_t offset) {
 
-	size_t low = offset & ((1<<31) + 1);
-	size_t high = (offset >> 31) & ((1<<31) + 1);
+	// TODO: signed or unsigned? SFileSetFilePointer needs LONG
+	int low = offset;
+	int high = offset >> 32;
 
-	if ( SFileSetFilePointer(archive->SFile, low, (LONG *)&high, FILE_BEGIN) == SFILE_INVALID_SIZE ) {
+	if ( SFileSetFilePointer(p->SFile, low, &high, FILE_BEGIN) == SFILE_INVALID_SIZE ) {
 
-			error(KIO::ERR_COULD_NOT_SEEK, "");
+			error(KIO::ERR_COULD_NOT_SEEK, p->url.prettyUrl());
 			return;
 
 	}
 
-	position(high << 31 | low);
+	position(((KIO::filesize_t)high << 31) | low);
 
 }
 
