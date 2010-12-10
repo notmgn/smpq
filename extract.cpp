@@ -47,9 +47,34 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 	for ( i = 0; files[i]; ++i ) {
 
-		SFILE_FIND_DATA SFileFindData;
+		char mask[strlen(files[i])+1];
+		convertPathToArchive(mask, files[i]);
 
-		HANDLE SFileFind = SFileFindFirstFile(SArchive, files[i], &SFileFindData, listfile);
+		SFILE_FIND_DATA SFileFindData;
+		HANDLE SFileFind = SFileFindFirstFile(SArchive, mask, &SFileFindData, listfile);
+
+		if ( ! SFileFind ) {
+
+			SFileFind = (HANDLE)0xFFFFFFFF;
+			SFileFindData.dwFileTimeLo = 0;
+			SFileFindData.dwFileTimeHi = 0;
+
+			strcpy(SFileFindData.cFileName, mask);
+
+			HANDLE SFile;
+
+			if ( SFileOpenFileEx(SArchive, mask, 0, &SFile) ) {
+
+				unsigned int high = 0;
+				unsigned int low = SFileGetFileSize(SFile, &high);
+
+				SFileFindData.dwFileSize = low | ( (unsigned long long int)high << 32 );
+
+				SFileCloseFile(SFile);
+
+			}
+
+		}
 
 		while ( SFileFind ) {
 
@@ -187,12 +212,16 @@ next:
 			if ( SFile )
 				SFileCloseFile(SFile);
 
+			if ( SFileFind == (HANDLE)0xFFFFFFFF )
+				break;
+
 			if ( ! SFileFindNextFile(SFileFind, &SFileFindData) )
 				break;
 
 		}
 
-		SFileFindClose(SFileFind);
+		if ( SFileFind != (HANDLE)0xFFFFFFFF )
+			SFileFindClose(SFileFind);
 
 	}
 
