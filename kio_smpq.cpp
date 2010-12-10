@@ -251,22 +251,9 @@ void SMPQSlave::get(const KUrl &url) {
 
 	}
 
-	SFILE_FIND_DATA SFileFindData;
-	HANDLE SFileFind = SFileFindFirstFile(p->SArchive, archivePath, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
-
-	if ( ! SFileFind ) {
-
-		error(0, ""); // TODO: Better error
-		return;
-
-	}
-
 	HANDLE SFile = NULL;
-	QByteArray SFileName = SFileFindData.cFileName;
 
-	SFileFindClose(SFileFind);
-
-	if ( ! SFileOpenFileEx(p->SArchive, SFileName, 0, &SFile) ) {
+	if ( ! SFileOpenFileEx(p->SArchive, archivePath, 0, &SFile) ) {
 
 		error(0, ""); // TODO: Better error
 		return;
@@ -372,11 +359,15 @@ void SMPQSlave::del(const KUrl &url, bool isfile) {
 
 	if ( ! isfile ) {
 
-		if ( archivePath.at(archivePath.size()-1) != '\\' )
-			archivePath.append("\\*");
+		QByteArray mask = archivePath;
+
+		if ( mask.at(mask.size()-1) != '\\' )
+			mask.append("\\*");
+		else
+			mask.append("*");
 
 		SFILE_FIND_DATA SFileFindData;
-		HANDLE SFileFind = SFileFindFirstFile(p->SArchive, archivePath, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+		HANDLE SFileFind = SFileFindFirstFile(p->SArchive, mask, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
 
 		// MPQ archives does not support directory structure
 		// There are no files in this directory, so directory is empty
@@ -463,18 +454,20 @@ void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
 
 	}
 
-	SFILE_FIND_DATA SFileFindData;
-	HANDLE SFileFind = SFileFindFirstFile(p->SArchive, destArchivePath, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+	HANDLE SFile;
+	bool found;
 
-	if ( SFileFind && ! ( flags & KIO::Overwrite ) ) {
+	if ( ( found = SFileOpenFileEx(p->SArchive, destArchivePath, 0, &SFile) ) )
+		SFileCloseFile(SFile);
 
-		SFileFindClose(SFileFind);
+	if ( found && ! ( flags & KIO::Overwrite ) ) {
+
 		error(KIO::ERR_FILE_ALREADY_EXIST, destArchivePath);
 		return;
 
 	}
 
-	if ( SFileFind && ( flags & KIO::Overwrite ) ) {
+	if ( found && ( flags & KIO::Overwrite ) ) {
 
 		if ( ! SFileRemoveFile(p->SArchive, destArchivePath, SFILE_OPEN_FROM_MPQ) ) {
 
@@ -637,24 +630,78 @@ void SMPQSlave::stat(const KUrl &url) {
 	}
 
 	SFILE_FIND_DATA SFileFindData;
-	HANDLE SFileFind = SFileFindFirstFile(p->SArchive, archivePath, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+	HANDLE SFileFind;
+	HANDLE SFile;
+	bool found = false;
+	bool dir = false;
 
-	if ( ! SFileFind )
-		SFileFind = SFileFindFirstFile(p->SArchive, archivePath + "\\*", &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+	if ( ! found ) {
 
-	if ( ! SFileFind ) {
+		SFileFind = SFileFindFirstFile(p->SArchive, archivePath, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+
+		if ( SFileFind ) {
+
+			found = true;
+			dir = false;
+			SFileFindClose(SFileFind);
+
+		}
+
+	}
+
+	if ( ! found ) {
+
+		QByteArray mask = archivePath;
+
+		if ( mask.at(mask.size()-1) != '\\' )
+			mask.append("\\*");
+		else
+			mask.append("*");
+
+		SFileFind = SFileFindFirstFile(p->SArchive, mask, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+
+		if ( SFileFind ) {
+
+			found = true;
+			dir = true;
+			SFileFindClose(SFileFind);
+
+		}
+
+	}
+
+	if ( ! found ) {
+
+		if ( SFileOpenFileEx(p->SArchive, archivePath, 0, &SFile) ) {
+
+			found = true;
+			dir = false;
+
+			SFileFindData.dwFileTimeLo = 0;
+			SFileFindData.dwFileTimeHi = 0;
+
+			unsigned int high = 0;
+			unsigned int low = SFileGetFileSize(SFile, &high);
+
+			SFileFindData.dwFileSize = low | ( (unsigned long long int)high << 32 );
+
+			SFileCloseFile(SFile);
+
+		}
+
+	}
+
+	if ( ! found ) {
 
 		error(KIO::ERR_DOES_NOT_EXIST, url.path());
 		return;
 
 	}
 
-	SFileFindClose(SFileFind);
-
 	KIO::UDSEntry entry;
 	entry.insert(KIO::UDSEntry::UDS_NAME, url.path());
 
-	if ( archivePath == SFileFindData.cFileName ) {
+	if ( ! dir ) {
 
 		time_t fileTime = 0;
 		quint64 SFileTime = SFileFindData.dwFileTimeLo | ( (quint64)SFileFindData.dwFileTimeHi << 32 );
