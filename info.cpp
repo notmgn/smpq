@@ -25,6 +25,17 @@ extern "C" {
 
 #include "common.h"
 
+inline unsigned int GetInfo(HANDLE archive, unsigned int info) {
+	
+	unsigned int ret;
+
+	if ( SFileGetFileInfo(archive, info, &ret, sizeof(ret), NULL) )
+		return ret;
+	else
+		return 0;
+
+}
+
 int info(const char * archive) {
 
 	HANDLE SArchive = NULL;
@@ -37,8 +48,12 @@ int info(const char * archive) {
 
 	}
 
-	// TODO: Show more info
-	printMessage("Archive Name: %s", archive);
+	printMessage("Archive name: %s", archive);
+	printMessage("Archive size: %u", GetInfo(SArchive, SFILE_INFO_ARCHIVE_SIZE));
+	printMessage("Hash table size: %u", GetInfo(SArchive, SFILE_INFO_HASH_TABLE_SIZE));
+	printMessage("Block table size: %u", GetInfo(SArchive, SFILE_INFO_BLOCK_TABLE_SIZE));
+	printMessage("Sector size: %u", GetInfo(SArchive, SFILE_INFO_SECTOR_SIZE));
+	printMessage("Number of files in archive: %u", GetInfo(SArchive, SFILE_INFO_NUM_FILES));
 
 	SFileCloseArchive(SArchive);
 
