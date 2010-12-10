@@ -58,12 +58,13 @@ void printError(const char * archive, const char * message, const char * file, i
 #endif
 
 	fprintf(stderr, "%s: %s: Error: %s `%s': %s\n", app, archive, message, file, error);
+	fflush(stderr);
 
 #if defined(WIN32) || defined(_MSC_VER)
 
 	LocalFree(error);
 
-#elif defined (__APPLE__)
+#elif defined(__APPLE__)
 
 	free(error);
 
@@ -74,5 +75,6 @@ void printError(const char * archive, const char * message, const char * file, i
 void printVerbose(const char * archive, const char * message, const char * file) {
 
 	printf("%s: %s: %s `%s' ...\n", app, archive, message, file);
+	fflush(stdout);
 
 }

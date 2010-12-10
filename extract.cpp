@@ -30,7 +30,7 @@ extern "C" {
 
 #include "common.h"
 
-int extract(const char * archive, const char * const files[], int flags /*const char * ListFileName*/) {
+int extract(const char * archive, const char * const files[], int flags, const char * listfile) {
 
 	int i, j;
 	HANDLE SArchive = NULL;
@@ -42,12 +42,14 @@ int extract(const char * archive, const char * const files[], int flags /*const 
 
 	}
 
+	if ( ! ( flags & NO_SYSTEM ) )
+		systemListfiles(SArchive, archive, flags);
+
 	for ( i = 0; files[i]; ++i ) {
 
 		SFILE_FIND_DATA SFileFindData;
 
-		// TODO: add listfile
-		HANDLE SFileFind = SFileFindFirstFile(SArchive, files[i], &SFileFindData, NULL /*ListFileName*/);
+		HANDLE SFileFind = SFileFindFirstFile(SArchive, files[i], &SFileFindData, listfile);
 
 		while ( SFileFind ) {
 
@@ -90,7 +92,7 @@ int extract(const char * archive, const char * const files[], int flags /*const 
 				printVerbose(archive, "Extract", fileName);
 
 			if ( ( flags & LIST ) )
-				printf("%s\n", fileName);
+				printMessage("%s", fileName);
 
 			if ( flags & LIST )
 				goto next;

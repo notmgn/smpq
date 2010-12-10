@@ -17,11 +17,12 @@
 
 */
 
-/* TODO: add listfile */
-
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "common.h"
 
@@ -38,11 +39,14 @@
 	"     -d, -r, --delete, --remove    Remove file(s) from archive\n" \
 	"     -l, --list                    List file(s) of archive\n" \
 	"     -e, -x, --extract             Extract file(s) from archive\n" \
+	"     -i, -I, --info                Show info about archive\n" \
 	"\n" \
 	"     -h, -u, --help, --usage       Show this help/usage information\n" \
 	"     -V, --license                 Show version license information\n" \
 	"\n" \
 	"Options:\n" \
+	"     -L, --listfile                Specify additional external listfile\n" \
+	"     -n, --no-system-listfiles     Do not load system listfiles\n" \
 	"     -f, -o, --force, --overwrite  Enable overwrite file(s)\n" \
 	"     -v, --verbose                 Enable verbose output\n"
 
@@ -71,6 +75,14 @@ void parse(char c) {
 
 	switch ( c ) {
 
+		case 'L':
+			flags |= LISTFILE;
+			break;
+
+		case 'n':
+			flags |= NO_SYSTEM;
+			break;
+
 		case 'f':
 		case 'o':
 
@@ -86,6 +98,8 @@ void parse(char c) {
 		case 'c':
 		case 'd':
 		case 'e':
+		case 'i':
+		case 'I':
 		case 'l':
 		case 'r':
 		case 'x':
@@ -118,6 +132,9 @@ void parse(char c) {
 
 			if ( action == 'e' )
 				action = 'x';
+
+			if ( action == 'I' )
+				action = 'i';
 
 			break;
 
@@ -165,8 +182,16 @@ int main(int argc, char * argv[]) {
 				parse('l');
 			else if ( strcmp(argv[i], "--extract") == 0 )
 				parse('x');
+			else if ( strcmp(argv[i], "--info") == 0 )
+				parse('i');
 			else if ( strcmp(argv[i], "--force") == 0 || strcmp(argv[i], "--overwrite") == 0 )
 				parse('f');
+			else if ( strcmp(argv[i], "--verbose") == 0 )
+				parse('v');
+			else if ( strcmp(argv[i], "--listfile") == 0 )
+				parse('L');
+			else if ( strcmp(argv[i], "--no-system-listfiles") == 0 )
+				parse('n');
 			else if ( strcmp(argv[i], "--license") == 0 || strcmp(argv[i], "--version") == 0 )
 				parse('V');
 			else if ( strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "--usage") == 0 )
@@ -192,6 +217,30 @@ int main(int argc, char * argv[]) {
 
 	}
 
+	char * listfile = NULL;
+
+	if ( flags & LISTFILE ) {
+
+		listfile = argv[i++];
+
+		struct stat st;
+
+		if ( stat(listfile, &st) == -1 ) {
+
+			fprintf(stderr, "%s Error: Cannot stat listfile `%s': %s\n", app, listfile, strerror(errno));
+			return -1;
+
+		}
+
+		if ( S_ISDIR(st.st_mode) ) {
+
+			fprintf(stderr, "%s Error: Cannot open listfile `%s': It is directory\n", app, listfile);
+			return -1;
+
+		}
+
+	}
+
 	if ( argc - i <= 0 ) {
 
 		fprintf(stderr, "%s Error: No archive specified\n", app);
@@ -199,8 +248,11 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	char * archive = argv[i];
-	++i;
+	char * archive = argv[i++];
+
+	if ( action == 'i' )
+		return info(archive);
+
 	int filesc = argc - i;
 	char * files[filesc + 2];
 
@@ -238,13 +290,13 @@ int main(int argc, char * argv[]) {
 	switch ( action ) {
 
 		case 'a':
-			return append(archive, (const char * const *)files, flags);
+			return append(archive, (const char * const *)files, flags, listfile);
 
 		case 'x':
-			return extract(archive, (const char * const *)files, flags);
+			return extract(archive, (const char * const *)files, flags, listfile);
 
 		case 'r':
-			return remove(archive, (const char * const *)files, flags);
+			return remove(archive, (const char * const *)files, flags, listfile);
 
 	}
 

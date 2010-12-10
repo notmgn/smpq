@@ -29,6 +29,8 @@ set(smpq_SRCS
 	append.cpp
 	extract.cpp
 	filetime.c
+	info.cpp
+	listfiles.cpp
 	main.c
 	mkpath.c
 	print.c

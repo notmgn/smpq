@@ -25,7 +25,7 @@ extern "C" {
 
 #include "common.h"
 
-int remove(const char * archive, const char * const files[], int flags) {
+int remove(const char * archive, const char * const files[], int flags, const char * listfile) {
 
 	int i;
 	int needCompact = 0;
@@ -38,6 +38,9 @@ int remove(const char * archive, const char * const files[], int flags) {
 		return -1;
 
 	}
+
+	if ( ! ( flags & NO_SYSTEM ) )
+		systemListfiles(SArchive, archive, flags);
 
 	for ( i = 0; files[i]; ++i ) {
 
@@ -69,8 +72,7 @@ int remove(const char * archive, const char * const files[], int flags) {
 
 		SFileFlushArchive(SArchive);
 
-		// TODO: Add listfile
-		if ( ! SFileCompactArchive(SArchive, NULL /*listfile*/, 0) )
+		if ( ! SFileCompactArchive(SArchive, listfile, 0) )
 			printError(archive, "Cannot compact archive", archive, GetLastError());
 
 	}

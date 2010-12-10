@@ -35,11 +35,14 @@ typedef struct _FILETIME {
 	unsigned int dwHighDateTime;
 } FILETIME, *PFILETIME;
 
+typedef void * HANDLE;
+
 #endif
 
-#define remove _smpq_remove
 #define append _smpq_append
 #define extract _smpq_extract
+#define info _smpq_info
+#define remove _smpq_remove
 
 /**
  * Flags
@@ -50,6 +53,8 @@ typedef struct _FILETIME {
 
 #define OVERWRITE	1 << 1
 #define VERBOSE		1 << 2
+#define LISTFILE	1 << 3
+#define NO_SYSTEM	1 << 4
 
 /**
  * Variables
@@ -58,37 +63,34 @@ typedef struct _FILETIME {
 /* Application name */
 extern char * app;
 
-/* Set if output is verbose */
-extern int verbose;
-
-/* Set if files can be overwrite */
-extern int overwrite;
-
-/* Specify action */
-extern int action;
-
 /**
  * Functions for manipulating with MPQ archive
  */
 
 /* Create new archive and/or append files to archive */
-int append(const char * archive, const char * const files[], int flags);
+int append(const char * archive, const char * const files[], int flags, const char * listfile);
 
 /* Extract or print list files from archive */
-int extract(const char * archive, const char * const files[], int flags);
+int extract(const char * archive, const char * const files[], int flags, const char * listfile);
+
+/* Show info about archive */
+int info(const char * archive);
 
 /* Remove file(s) fro archive */
-int remove(const char * archive, const char * const files[], int flags);
+int remove(const char * archive, const char * const files[], int flags, const char * listfile);
 
 /**
  * Functions for output
  */
 
-/* Print formatted error */
+/* Print formatted error message */
 void printError(const char * archive, const char * file, const char * message, int errnum);
 
 /* Print verbose message */
 void printVerbose(const char * archive, const char * message, const char * file);
+
+/* Print normal message */
+#define printMessage(message, ...) do { printf(message "\n", ##__VA_ARGS__); fflush(stdout); } while (0)
 
 /**
  * Function for disk operations
@@ -96,6 +98,9 @@ void printVerbose(const char * archive, const char * message, const char * file)
 
 /* Recursive create directory */
 int mkpath(const char * s, mode_t mode);
+
+/* Load system listfiles to memory */
+void systemListfiles(HANDLE SArchive, const char * archive, int flags);
 
 /**
  * Functions for FILETIME conversion
