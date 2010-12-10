@@ -23,9 +23,10 @@
 #define KIO_SMPQ 0
 
 #include <KIO/SlaveBase>
-#include <KIO/FileCopyJob>
+#include <KIO/FileJob>
 
-class SMPQSlavePrivate;
+struct SMPQSlavePrivate;
+typedef struct _FILETIME FILETIME;
 
 class SMPQSlave : public KIO::SlaveBase
 {
@@ -37,33 +38,32 @@ class SMPQSlave : public KIO::SlaveBase
 		bool parseUrl(const KUrl &url, QString &fileName, QByteArray &archivePath);
 		void toArchivePath(QByteArray &to, const QString &from);
 		void fromArchivePath(QString &to, const QByteArray &from);
+		void toFileTime(FILETIME &to, const time_t &from);
+		bool fromFileTime(time_t &to, const FILETIME &from);
 
 	public:
 		SMPQSlave(const QByteArray &protocol, const QByteArray &pool_socket, const QByteArray &app_socket);
 		virtual ~SMPQSlave();
 
-		virtual void openConnection();
-		virtual void closeConnection();
+//		virtual void openConnection();
+//		virtual void closeConnection();
 
 		virtual void get(const KUrl &url);
 		virtual void put(const KUrl &url, int permissions, KIO::JobFlags flags);
 		virtual void del(const KUrl &url, bool isfile);
-		virtual void copy(const KUrl &src, const KUrl &dest, int permissions, KIO::JobFlags flags);
 		virtual void rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags);
 		virtual void listDir(const KUrl &url);
 		virtual void stat(const KUrl &url);
 		virtual void mkdir(const KUrl &url, int permissions);
 
-		virtual void setModificationTime(const KUrl &url, const QDateTime &mtime);
 		virtual void slave_status();
 
 		// KIO::FileJob interface
 		virtual void open(const KUrl &url, QIODevice::OpenMode mode);
 		virtual void close();
 		virtual void read(KIO::filesize_t size);
-		virtual void write(const QByteArray &data);
+		//virtual void write(const QByteArray &data);
 		virtual void seek(KIO::filesize_t offset);
-		virtual void special(const QByteArray &data);
 
 };
 

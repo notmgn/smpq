@@ -1,6 +1,7 @@
 [Protocol]
 exec=kio_smpq
 protocol=mpq
+archiveMimetype=application/x-mpq
 input=filesystem
 output=filesystem
 listing=Name,Type,Size,Date
@@ -8,8 +9,10 @@ reading=true
 writing=true
 makedir=true
 deleting=true
+linking=false
 moving=true
 opening=true
+source=true
 Icon=package-x-generic
 Description=A kioslave for smpq
 #X-DocPath=kioslave/smpq/index.html

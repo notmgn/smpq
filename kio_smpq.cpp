@@ -58,19 +58,18 @@ int KDE_EXPORT kdemain(int argc, char * argv[]) {
 
 }
 
-class SMPQSlavePrivate
+struct SMPQSlavePrivate
 {
 
-	public:
-		SMPQSlavePrivate() : SArchive(NULL), flags(0), SFile(NULL) { }
+	SMPQSlavePrivate() : SArchive(NULL), flags(0), SFile(NULL) { }
 
-		HANDLE SArchive;
-		QString archive;
-		unsigned int flags;
+	HANDLE SArchive;
+	QString archive;
+	unsigned int flags;
 
-		HANDLE SFile;
-		QByteArray file;
-		KUrl url;
+	HANDLE SFile;
+	QByteArray file;
+	KUrl url;
 
 };
 
@@ -98,9 +97,9 @@ bool SMPQSlave::parseUrl(const KUrl &url, QString &fileName, QByteArray &archive
 
 	bool appended = false;
 
-	if ( path.at(path.size() - 1) != '/' ) {
+	if ( path.at(path.size() - 1) != KDIR_SEPARATOR ) {
 
-		path.append('/');
+		path.append(KDIR_SEPARATOR);
 		appended = true;
 
 	}
@@ -110,7 +109,7 @@ bool SMPQSlave::parseUrl(const KUrl &url, QString &fileName, QByteArray &archive
 
 	KDE_struct_stat statbuf;
 
-	while ( ( nextPos = path.indexOf('/', pos + 1) ) != -1 ) {
+	while ( ( nextPos = path.indexOf(KDIR_SEPARATOR, pos + 1) ) != -1 ) {
 
 		if ( KDE_stat(QFile::encodeName(path.left(nextPos)), &statbuf) == -1 )
 			break;
@@ -126,6 +125,12 @@ bool SMPQSlave::parseUrl(const KUrl &url, QString &fileName, QByteArray &archive
 		path.chop(1);
 
 	fileName = path.left(pos);
+
+	if ( KDE_stat(QFile::encodeName(fileName), &statbuf) == -1 )
+		return false;
+
+	if ( S_ISDIR(statbuf.st_mode) )
+		return false;
 
 	toArchivePath(archivePath, path.mid(pos + 1, -1));
 
@@ -171,28 +176,81 @@ void SMPQSlave::closeArchive() {
 
 void SMPQSlave::toArchivePath(QByteArray &to, const QString &from) {
 
-#ifdef QT_WS_WIN
+#if KDIR_SEPARATOR == '\\'
 	to = from.toUtf8();
 #else
-	to = from.toUtf8().replace('/', '\\');
-#endif
+	to = from.toUtf8().replace(KDIR_SEPARATOR, '\\');
+#endif // KDIR_SEPARATOR == '\\'
 
 }
 
 void SMPQSlave::fromArchivePath(QString &to, const QByteArray &from) {
 
-#ifdef QT_WS_WIN
+#if KDIR_SEPARATOR == '\\'
 	to = QString::fromUtf8(from);
 #else
-	to = QString::fromUtf8(from).replace('\\', '/');
-#endif
+	to = QString::fromUtf8(from).replace('\\', KDIR_SEPARATOR);
+#endif // KDIR_SEPARATOR == '\\'
 
 }
 
+#define OFFSET 116444736000000000ULL // Number of 100 ns units between 01/01/1601 and 01/01/1970
+#define NSEC 10000000ULL // Convert 100 ns to sec
+
+#ifndef Q_WS_WIN
+
+typedef struct _FILETIME {
+	unsigned int dwLowDateTime;
+	unsigned int dwHighDateTime;
+} FILETIME, *PFILETIME;
+
+#endif // Q_WS_WIN
+
+void SMPQSlave::toFileTime(FILETIME &to, const time_t &from) {
+
+	if ( from == 0 ) {
+
+		to.dwLowDateTime = 0;
+		to.dwHighDateTime = 0;
+
+	}
+
+	quint64 fromTime = from;
+
+	fromTime *= NSEC;
+	fromTime += OFFSET;
+
+	to.dwLowDateTime = fromTime;
+	to.dwHighDateTime = fromTime >> 32;
+
+}
+
+bool SMPQSlave::fromFileTime(time_t &to, const FILETIME &from) {
+
+	quint64 toTime = ((quint64)from.dwHighDateTime << 31) | from.dwLowDateTime;
+
+	if ( toTime < OFFSET )
+		return false;
+
+	toTime -= OFFSET;
+	toTime /= NSEC;
+
+	if ( toTime > ( 1 << (sizeof(time_t)) ) - 1 )
+		return false;
+
+	to = toTime;
+
+	return true;
+
+}
+
+#undef OFFSET
+#undef NSEC
+
 ///
 
-void SMPQSlave::openConnection() {}
-void SMPQSlave::closeConnection() {}
+//void SMPQSlave::openConnection() {}
+//void SMPQSlave::closeConnection() {}
 
 ///
 
@@ -232,14 +290,6 @@ void SMPQSlave::get(const KUrl &url) {
 
 	SFileFindClose(SFileFind);
 
-	// Skip internal MPQ files
-	if ( SFileName == "(listfile)" || SFileName == "(signature)" || SFileName == "(attributes)" ) {
-
-		error(0, ""); // TODO: Better error
-		return;
-
-	}
-
 	if ( ! SFileOpenFileEx(p->SArchive, SFileName, 0, &SFile) ) {
 
 		error(0, ""); // TODO: Better error
@@ -247,7 +297,14 @@ void SMPQSlave::get(const KUrl &url) {
 
 	}
 
-	int eof = 0;
+	// TODO: rename
+	unsigned int t_low;
+	unsigned int t_high;
+	t_low = SFileGetFileSize(p->SFile, &t_high);
+
+	totalSize(((KIO::filesize_t)t_high << 31) | t_low);
+
+	bool eof = false;
 	size_t bytes = 1024;
 	QVarLengthArray <char> buffer(bytes);
 
@@ -257,13 +314,16 @@ void SMPQSlave::get(const KUrl &url) {
 	KMimeType::Ptr fileMimeType = KMimeType::findByNameAndContent(url.fileName(), fileData);
 	mimeType(fileMimeType->name());
 
+	// TODO: signed or unsigned? SFileSetFilePointer needs LONG
 	int low = 0;
 	int high = 0;
 	SFileSetFilePointer(SFile, low, &high, FILE_BEGIN);
 
 	buffer.resize(0x10000);
 
-	while ( 1 ) {
+	KIO::filesize_t processedBytes = 0;
+
+	while ( true ) {
 
 		if ( ! SFileReadFile(SFile, buffer.data(), buffer.size(), &bytes, NULL) ) {
 
@@ -279,7 +339,10 @@ void SMPQSlave::get(const KUrl &url) {
 
 		}
 
+		processedBytes += bytes;
+
 		data(QByteArray::fromRawData(buffer.data(), bytes));
+		processedSize(processedBytes);
 
 		if ( eof )
 			break;
@@ -289,12 +352,18 @@ void SMPQSlave::get(const KUrl &url) {
 	SFileCloseFile(SFile);
 
 	data(QByteArray());
-
+	processedSize(((KIO::filesize_t)t_high << 31) | t_low);
 	finished();
 
 }
 
-void SMPQSlave::put(const KUrl &url, int permissions, KIO::JobFlags flags) {}
+void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
+
+	kDebug(KIO_SMPQ);
+
+	// TODO
+
+}
 
 void SMPQSlave::del(const KUrl &url, bool isfile) {
 
@@ -317,6 +386,40 @@ void SMPQSlave::del(const KUrl &url, bool isfile) {
 
 	}
 
+	// Skip internal files in MPQ archive
+	if ( archivePath == "(listfile)" || archivePath == "(signature)" || archivePath == "(attributes)" ) {
+
+		error(0, ""); // TODO: Better error
+		return;
+
+	}
+
+	if ( ! isfile ) {
+
+		if ( archivePath.at(archivePath.size()-1) != '\\' )
+			archivePath.append("\\*");
+
+		SFILE_FIND_DATA SFileFindData;
+		HANDLE SFileFind = SFileFindFirstFile(p->SArchive, archivePath, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+
+		// MPQ archives does not support directory structure
+		// There are no files in this directory, so directory is empty
+		// Only simulate deleting directory
+		if ( ! SFileFind ) {
+
+			finished();
+			return;
+
+		}
+
+		SFileFindClose(SFileFind);
+
+		// TODO: KIO::ERR_COULD_NOT_RMDIR or KIO::ERR_CANNOT_DELETE ?
+		error(KIO::ERR_CANNOT_DELETE, url.prettyUrl());
+		return;
+
+	}
+
 	if ( ! SFileRemoveFile(p->SArchive, archivePath, SFILE_OPEN_FROM_MPQ) ) {
 
 		error(0, "");  // TODO: Better error
@@ -330,8 +433,6 @@ void SMPQSlave::del(const KUrl &url, bool isfile) {
 	finished();
 
 }
-
-void SMPQSlave::copy(const KUrl &src, const KUrl &dest, int permissions, KIO::JobFlags flags) {}
 
 void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
 
@@ -372,6 +473,14 @@ void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
 	}
 
 	if ( ! openArchive(srcFileName) ) {
+
+		error(0, ""); // TODO: Better error
+		return;
+
+	}
+
+	// Skip internal files in MPQ archive
+	if ( destArchivePath == "(listfile)" || destArchivePath == "(signature)" || destArchivePath == "(attributes)" ) {
 
 		error(0, ""); // TODO: Better error
 		return;
@@ -422,6 +531,16 @@ void SMPQSlave::listDir(const KUrl &url) {
 	QByteArray archivePath;
 
 	if ( ! parseUrl(url, fileName, archivePath) ) {
+
+		KDE_struct_stat statbuf;
+
+		if ( KDE_stat(url.path().toUtf8(), &statbuf) == 0 ) {
+
+			redirection(KUrl(url.path()));
+			finished();
+			return;
+
+		}
 
 		error(KIO::ERR_CANNOT_ENTER_DIRECTORY, url.path());
 		return;
@@ -479,11 +598,16 @@ void SMPQSlave::listDir(const KUrl &url) {
 
 		} else {
 
+			time_t fileTime = 0;
+			FILETIME SFileTime = { SFileFindData.dwFileTimeLo, SFileFindData.dwFileTimeHi };
+
+			fromFileTime(fileTime, SFileTime);
+
 			KIO::UDSEntry entry;
 			entry.insert(KIO::UDSEntry::UDS_NAME, QFile::decodeName(fileName));
 			entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFREG);
 			entry.insert(KIO::UDSEntry::UDS_SIZE, SFileFindData.dwFileSize);
-//			entry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, 0); // TODO: Add time
+			entry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, fileTime);
 			listEntry(entry, false);
 
 		}
@@ -507,6 +631,16 @@ void SMPQSlave::stat(const KUrl &url) {
 	QByteArray archivePath;
 
 	if ( ! parseUrl(url, fileName, archivePath) ) {
+
+		KDE_struct_stat statbuf;
+
+		if ( KDE_stat(url.path().toUtf8(), &statbuf) == 0 ) {
+
+			redirection(KUrl(url.path()));
+			finished();
+			return;
+
+		}
 
 		error(KIO::ERR_DOES_NOT_EXIST, url.path());
 		return;
@@ -532,42 +666,60 @@ void SMPQSlave::stat(const KUrl &url) {
 	if ( ! SFileFind )
 		SFileFind = SFileFindFirstFile(p->SArchive, archivePath + "\\*", &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
 
-	if ( SFileFind ) {
-
-		KIO::UDSEntry entry;
-		entry.insert(KIO::UDSEntry::UDS_NAME, url.path());
-
-		if ( archivePath == SFileFindData.cFileName ) {
-
-			entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFREG);
-			entry.insert(KIO::UDSEntry::UDS_SIZE, SFileFindData.dwFileSize);
-//			entry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, 0); // TODO: Add time
-
-		} else {
-
-			entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
-
-		}
-
-		statEntry(entry);
-		finished();
-
-	} else {
+	if ( ! SFileFind ) {
 
 		error(KIO::ERR_DOES_NOT_EXIST, url.path());
+		return;
 
 	}
 
 	SFileFindClose(SFileFind);
 
+	KIO::UDSEntry entry;
+	entry.insert(KIO::UDSEntry::UDS_NAME, url.path());
+
+	if ( archivePath == SFileFindData.cFileName ) {
+
+		time_t fileTime = 0;
+		FILETIME SFileTime = { SFileFindData.dwFileTimeLo, SFileFindData.dwFileTimeHi };
+
+		fromFileTime(fileTime, SFileTime);
+
+		entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFREG);
+		entry.insert(KIO::UDSEntry::UDS_SIZE, SFileFindData.dwFileSize);
+		entry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, fileTime);
+
+	} else {
+
+		entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
+
+	}
+
+	statEntry(entry);
+	finished();
+
 }
 
-void SMPQSlave::mkdir(const KUrl &url, int permissions) { finished(); }
+void SMPQSlave::mkdir(const KUrl &, int) { 
+
+	kDebug(KIO_SMPQ);
+	
+	// MPQ archives does not support directory structure
+	// Only simulate creating directory
+
+	finished();
+
+}
 
 ///
 
-void SMPQSlave::setModificationTime(const KUrl &url, const QDateTime &mtime) {}
-void SMPQSlave::slave_status() {}
+void SMPQSlave::slave_status() {
+
+	kDebug(KIO_SMPQ);
+
+	slaveStatus(QString(), (bool)p->SArchive);
+
+}
 
 ///
 // KIO::FileJob interface
@@ -588,8 +740,49 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 
 	unsigned int flags = 0;
 
-	if ( mode & QIODevice::ReadOnly )
-		flags = MPQ_OPEN_READ_ONLY;
+	// 0 - read only
+	// 1 - write only
+	// 2 - append
+	// 3 - read + write
+	unsigned int myMode = -1;
+
+	if ( mode & QIODevice::ReadWrite )
+		myMode = 3;
+	else if ( mode & QIODevice::Append )
+		myMode = 2;
+	else if ( mode & QIODevice::ReadOnly )
+		myMode = 0;
+	else if ( mode & QIODevice::WriteOnly )
+		myMode = 1;
+
+	if ( mode == 0 ) {
+
+		flags |= MPQ_OPEN_READ_ONLY;
+
+	} else if ( mode == 1 ) {
+
+		// TODO: Add support for write only mode
+		error(0, ""); // TODO: Better error
+		return;
+
+	} else if ( mode == 2 ) {
+
+		// TODO: Add support for append mode
+		error(0, ""); // TODO: Better error
+		return;
+
+	} else if ( mode == 3 ) {
+
+		// TODO: Add support for read + write mode
+		// Currently read mode is used
+		flags |= MPQ_OPEN_READ_ONLY;
+
+	} else {
+
+		error(0, ""); // TODO: Better error
+		return;
+
+	}
 
 	if ( ! openArchive(fileName, flags) ) {
 
@@ -598,46 +791,61 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 
 	}
 
-	if ( ! SFileOpenFileEx(p->SArchive, archivePath, 0, &p->SFile) ) {
+	// Skip internal files in MPQ archive
+	if ( myMode != 0 && ( archivePath == "(listfile)" || archivePath == "(signature)" || archivePath == "(attributes)" ) ) {
 
 		error(0, ""); // TODO: Better error
 		return;
 
 	}
 
+	if ( myMode == 0 ) {
+
+		if ( ! SFileOpenFileEx(p->SArchive, archivePath, 0, &p->SFile) ) {
+
+			error(0, ""); // TODO: Better error
+			return;
+
+		}
+
+	}
+
+	// TODO: open file for writing
+
 	p->file = archivePath;
 	p->url = url;
 
-	if ( mode & QIODevice::ReadOnly ) {
+	if ( myMode == 0 || myMode == 3 ) {
 
 		size_t bytes = 1024;
 		QVarLengthArray <char> buffer(bytes);
 
-		if ( ! SFileReadFile(p->SFile, buffer.data(), buffer.size(), &bytes, NULL) ) {
-
-			if ( GetLastError() != ERROR_HANDLE_EOF ) {
-
-				error(KIO::ERR_COULD_NOT_READ, p->url.prettyUrl());
-				close();
-				return;
-
-			}
-
-		}
+		SFileReadFile(p->SFile, buffer.data(), buffer.size(), &bytes, NULL);
 
 		QByteArray fileData = QByteArray::fromRawData(buffer.data(), bytes);
 		KMimeType::Ptr fileMimeType = KMimeType::findByNameAndContent(url.fileName(), fileData);
 		mimeType(fileMimeType->name());
 
+		// TODO: signed or unsigned? SFileSetFilePointer needs LONG
 		int low = 0;
 		int high = 0;
 		SFileSetFilePointer(p->SFile, low, &high, FILE_BEGIN);
 
 	}
 
+	unsigned int low;
+	unsigned int high;
+	low = SFileGetFileSize(p->SFile, &high);
+
+	totalSize(((KIO::filesize_t)high << 31) | low);
+	position(0);
+	opened();
+
 }
 
 void SMPQSlave::close() {
+
+	kDebug(KIO_SMPQ);
 
 	SFileCloseFile(p->SFile);
 
@@ -651,46 +859,56 @@ void SMPQSlave::close() {
 
 void SMPQSlave::read(KIO::filesize_t size) {
 
+	kDebug(KIO_SMPQ);
+
+	bool eof = false;
 	size_t bytes = size;
 	QVarLengthArray <char> buffer(bytes);
 
 	if ( ! SFileReadFile(p->SFile, buffer.data(), buffer.size(), &bytes, NULL) ) {
 
-		if ( GetLastError() != ERROR_HANDLE_EOF ) {
+		eof = GetLastError() == ERROR_HANDLE_EOF;
 
+		if ( ! eof ) {
+
+			close();
 			error(KIO::ERR_COULD_NOT_READ, p->url.prettyUrl());
 			return;
 
 		}
 
-		data(QByteArray::fromRawData(buffer.data(), bytes));
-		data(QByteArray());
-
-	} else {
-
-		data(QByteArray::fromRawData(buffer.data(), bytes));
-
 	}
+
+	data(QByteArray::fromRawData(buffer.data(), bytes));
+
+	if ( eof )
+		data(QByteArray());
 
 }
 
-void SMPQSlave::write(const QByteArray &data) {}
+/*void SMPQSlave::write(const QByteArray &data) {
+
+	kDebug(KIO_SMPQ);
+
+	// TODO
+
+}*/
 
 void SMPQSlave::seek(KIO::filesize_t offset) {
+
+	kDebug(KIO_SMPQ);
 
 	// TODO: signed or unsigned? SFileSetFilePointer needs LONG
 	int low = offset;
 	int high = offset >> 32;
 
-	if ( SFileSetFilePointer(p->SFile, low, &high, FILE_BEGIN) == SFILE_INVALID_SIZE ) {
+	if ( ( low = SFileSetFilePointer(p->SFile, low, &high, FILE_BEGIN) ) == SFILE_INVALID_SIZE ) {
 
-			error(KIO::ERR_COULD_NOT_SEEK, p->url.prettyUrl());
-			return;
+		error(KIO::ERR_COULD_NOT_SEEK, p->url.prettyUrl());
+		return;
 
 	}
 
 	position(((KIO::filesize_t)high << 31) | low);
 
 }
-
-void SMPQSlave::special(const QByteArray &data) {}
