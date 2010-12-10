@@ -197,48 +197,24 @@ void SMPQSlave::fromArchivePath(QString &to, const QByteArray &from) {
 #define OFFSET 116444736000000000ULL // Number of 100 ns units between 01/01/1601 and 01/01/1970
 #define NSEC 10000000ULL // Convert 100 ns to sec
 
-#ifndef Q_WS_WIN
+void SMPQSlave::toFileTime(quint64 &to, const time_t &from) {
 
-typedef struct _FILETIME {
-	unsigned int dwLowDateTime;
-	unsigned int dwHighDateTime;
-} FILETIME, *PFILETIME;
-
-#endif // Q_WS_WIN
-
-void SMPQSlave::toFileTime(FILETIME &to, const time_t &from) {
-
-	if ( from == 0 ) {
-
-		to.dwLowDateTime = 0;
-		to.dwHighDateTime = 0;
-
-	}
-
-	quint64 fromTime = from;
-
-	fromTime *= NSEC;
-	fromTime += OFFSET;
-
-	to.dwLowDateTime = fromTime;
-	to.dwHighDateTime = fromTime >> 32;
+	if ( from == 0 )
+		to = 0;
+	else
+		to = from * NSEC + OFFSET;
 
 }
 
-bool SMPQSlave::fromFileTime(time_t &to, const FILETIME &from) {
+bool SMPQSlave::fromFileTime(time_t &to, const quint64 &from) {
 
-	quint64 toTime = ((quint64)from.dwHighDateTime << 31) | from.dwLowDateTime;
-
-	if ( toTime < OFFSET )
+	if ( from < OFFSET )
 		return false;
 
-	toTime -= OFFSET;
-	toTime /= NSEC;
-
-	if ( toTime > ( 1 << (sizeof(time_t)) ) - 1 )
+	if ( ( from - OFFSET ) / NSEC > ( 1ULL << sizeof(time_t)*8 ) )
 		return false;
 
-	to = toTime;
+	to = ( from - OFFSET ) / NSEC;
 
 	return true;
 
@@ -599,7 +575,7 @@ void SMPQSlave::listDir(const KUrl &url) {
 		} else {
 
 			time_t fileTime = 0;
-			FILETIME SFileTime = { SFileFindData.dwFileTimeLo, SFileFindData.dwFileTimeHi };
+			quint64 SFileTime = SFileFindData.dwFileTimeLo | ( (quint64)SFileFindData.dwFileTimeHi << 32 );
 
 			fromFileTime(fileTime, SFileTime);
 
@@ -681,7 +657,7 @@ void SMPQSlave::stat(const KUrl &url) {
 	if ( archivePath == SFileFindData.cFileName ) {
 
 		time_t fileTime = 0;
-		FILETIME SFileTime = { SFileFindData.dwFileTimeLo, SFileFindData.dwFileTimeHi };
+		quint64 SFileTime = SFileFindData.dwFileTimeLo | ( (quint64)SFileFindData.dwFileTimeHi << 32 );
 
 		fromFileTime(fileTime, SFileTime);
 

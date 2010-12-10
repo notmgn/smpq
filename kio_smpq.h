@@ -26,7 +26,6 @@
 #include <KIO/FileJob>
 
 struct SMPQSlavePrivate;
-typedef struct _FILETIME FILETIME;
 
 class SMPQSlave : public KIO::SlaveBase
 {
@@ -38,8 +37,8 @@ class SMPQSlave : public KIO::SlaveBase
 		bool parseUrl(const KUrl &url, QString &fileName, QByteArray &archivePath);
 		void toArchivePath(QByteArray &to, const QString &from);
 		void fromArchivePath(QString &to, const QByteArray &from);
-		void toFileTime(FILETIME &to, const time_t &from);
-		bool fromFileTime(time_t &to, const FILETIME &from);
+		void toFileTime(quint64 &to, const time_t &from);
+		bool fromFileTime(time_t &to, const quint64 &from);
 
 	public:
 		SMPQSlave(const QByteArray &protocol, const QByteArray &pool_socket, const QByteArray &app_socket);
