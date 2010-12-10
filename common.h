@@ -28,16 +28,12 @@
 #else
 
 #include <sys/types.h>
-#include <time.h>
-
-typedef struct _FILETIME {
-	unsigned int dwLowDateTime;
-	unsigned int dwHighDateTime;
-} FILETIME, *PFILETIME;
 
 typedef void * HANDLE;
 
 #endif
+
+#include <time.h>
 
 #define append _smpq_append
 #define extract _smpq_extract
@@ -107,10 +103,10 @@ void systemListfiles(HANDLE SArchive, const char * archive, int flags);
  */
 
 /* Convert FILETIME to time_t */
-int GetTimeFromFileTime(const FILETIME fileTime, time_t * time);
+int GetTimeFromFileTime(const unsigned long long int fileTime, time_t * time);
 
 /* Convert time_t to FILETIME */
-void GetFileTimeFromTime(const time_t time, FILETIME * fileTime);
+void GetFileTimeFromTime(const time_t time, unsigned long long int * fileTime);
 
 /**
  * Path conversation in archive

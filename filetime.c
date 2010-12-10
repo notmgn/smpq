@@ -28,10 +28,10 @@
 /* Number of 100 ns units between 01/01/1601 and 01/01/1970 */
 #define EPOCH_OFFSET 116444736000000000ULL
 
-int GetTimeFromFileTime(const FILETIME fileTime, time_t * time)
+int GetTimeFromFileTime(const unsigned long long int fileTime, time_t * time)
 {
 	/* The FILETIME represents a 64-bit integer: the number of 100 ns units since January 1, 1601 */
-	unsigned long long nTime = ((unsigned long long)fileTime.dwHighDateTime << 32) + fileTime.dwLowDateTime;
+	unsigned long long nTime = fileTime;
 
 	if (nTime < EPOCH_OFFSET)
 		return 0;
@@ -53,13 +53,12 @@ int GetTimeFromFileTime(const FILETIME fileTime, time_t * time)
 	return 1;
 }
 
-void GetFileTimeFromTime(const time_t time, FILETIME * fileTime)
+void GetFileTimeFromTime(const time_t time, unsigned long long int * fileTime)
 {
 	unsigned long long nTime = (unsigned long long)time;
 
 	nTime *= 10000000ULL;
 	nTime += EPOCH_OFFSET;
 
-	fileTime->dwLowDateTime = (unsigned int)nTime;
-	fileTime->dwHighDateTime = (unsigned int)(nTime >> 32);
+	*fileTime = nTime;
 }

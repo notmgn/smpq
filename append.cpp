@@ -26,6 +26,7 @@ extern "C" {
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <utime.h>
+#include <errno.h>
 
 #include "common.h"
 
@@ -80,12 +81,14 @@ int append(const char * archive, const char * const files[], int flags, const ch
 
 	for ( i = 0; files[i]; ++i ) {
 
+		struct stat st;
 		FILE * file = NULL;
 		const char * fileName = files[i];
 		size_t fileSize = 0;
 
 		HANDLE SFile = NULL;
 		char SFileName[strlen(fileName) + 1];
+		unsigned long long int SFileTime = 0;
 
 		char buffer[0x10000];
 		size_t bytes = 0;
@@ -94,14 +97,14 @@ int append(const char * archive, const char * const files[], int flags, const ch
 
 		if ( strncmp(SFileName, "File", 4) == 0 && strcmp(SFileName + 12, ".xxx") == 0 ) {
 
-			printError(archive, "File `File????????.xxx' is not allowed. Cannot create new file", SFileName, 1);
+			printError(archive, "File `File????????.xxx' is not allowed. Cannot create new file", SFileName, EPERM);
 			continue;
 
 		}
 
 		if ( strcmp(SFileName, "(listfile)") == 0 || strcmp(SFileName, "(signature)") == 0 || strcmp(SFileName, "(attributes)") == 0 ) {
 
-			printError(archive, "Files `(listfile)' `(signature)' `(attributes)' are for internal usage. Cannot create new file", SFileName, 1);
+			printError(archive, "Files `(listfile)' `(signature)' `(attributes)' are for internal usage. Cannot create new file", SFileName, EPERM);
 			continue;
 
 		}
@@ -141,8 +144,18 @@ int append(const char * archive, const char * const files[], int flags, const ch
 		if ( flags & VERBOSE )
 			printVerbose(archive, "Append file", SFileName);
 
-		// TODO: Add flags and datefile
-		if ( ! SFileCreateFile(SArchive, SFileName, 0 /*datefile*/, fileSize, 0 /*locale*/, MPQ_FILE_COMPRESS, &SFile) ) {
+		if ( stat(fileName, &st) == -1 ) {
+
+			printError(archive, "Cannot stat file", fileName, errno);
+			fclose(file);
+			continue;
+
+		}
+
+		GetFileTimeFromTime(st.st_mtime, &SFileTime);
+
+		// TODO: Add flags
+		if ( ! SFileCreateFile(SArchive, SFileName, SFileTime, fileSize, 0 /*locale*/, MPQ_FILE_COMPRESS, &SFile) ) {
 
 			printError(archive, "Cannot create new file", SFileName, GetLastError());
 			fclose(file);

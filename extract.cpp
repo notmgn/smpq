@@ -53,15 +53,16 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 		while ( SFileFind ) {
 
+			struct stat st;
 			FILE * file = NULL;
 			char fileName[strlen(SFileFindData.cFileName)+1];
 			char fileDir[strlen(SFileFindData.cFileName)+1];
-			//size_t fileSize = SFileFindData.dwFileSize; // TODO: Use it
+			size_t fileSize = SFileFindData.dwFileSize;
 			time_t fileTime = 0;
 
 			HANDLE SFile = NULL;
 			const char * SFileName = SFileFindData.cFileName;
-			FILETIME SFileTime = { SFileFindData.dwFileTimeLo, SFileFindData.dwFileTimeHi };
+			unsigned long long int SFileTime = SFileFindData.dwFileTimeLo | ( ((unsigned long long int)SFileFindData.dwFileTimeHi) << 32 );
 
 			int last = 0;
 			char buffer[0x10000];
@@ -91,8 +92,13 @@ int extract(const char * archive, const char * const files[], int flags, const c
 			if ( ( flags & VERBOSE ) && ! ( flags & LIST ) )
 				printVerbose(archive, "Extract", fileName);
 
-			if ( ( flags & LIST ) )
-				printMessage("%s", fileName);
+			if ( ( flags & LIST ) ) {
+
+				char strtime[80];
+				strftime(strtime, 80, "%Y-%m-%d %H:%M", localtime(&fileTime));
+				printMessage("%12u %s %s", fileSize, strtime, fileName);
+
+			}
 
 			if ( flags & LIST )
 				goto next;
@@ -105,14 +111,32 @@ int extract(const char * archive, const char * const files[], int flags, const c
 				if ( mkpath(fileDir, S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH) != 0 ) {
 
 					printError(archive, "Cannot create directory", fileDir, errno);
-					printError(archive, "Cannot extract file", fileName, 2);
+					printError(archive, "Cannot extract file", fileName, ENOENT);
 					goto next;
 
 				}
 
 			}
 
-			// TODO: stat if file exist - overwrite
+			if ( stat(fileName, &st) != -1 ) {
+
+				if ( ! ( flags & OVERWRITE ) ) {
+
+					printError(archive, "Cannot extract file", fileName, EEXIST);
+					goto next;
+
+				}
+
+				if ( S_ISDIR(st.st_mode) ) {
+
+					printError(archive, "Cannot extract file", fileName, EISDIR);
+					goto next;
+
+				}
+
+				unlink(fileName);
+
+			}
 
 			file  = fopen(fileName, "wb");
 
