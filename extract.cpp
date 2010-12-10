@@ -23,12 +23,74 @@
 extern "C" {
 ///
 
-#include <stdio.h>
+#if defined(WIN32) || defined(_MSC_VER)
+
+#include <direct.h>
+#include <io.h>
+
+#define mkdir(dir,) _mkdir(dir)
+
+#else
+
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <libgen.h>
+
+#endif
+
+#include <errno.h>
+#include <string.h>
+#include <time.h>
 #include <utime.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "common.h"
+
+int mkpath(const char * s, mode_t mode) {
+
+	char * q = NULL;
+	char * r = NULL;
+	char * path = NULL;
+	char * up = NULL;
+	int rv = -1;
+
+#if defined(WIN32) || defined(_MSC_VER)
+	if ( strcmp(s, ".") == 0 || strcmp(s, "\\") == 0 )
+		return 0;
+#else
+	if ( strcmp(s, ".") == 0 || strcmp(s, "/") == 0 )
+		return 0;
+#endif
+
+	if ( ( path = strdup(s) ) == NULL )
+		return -1;
+
+	if ( ( q = strdup(s) ) == NULL )
+		return -1;
+
+	if ( ( r = (char *)dirname(q) ) == NULL )
+		goto out;
+
+	if ( ( up = strdup(r) ) == NULL )
+		return -1;
+
+	if ( ( mkpath(up, mode) == -1 ) && ( errno != EEXIST ) )
+		goto out;
+
+	if ( ( mkdir(path, mode) != -1 ) || ( errno == EEXIST ) )
+		rv = 0;
+
+out:
+	if ( up != NULL )
+		free(up);
+
+	free(q);
+	free(path);
+
+        return rv;
+
+}
 
 int extract(const char * archive, const char * const files[], int flags, const char * listfile) {
 
@@ -48,7 +110,7 @@ int extract(const char * archive, const char * const files[], int flags, const c
 	for ( i = 0; files[i]; ++i ) {
 
 		char mask[strlen(files[i])+1];
-		convertPathToArchive(mask, files[i]);
+		toArchivePath(mask, files[i]);
 
 		SFILE_FIND_DATA SFileFindData;
 		HANDLE SFileFind = SFileFindFirstFile(SArchive, mask, &SFileFindData, listfile);
@@ -96,9 +158,9 @@ int extract(const char * archive, const char * const files[], int flags, const c
 			if ( strcmp(SFileName, "(listfile)") == 0 || strcmp(SFileName, "(signature)") == 0 || strcmp(SFileName, "(attributes)") == 0 )
 				goto next;
 
-			convertPathFromArchive(fileName, SFileName);
+			fromArchivePath(fileName, SFileName);
 
-			if ( ! GetTimeFromFileTime(SFileTime, &fileTime) )
+			if ( ! fromFileTime(&fileTime, SFileTime) )
 				fileTime = 0;
 
 			if ( ! SFileOpenFileEx(SArchive, SFileName, 0, &SFile) ) {

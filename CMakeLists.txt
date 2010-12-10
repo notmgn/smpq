@@ -28,11 +28,9 @@ option(WITH_KDE "Enable KDE4 kio_smpq plugin" ON)
 set(smpq_SRCS
 	append.cpp
 	extract.cpp
-	filetime.c
 	info.cpp
 	listfiles.cpp
 	main.c
-	mkpath.c
 	print.c
 	remove.cpp
 )

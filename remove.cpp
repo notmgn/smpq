@@ -47,7 +47,7 @@ int remove(const char * archive, const char * const files[], int flags, const ch
 		const char * fileName = files[i];
 		char SFileName[strlen(fileName)+1];
 
-		convertPathToArchive(SFileName, fileName);
+		toArchivePath(SFileName, fileName);
 
 		if ( flags & VERBOSE )
 			printVerbose(archive, "Remove file", SFileName);

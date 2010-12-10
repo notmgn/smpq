@@ -93,7 +93,7 @@ int append(const char * archive, const char * const files[], int flags, const ch
 		char buffer[0x10000];
 		size_t bytes = 0;
 
-		convertPathToArchive(SFileName, fileName);
+		toArchivePath(SFileName, fileName);
 
 		if ( strncmp(SFileName, "File", 4) == 0 && strcmp(SFileName + 12, ".xxx") == 0 ) {
 
@@ -152,7 +152,7 @@ int append(const char * archive, const char * const files[], int flags, const ch
 
 		}
 
-		GetFileTimeFromTime(st.st_mtime, &SFileTime);
+		toFileTime(&SFileTime, st.st_mtime);
 
 		// TODO: Add flags
 		if ( ! SFileCreateFile(SArchive, SFileName, SFileTime, fileSize, 0 /*locale*/, MPQ_FILE_COMPRESS, &SFile) ) {

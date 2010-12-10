@@ -22,18 +22,10 @@
 #endif
 
 #if defined(WIN32) || defined(_MSC_VER)
-
 #include <windows.h>
-
 #else
-
-#include <sys/types.h>
-
 typedef void * HANDLE;
-
 #endif
-
-#include <time.h>
 
 #define append _smpq_append
 #define extract _smpq_extract
@@ -75,6 +67,9 @@ int info(const char * archive);
 /* Remove file(s) fro archive */
 int remove(const char * archive, const char * const files[], int flags, const char * listfile);
 
+/* Load system listfiles for archive to memory */
+void systemListfiles(HANDLE SArchive, const char * archive, int flags);
+
 /**
  * Functions for output
  */
@@ -89,75 +84,90 @@ void printVerbose(const char * archive, const char * message, const char * file)
 #define printMessage(message, ...) do { printf(message "\n", ##__VA_ARGS__); fflush(stdout); } while (0)
 
 /**
- * Function for disk operations
- */
-
-/* Recursive create directory */
-int mkpath(const char * s, mode_t mode);
-
-/* Load system listfiles to memory */
-void systemListfiles(HANDLE SArchive, const char * archive, int flags);
-
-/**
  * Functions for FILETIME conversion
  */
 
-/* Convert FILETIME to time_t */
-int GetTimeFromFileTime(const unsigned long long int fileTime, time_t * time);
+#define OFFSET 116444736000000000ULL /* Number of 100 ns units between 01/01/1601 and 01/01/1970 */
+#define NSEC 10000000ULL /* Convert 100 ns to sec */
 
 /* Convert time_t to FILETIME */
-void GetFileTimeFromTime(const time_t time, unsigned long long int * fileTime);
+static inline void toFileTime(unsigned long long int * to, time_t from) {
+
+        if ( from == 0 ) 
+                *to = 0;
+        else
+                *to = from * NSEC + OFFSET;
+
+}
+
+/* Convert FILETIME to time_t */
+static inline int fromFileTime(time_t * to, unsigned long long int from) {
+
+        if ( from < OFFSET )
+                return 0;
+
+        if ( ( from - OFFSET ) / NSEC > ( 1ULL << sizeof(time_t) * 8 ) ) 
+                return 1;
+
+        *to = ( from - OFFSET ) / NSEC;
+
+        return 1;
+
+}
+
+#undef OFFSET
+#undef NSEC
 
 /**
- * Path conversation in archive
+ * Functions for path conversation in archive
  */
 
 /* Replace all chars '/' in path to '\\' */
-static inline void convertPathToArchive(char * out, const char * in) {
+static inline void toArchivePath(char * to, const char * from) {
 
 #if defined(WIN32) || defined(_MSC_VER)
 
-	strcpy(out, in);
+	strcpy(to, from);
 	return;
 
 #endif
 
 	int i = -1;
 
-	while ( in[++i] ) {
+	while ( from[++i] ) {
 
-		if ( in[i] == '/' )
-			out[i] = '\\';
+		if ( from[i] == '/' )
+			to[i] = '\\';
 		else
-			out[i] = in[i];
+			to[i] = from[i];
 
 	}
 
-	out[i] = 0;
+	to[i] = 0;
 
 }
 
 /* Replace all chars '\\' in path to '/' */
-static inline void convertPathFromArchive(char * out, const char * in) {
+static inline void fromArchivePath(char * to, const char * from) {
 
 #if defined(WIN32) || defined(_MSC_VER)
 
-	strcpy(out, in);
+	strcpy(to, from);
 	return;
 
 #endif
 
 	int i = -1;
 
-	while ( in[++i] ) {
+	while ( from[++i] ) {
 
-		if ( in[i] == '\\' )
-			out[i] = '/';
+		if ( from[i] == '\\' )
+			to[i] = '/';
 		else
-			out[i] = in[i];
+			to[i] = from[i];
 
 	}
 
-	out[i] = 0;
+	to[i] = 0;
 
 }
