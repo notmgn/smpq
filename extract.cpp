@@ -159,7 +159,15 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 				}
 
-				unlink(fileName);
+				if ( flags & VERBOSE )
+					printVerbose(archive, "Remove old file", fileName);
+
+				if ( unlink(fileName) != 0 ) {
+
+					printError(archive, "Cannot remove existing file", fileName, errno);
+					goto next;
+
+				}
 
 			}
 
