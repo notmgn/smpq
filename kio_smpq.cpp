@@ -197,7 +197,7 @@ void SMPQSlave::fromArchivePath(QString &to, const QByteArray &from) {
 #define OFFSET 116444736000000000ULL // Number of 100 ns units between 01/01/1601 and 01/01/1970
 #define NSEC 10000000ULL // Convert 100 ns to sec
 
-void SMPQSlave::toFileTime(quint64 &to, const time_t &from) {
+void SMPQSlave::toFileTime(quint64 &to, const quint64 &from) {
 
 	if ( from == 0 )
 		to = 0;
@@ -206,12 +206,9 @@ void SMPQSlave::toFileTime(quint64 &to, const time_t &from) {
 
 }
 
-bool SMPQSlave::fromFileTime(time_t &to, const quint64 &from) {
+bool SMPQSlave::fromFileTime(quint64 &to, const quint64 &from) {
 
 	if ( from < OFFSET )
-		return false;
-
-	if ( ( from - OFFSET ) / NSEC > ( 1ULL << sizeof(time_t)*8 ) )
 		return false;
 
 	to = ( from - OFFSET ) / NSEC;
@@ -567,7 +564,7 @@ void SMPQSlave::listDir(const KUrl &url) {
 
 		} else {
 
-			time_t fileTime = 0;
+			quint64 fileTime = 0;
 			quint64 SFileTime = SFileFindData.dwFileTimeLo | ( (quint64)SFileFindData.dwFileTimeHi << 32 );
 
 			fromFileTime(fileTime, SFileTime);
@@ -703,7 +700,7 @@ void SMPQSlave::stat(const KUrl &url) {
 
 	if ( ! dir ) {
 
-		time_t fileTime = 0;
+		quint64 fileTime = 0;
 		quint64 SFileTime = SFileFindData.dwFileTimeLo | ( (quint64)SFileFindData.dwFileTimeHi << 32 );
 
 		fromFileTime(fileTime, SFileTime);
