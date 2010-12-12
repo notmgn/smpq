@@ -59,5 +59,6 @@ if(WITH_KDE)
 
 	install(TARGETS kio_smpq DESTINATION ${PLUGIN_INSTALL_DIR})
 	install(FILES smpq.protocol DESTINATION ${SERVICES_INSTALL_DIR})
+	install(FILES smpq.xml DESTINATION ${XDG_MIME_INSTALL_DIR})
 
 endif(WITH_KDE)
