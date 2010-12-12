@@ -19,10 +19,12 @@
 
 #include <QCoreApplication>
 #include <QFile>
+#include <QTemporaryFile>
 #include <QByteArray>
 #include <QVarLengthArray>
 #include <QString>
 #include <QSet>
+#include <QDateTime>
 
 #include <KComponentData>
 #include <KDebug>
@@ -321,7 +323,110 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 
 	kDebug(KIO_SMPQ);
 
-	// TODO
+	QString fileName;
+	QByteArray archivePath;
+
+	if ( ! parseUrl(url, fileName, archivePath) ) {
+
+		error(KIO::ERR_DOES_NOT_EXIST, url.path());
+		return;
+
+	}
+
+	if ( ! openArchive(fileName) ) {
+
+		error(0, ""); // TODO: Better error
+		return;
+
+	}
+
+	// TODO: check if archivePath is not File????????.??? (listfile) (signature) (attributes)
+
+	HANDLE SFile;
+	bool needCompact = false;
+
+	if ( ( flags & KIO::Overwrite ) && SFileOpenFileEx(p->SArchive, archivePath, SFILE_OPEN_FROM_MPQ, &SFile) ) {
+
+		SFileCloseFile(SFile);
+
+		if ( ! SFileRemoveFile(p->SArchive, archivePath, SFILE_OPEN_FROM_MPQ) ) {
+
+			error(0, ""); // TODO: Better error
+			return;
+
+		}
+
+		needCompact = true;
+
+	}
+
+	QTemporaryFile file;
+
+	if ( ! file.open() ) {
+
+		error(0, ""); // TODO: Better error
+		return;
+
+	}
+
+	qint64 bytes;
+	KIO::filesize_t totalBytes = 0;
+	QByteArray buffer;
+
+	dataReq();
+	while ( ( bytes = readData(buffer) ) > 0 ) {
+
+		file.write(buffer);
+		totalBytes += bytes;
+		processedSize(totalBytes/2);
+
+		dataReq();
+
+	}
+
+	quint64 SFileTime = 0;
+	quint64 fileTime = 0;
+	const QString metaDataTime = metaData("modified");
+
+	if ( ! metaDataTime.isEmpty() )
+		fileTime = QDateTime::fromString(metaDataTime, Qt::ISODate).toTime_t();
+
+	toFileTime(SFileTime, fileTime);
+
+	qint64 fileSize = file.size();
+
+	// TODO: Add flags
+	if ( ! SFileCreateFile(p->SArchive, archivePath, SFileTime, fileSize, 0 /*locale*/, MPQ_FILE_COMPRESS, &SFile) ) {
+
+		error(0, ""); // TODO: Better error
+		return;
+
+	}
+
+	file.seek(0);
+	totalBytes = 0;
+
+	while ( ( buffer = file.read(0x10000) ).size() > 0 ) {
+
+		if ( ! SFileWriteFile(SFile, buffer, buffer.size(), MPQ_COMPRESSION_LZMA) ) {
+
+			error(0, ""); // TODO: Better error
+			return;
+
+		}
+
+		totalBytes += buffer.size();
+		processedSize(fileSize/2+totalBytes/2);
+
+	}
+
+	SFileFinishFile(SFile);
+
+	SFileFlushArchive(p->SArchive);
+	SFileCompactArchive(p->SArchive, NULL, 0); // TODO: Add listfile
+	SFileFlushArchive(p->SArchive);
+
+	finished();
 
 }
 
@@ -528,6 +633,7 @@ void SMPQSlave::listDir(const KUrl &url) {
 		KIO::UDSEntry entry;
 		entry.insert(KIO::UDSEntry::UDS_NAME, ".");
 		entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
+		entry.insert(KIO::UDSEntry::UDS_ACCESS, (S_IRWXU | S_IRWXG | S_IRWXO));
 		listEntry(entry, false);
 
 	}
@@ -537,7 +643,14 @@ void SMPQSlave::listDir(const KUrl &url) {
 	SFILE_FIND_DATA SFileFindData;
 	HANDLE SFileFind = SFileFindFirstFile(p->SArchive, archivePath + '*', &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
 
-	while ( SFileFind ) {
+	if ( ! SFileFind ) {
+
+		error(KIO::ERR_CANNOT_ENTER_DIRECTORY, archivePath);
+		return;
+
+	}
+
+	while ( true ) {
 
 		QByteArray filePath = SFileFindData.cFileName;
 		QByteArray fileName;
@@ -556,6 +669,7 @@ void SMPQSlave::listDir(const KUrl &url) {
 				KIO::UDSEntry entry;
 				entry.insert(KIO::UDSEntry::UDS_NAME, QFile::decodeName(dirName));
 				entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
+				entry.insert(KIO::UDSEntry::UDS_ACCESS, (S_IRWXU | S_IRWXG | S_IRWXO));
 				listEntry(entry, false);
 
 				directories.insert(dirName);
@@ -574,6 +688,7 @@ void SMPQSlave::listDir(const KUrl &url) {
 			entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFREG);
 			entry.insert(KIO::UDSEntry::UDS_SIZE, SFileFindData.dwFileSize);
 			entry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, fileTime);
+			entry.insert(KIO::UDSEntry::UDS_ACCESS, (S_IRWXU | S_IRWXG | S_IRWXO));
 			listEntry(entry, false);
 
 		}
@@ -582,6 +697,8 @@ void SMPQSlave::listDir(const KUrl &url) {
 			break;
 
 	}
+
+	SFileFindClose(SFileFind);
 
 	listEntry(KIO::UDSEntry(), true);
 	finished();
@@ -697,6 +814,7 @@ void SMPQSlave::stat(const KUrl &url) {
 
 	KIO::UDSEntry entry;
 	entry.insert(KIO::UDSEntry::UDS_NAME, url.path());
+	entry.insert(KIO::UDSEntry::UDS_ACCESS, (S_IRWXU | S_IRWXG | S_IRWXO));
 
 	if ( ! dir ) {
 
