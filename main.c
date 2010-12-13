@@ -37,18 +37,62 @@
 	"     -c, --create                  Create new archive with file(s)\n" \
 	"     -a, --append, --add           Append file(s) to archive\n" \
 	"     -d, -r, --delete, --remove    Remove file(s) from archive\n" \
+	"     -R, --rename                  Rename file in archive\n" \
 	"     -l, --list                    List file(s) of archive\n" \
 	"     -e, -x, --extract             Extract file(s) from archive\n" \
-	"     -i, -I, --info                Show info about archive\n" \
+	"     -i, --info                    Show info about archive\n" \
 	"\n" \
 	"     -h, -u, --help, --usage       Show this help/usage information\n" \
-	"     -V, --license                 Show version license information\n" \
+	"     -V, --license, --version      Show version license information\n" \
 	"\n" \
 	"Options:\n" \
-	"     -L, --listfile                Specify additional external listfile\n" \
-	"     -n, --no-system-listfiles     Do not load system listfiles\n" \
+	"     -L, --listfile <file>         Additional external listfile\n" \
+	"     -n, --no-system-listfiles     Do not load system listfile(s)\n" \
+	"     -N, --no-archive-listfile     Do not use/create archive listfile (no file names will be read/stored)\n" \
+	"     -q, --quiet                   Be quiet, do not show any output\n" \
 	"     -f, -o, --force, --overwrite  Enable overwrite file(s)\n" \
-	"     -v, --verbose                 Enable verbose output\n"
+	"     -v, --verbose                 Enable verbose output\n" \
+	"     -O, --locale <id>             Set locale id (default: neutral=0)\n" \
+	"          For all locale id see: http://msdn.microsoft.com/en-us/library/0h88fahh(v=VS.85).aspx\n" \
+	"\n" \
+	"Options for creating archive:\n" \
+	"     -M, --mpq <version>           MPQ Version of archive: 1, 2 (default 2)\n" \
+	"     -A, --no-attributes           Do not allow using file attributes (time, checksum, hash)\n" \
+	"     -H, --hash-table-size <size>  Hash table size for storing file(s): must be between 4 and 524288 (default: 16)\n" \
+	"\n" \
+	"Options for appending file(s) to archive:\n" \
+	"     -E, --encrypt                 Store as encrypted\n" \
+	"     -D, --deletion-marker         Set deletion marker\n" \
+	"     -S, --sector-crc              Store CRC for each sector, ignored if file has none compression or is single unit\n" \
+	"     -U, --single-unit             Add file as single unit, cannot be encrypted\n" \
+	"     -C, --compression <method>    Compression method: (default LZMA)\n" \
+	"          none                  None compression\n" \
+	"          IMPLODE               Pkware Data Compression IMPLODE method - OBSOLATE (It was used only in Diablo I)\n" \
+	"          HUFFMANN              Huffmann compression\n" \
+	"          ADPCM_MONO            Huffmann IMA ADPCM compression for 1-channel (mono) WAVE files - Lossy compression, only for WAVE files (Now it is not used)\n" \
+	"          ADPCM_STEREO          Huffmann IMA ADPCM compression for 2-channel (stereo) WAVE files - Lossy compression, only for WAVE files (Now it is not used)\n" \
+	"          ZLIB                  ZLIB compression\n" \
+	"          PKWARE                Pkware Data compression\n" \
+	"          BZIP2                 BZIP2 compression\n" \
+	"          SPARSE                SPARSE compression\n" \
+	"          LZMA                  LZMA compression\n" \
+	"          ZLIB+PKWARE           Together ZLIB and Pkware Data compression\n" \
+	"          BZIP2+PKWARE          Together BZIP2 and Pkware Data compression\n" \
+	"          SPARSE+ZLIB           Together SPARSE and ZLIB compression\n" \
+	"          SPARSE+PKWARE         Together SPARSE and Pkware Data compression\n" \
+	"          SPARSE+BZIP2          Together SPARSE and BZIP2 compression\n" \
+	"          SPARSE+ZLIB+PKWARE    Together SPARSE, ZLIB and Pkware Data compression\n" \
+	"          SPARSE+BZIP2+PKWARE   Together SPARSE. BZIP2 and Pkware Data compression\n" \
+	"          choose                Try all compression (expect ADPCM_MONO and ADPCM_STEREO) and choose the best for each file - This will spend a lot of time\n" \
+	"\n" \
+	"Options for deleting file(s) from archive:\n" \
+	"     -I, --index                   Specify file(s) by index(es) (not by name)\n" \
+	"\n" \
+	"Options for extracting file(s) from archive:\n" \
+	"     -I, --index                   Specify file(s) by index(es) (not by name)\n" \
+	"     -p                            Open more (patched) archives, when file is in more archives, will be extracted from last\n" \
+	"          Usage with more (patched) archives: %s -l|-x [options] [archive] -p [(patched)archives] -- [files]\n" \
+	""
 
 #define LICENSE \
 	"smpq - StormLib MPQ archiving utility, version " VERSION "\n" \
@@ -143,7 +187,7 @@ void parse(char c) {
 		case 'h':
 		case 'u':
 
-			printf(HELP, app);
+			printf(HELP, app, app);
 			exit(0);
 
 		case 'V':
