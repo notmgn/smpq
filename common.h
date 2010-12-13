@@ -57,7 +57,8 @@ typedef void * HANDLE;
 /* Append file */
 #define HASH_SIZE	1 << 19
 #define ENCRYPT		1 << 20
-#define DELETION_MARKER	1 << 21
+#define FIX_KEY		1 << 21
+#define DELETE_MARKER	1 << 22
 #define SINGLE_UNIT	1 << 23
 #define COMPRESSION	1 << 24
 
@@ -78,7 +79,7 @@ extern char * app;
  */
 
 /* Create new archive and/or append files to archive */
-int append(const char * archive, const char * const files[], int flags, const char * listfile, int locale, int hashTableSize, const char * compression);
+int append(const char * archive, const char * const files[], int flags, int locale, int hashTableSize, const char * compression);
 
 /* Extract or print list files from archive */
 int extract(const char * archive, const char * const files[], int flags, const char * listfile, int locale, const char * const parchives[]);

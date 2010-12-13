@@ -46,8 +46,8 @@
 	"     -V, --license, --version      Show version license information\n" \
 	"\n" \
 	"Options:\n" \
-	"     -L, --listfile <file>         Additional external listfile\n" \
-	"     -n, --no-system-listfiles     Do not load system listfile(s)\n" \
+	"     -L, --listfile <file>         Additional external listfile (not used when appending file)\n" \
+	"     -n, --no-system-listfiles     Do not load system listfile(s) (not used when appending file)\n" \
 	"     -N, --no-archive-listfile     Do not use/create archive listfile (no file names will be read/stored)\n" \
 	"     -A, --no-attributes           Do not allow using file attributes (time, checksum, hash)\n" \
 	"     -M, --mpq-version-1           Use MPQ archive version 1 (default: use new version 2)\n" \
@@ -61,19 +61,22 @@
 	"Options for appending file(s) to archive:\n" \
 	"     -H, --hash-table-size <size>  Set/Change hash table size in archive: between 4 and 524288; 0 - do not change when not set -c (default: 0 or 16)\n" \
 	"     -E, --encrypt                 Store as encrypted\n" \
+	"     -F, --fix-key                 Encryption key will be adjusted according to file size in the archive (need -E)\n" \
 	"     -D, --deletion-marker         Set deletion marker\n" \
 	"     -U, --single-unit             Add file as single unit, cannot be encrypted\n" \
 	"     -C, --compression <method>    Compression method: (default LZMA)\n" \
 	"          none                  None compression\n" \
 	"          IMPLODE               Pkware Data Compression IMPLODE method - OBSOLATE (It was used only in Diablo I)\n" \
 	"          HUFFMANN              Huffmann compression\n" \
-	"          ADPCM_MONO            Huffmann IMA ADPCM compression for 1-channel (mono) WAVE files - Lossy compression, only for WAVE files (Now it is not used)\n" \
-	"          ADPCM_STEREO          Huffmann IMA ADPCM compression for 2-channel (stereo) WAVE files - Lossy compression, only for WAVE files (Now it is not used)\n" \
+	"          ADPCM_MONO            IMA ADPCM compression for 1-channel (mono) WAVE files - Lossy compression, only for WAVE files (Now it is not used)\n" \
+	"          ADPCM_STEREO          IMA ADPCM compression for 2-channel (stereo) WAVE files - Lossy compression, only for WAVE files (Now it is not used)\n" \
 	"          ZLIB                  ZLIB compression\n" \
 	"          PKWARE                Pkware Data compression\n" \
 	"          BZIP2                 BZIP2 compression\n" \
 	"          SPARSE                SPARSE compression\n" \
 	"          LZMA                  LZMA compression\n" \
+	"          HUFFMANN+ADPCM_MONO   Together Huffmann and IMA ADPCM compression for 1-channel (mono) WAVE files\n" \
+	"          HUFFMANN+ADPCM_STEREO Together Huffmann and IMA ADPCM compression for 2-channel (stereo) WAVE files\n" \
 	"          ZLIB+PKWARE           Together ZLIB and Pkware Data compression\n" \
 	"          BZIP2+PKWARE          Together BZIP2 and Pkware Data compression\n" \
 	"          SPARSE+ZLIB           Together SPARSE and ZLIB compression\n" \
@@ -143,6 +146,10 @@ void parse(char c) {
 			flags |= SECTOR_CRC;
 			break;
 
+		case 'q':
+			flags |= QUIET;
+			break;
+
 		case 'f':
 		case 'o':
 
@@ -168,8 +175,12 @@ void parse(char c) {
 			flags |= ENCRYPT;
 			break;
 
+		case 'F':
+			flags |= FIX_KEY;
+			break;
+
 		case 'D':
-			flags |= DELETION_MARKER;
+			flags |= DELETE_MARKER;
 			break;
 
 		case 'U':
@@ -300,6 +311,8 @@ int main(int argc, char * argv[]) {
 				parse('A');
 			else if ( strcmp(argv[i], "--mpq-version-1") == 0 )
 				parse('M');
+			else if ( strcmp(argv[i], "--sector-crc") == 0 )
+				parse('S');
 			else if ( strcmp(argv[i], "--quiet") == 0 )
 				parse('q');
 			else if ( strcmp(argv[i], "--force") == 0 || strcmp(argv[i], "--overwrite") == 0 )
@@ -312,10 +325,10 @@ int main(int argc, char * argv[]) {
 				parse('H');
 			else if ( strcmp(argv[i], "--encrypt") == 0 )
 				parse('E');
-			else if ( strcmp(argv[i], "--deletion-marker") == 0 )
+			else if ( strcmp(argv[i], "--fix-key") == 0 )
+				parse('F');
+			else if ( strcmp(argv[i], "--delete-marker") == 0 )
 				parse('D');
-			else if ( strcmp(argv[i], "--sector-crc") == 0 )
-				parse('S');
 			else if ( strcmp(argv[i], "--single-unit") == 0 )
 				parse('U');
 			else if ( strcmp(argv[i], "--compression") == 0 )
@@ -511,7 +524,7 @@ int main(int argc, char * argv[]) {
 	switch ( action ) {
 
 		case 'a':
-			return append(archive, (const char * const *)files, flags, listfile, locale, hashTableSize, compression);
+			return append(archive, (const char * const *)files, flags, locale, hashTableSize, compression);
 
 		case 'x':
 			return extract(archive, (const char * const *)files, flags, listfile, locale, (const char * const *)parchives);

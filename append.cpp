@@ -30,10 +30,9 @@ extern "C" {
 
 #include "common.h"
 
-int append(const char * archive, const char * const files[], int flags, const char * listfile, int locale, int hashTableSize, const char * compression) {
+int append(const char * archive, const char * const files[], int flags, int locale, int hashTableSize, const char * compression) {
 
 	int i;
-	int needCompact = 0;
 	HANDLE SArchive = NULL;
 
 	if ( flags & CREATE ) {
@@ -56,8 +55,17 @@ int append(const char * archive, const char * const files[], int flags, const ch
 		if ( flags & VERBOSE )
 			printVerbose(archive, "Create new archive", archive);
 
-		// TODO: Configure hash table size
-		if ( ! SFileCreateArchive(archive, MPQ_CREATE_ARCHIVE_V2 | MPQ_CREATE_ATTRIBUTES, 1 << 4 /*HASH_TABLE_SIZE_MAX*/ , &SArchive) ) {
+		int SFlags = 0;
+
+		if ( flags & MPQ_VERSION_1 )
+			SFlags |= MPQ_CREATE_ARCHIVE_V1;
+		else
+			SFlags |= MPQ_CREATE_ARCHIVE_V2;
+
+		if ( ! ( flags & NO_ATTRIBUTES ) )
+			SFlags |= MPQ_CREATE_ATTRIBUTES;
+
+		if ( ! SFileCreateArchive(archive, SFlags, hashTableSize, &SArchive) ) {
 
 			printError(archive, "Cannot create archive", archive, GetLastError());
 			return -1;
@@ -66,8 +74,18 @@ int append(const char * archive, const char * const files[], int flags, const ch
 
 	} else {
 
-		// TODO: Add flags
-		if ( ! SFileOpenArchive(archive, 0, 0 /*MPQ_OPEN_CHECK_SECTOR_CRC*/, &SArchive) ) {
+		int SFlags = 0;
+
+		if ( flags & NO_LISTFILE )
+			SFlags |= MPQ_OPEN_NO_LISTFILE;
+
+		if ( flags & NO_ATTRIBUTES )
+			SFlags |= MPQ_OPEN_NO_ATTRIBUTES;
+
+		if ( flags & MPQ_VERSION_1 )
+			SFlags |= MPQ_OPEN_FORCE_MPQ_V1;
+
+		if ( ! SFileOpenArchive(archive, 0, SFlags, &SArchive) ) {
 
 			printError(archive, "Cannot open archive", archive, GetLastError());
 			return -1;
@@ -76,8 +94,91 @@ int append(const char * archive, const char * const files[], int flags, const ch
 
 	}
 
-	if ( ! ( flags & NO_SYSTEM_LF ) )
-		systemListfiles(SArchive, archive, flags);
+	SFileSetLocale(locale);
+
+	int SFlags = 0;
+	int SCompFlags = 0;
+
+	if ( flags & ENCRYPT )
+		SFlags |= MPQ_FILE_ENCRYPTED;
+
+	if ( flags & FIX_KEY )
+		SFlags |= MPQ_FILE_FIX_KEY;
+
+	if ( flags & DELETE_MARKER )
+		SFlags |= MPQ_FILE_DELETE_MARKER;
+
+	if ( flags & SECTOR_CRC )
+		SFlags |= MPQ_FILE_SECTOR_CRC;
+
+	if ( flags & SINGLE_UNIT )
+		SFlags |= MPQ_FILE_SINGLE_UNIT;
+
+	if ( flags & OVERWRITE )
+		SFlags |= MPQ_FILE_REPLACEEXISTING;
+
+	if ( compression != NULL ) {
+	       
+		if ( strcmp(compression, "none") == 0 ) {
+		       
+		} else if ( strcmp(compression, "IMPLODE") != 0 ) {
+
+			SFlags |= MPQ_FILE_IMPLODE;
+
+		} else {
+
+			SFlags |= MPQ_FILE_COMPRESS;
+
+			if ( strcmp(compression, "HUFFMANN") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_HUFFMANN;
+			else if ( strcmp(compression, "ADPCM_MONO") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_ADPCM_MONO;
+			else if ( strcmp(compression, "ADPCM_STEREO") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_ADPCM_STEREO;
+			else if ( strcmp(compression, "ZLIB") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_ZLIB;
+			else if ( strcmp(compression, "PKWARE") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_PKWARE;
+			else if ( strcmp(compression, "BZIP2") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_BZIP2;
+			else if ( strcmp(compression, "SPARSE") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_SPARSE;
+			else if ( strcmp(compression, "LZMA") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_LZMA;
+			else if ( strcmp(compression, "HUFFMANN+ADPCM_MONO") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_HUFFMANN | MPQ_COMPRESSION_ADPCM_MONO;
+			else if ( strcmp(compression, "HUFFMANN+ADPCM_STEREO") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_HUFFMANN | MPQ_COMPRESSION_ADPCM_STEREO;
+			else if ( strcmp(compression, "ZLIB+PKWARE") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_ZLIB | MPQ_COMPRESSION_PKWARE;
+			else if ( strcmp(compression, "BZIP2+PKWARE") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_BZIP2 | MPQ_COMPRESSION_PKWARE;
+			else if ( strcmp(compression, "SPARSE+ZLIB") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_ZLIB;
+			else if ( strcmp(compression, "SPARSE+PKWARE") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_PKWARE;
+			else if ( strcmp(compression, "SPARSE+BZIP2") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_BZIP2;
+			else if ( strcmp(compression, "SPARSE+ZLIB+PKWARE") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_ZLIB | MPQ_COMPRESSION_PKWARE;
+			else if ( strcmp(compression, "SPARSE+BZIP2+PKWARE") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_BZIP2 | MPQ_COMPRESSION_PKWARE;
+			else if ( strcmp(compression, "choose") == 0 ) {
+
+				printError(archive, "Choose the best compression is not implemented yet", compression, EINVAL);
+				return -1;
+
+			} else {
+
+				printError(archive, "Specified unknow compression method", compression, EINVAL);
+				return -1;
+
+			}
+
+		}
+
+	}
+
 
 	for ( i = 0; files[i]; ++i ) {
 
@@ -122,27 +223,6 @@ int append(const char * archive, const char * const files[], int flags, const ch
 		fileSize = ftell(file);
 		rewind(file);
 
-		// TODO: Use MPQ_FILE_REPLACEEXISTING in SFileCreateFile
-
-		if ( ( flags & OVERWRITE ) && SFileOpenFileEx(SArchive, SFileName, SFILE_OPEN_FROM_MPQ, &SFile) ) {
-
-			SFileCloseFile(SFile);
-
-			if ( flags & VERBOSE )
-				printVerbose(archive, "Remove old file", SFileName);
-
-			if ( ! SFileRemoveFile(SArchive, SFileName, SFILE_OPEN_FROM_MPQ) ) {
-
-				printError(archive, "Cannot remove existing file", SFileName, GetLastError());
-				fclose(file);
-				continue;
-
-			}
-
-			needCompact = 1;
-
-		}
-
 		if ( flags & VERBOSE )
 			printVerbose(archive, "Append file", SFileName);
 
@@ -156,8 +236,7 @@ int append(const char * archive, const char * const files[], int flags, const ch
 
 		toFileTime(&SFileTime, st.st_mtime);
 
-		// TODO: Add flags
-		if ( ! SFileCreateFile(SArchive, SFileName, SFileTime, fileSize, 0 /*locale*/, MPQ_FILE_COMPRESS, &SFile) ) {
+		if ( ! SFileCreateFile(SArchive, SFileName, SFileTime, fileSize, locale, SFlags, &SFile) ) {
 
 			printError(archive, "Cannot create new file", SFileName, GetLastError());
 			fclose(file);
@@ -176,7 +255,7 @@ int append(const char * archive, const char * const files[], int flags, const ch
 
 			}
 
-			if ( ! SFileWriteFile(SFile, buffer, bytes, MPQ_COMPRESSION_LZMA) ) {
+			if ( ! SFileWriteFile(SFile, buffer, bytes, SCompFlags) ) {
 
 				printError(archive, "Cannot write file new", SFileName, GetLastError());
 				break;
@@ -191,16 +270,6 @@ int append(const char * archive, const char * const files[], int flags, const ch
 		fclose(file);
 		SFileFinishFile(SFile);
 		SFileFlushArchive(SArchive);
-
-	}
-
-	if ( needCompact ) {
-
-		if ( flags & VERBOSE )
-			printVerbose(archive, "Compact archive", archive);
-
-		if ( ! SFileCompactArchive(SArchive, listfile, 0) )
-			printError(archive, "Cannot compact archive", archive, GetLastError());
 
 	}
 
