@@ -33,6 +33,7 @@ set(smpq_SRCS
 	main.c
 	print.c
 	remove.cpp
+	rename.cpp
 )
 
 set(kio_smpq_SRCS

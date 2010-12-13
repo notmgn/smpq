@@ -49,21 +49,19 @@
 	"     -L, --listfile <file>         Additional external listfile\n" \
 	"     -n, --no-system-listfiles     Do not load system listfile(s)\n" \
 	"     -N, --no-archive-listfile     Do not use/create archive listfile (no file names will be read/stored)\n" \
+	"     -A, --no-attributes           Do not allow using file attributes (time, checksum, hash)\n" \
+	"     -M, --mpq-version-1           Use MPQ archive version 1 (default: use new version 2)\n" \
+	"     -S, --sector-crc              Store/Check CRC for each sector, ignored if file has none compression or is single unit\n" \
 	"     -q, --quiet                   Be quiet, do not show any output\n" \
 	"     -f, -o, --force, --overwrite  Enable overwrite file(s)\n" \
 	"     -v, --verbose                 Enable verbose output\n" \
 	"     -O, --locale <id>             Set locale id (default: neutral=0)\n" \
 	"          For all locale id see: http://msdn.microsoft.com/en-us/library/0h88fahh(v=VS.85).aspx\n" \
 	"\n" \
-	"Options for creating archive:\n" \
-	"     -M, --mpq-version <version>   MPQ Version of archive: 1, 2 (default 2)\n" \
-	"     -A, --no-attributes           Do not allow using file attributes (time, checksum, hash)\n" \
-	"     -H, --hash-table-size <size>  Hash table size for storing file(s): must be between 4 and 524288 (default: 16)\n" \
-	"\n" \
 	"Options for appending file(s) to archive:\n" \
+	"     -H, --hash-table-size <size>  Set/Change hash table size in archive: between 4 and 524288; 0 - do not change when not set -c (default: 0 or 16)\n" \
 	"     -E, --encrypt                 Store as encrypted\n" \
 	"     -D, --deletion-marker         Set deletion marker\n" \
-	"     -S, --sector-crc              Store CRC for each sector, ignored if file has none compression or is single unit\n" \
 	"     -U, --single-unit             Add file as single unit, cannot be encrypted\n" \
 	"     -C, --compression <method>    Compression method: (default LZMA)\n" \
 	"          none                  None compression\n" \
@@ -126,11 +124,23 @@ void parse(char c) {
 			break;
 
 		case 'n':
-			flags |= NO_SYSTEM;
+			flags |= NO_SYSTEM_LF;
 			break;
 
 		case 'N':
-			flags |= NO_ARCHIVE;
+			flags |= NO_LISTFILE;
+			break;
+
+		case 'A':
+			flags |= NO_ATTRIBUTES;
+			break;
+
+		case 'M':
+			flags |= MPQ_VERSION_1;
+			break;
+
+		case 'S':
+			flags |= SECTOR_CRC;
 			break;
 
 		case 'f':
@@ -149,15 +159,6 @@ void parse(char c) {
 			skip = LOCALE_ARG;
 			break;
 
-		case 'M':
-			flags |= MPQ_VERSION;
-			skip = MPQ_VERSION_ARG;
-			break;
-
-		case 'A':
-			flags |= NO_ATTRIBUTES;
-			break;
-
 		case 'H':
 			flags |= HASH_SIZE;
 			skip = HASH_SIZE_ARG;
@@ -169,10 +170,6 @@ void parse(char c) {
 
 		case 'D':
 			flags |= DELETION_MARKER;
-			break;
-
-		case 'S':
-			flags |= SECTOR_CRC;
 			break;
 
 		case 'U':
@@ -299,6 +296,10 @@ int main(int argc, char * argv[]) {
 				parse('n');
 			else if ( strcmp(argv[i], "--no-archive-listfile") == 0 )
 				parse('N');
+			else if ( strcmp(argv[i], "--no-attributes") == 0 )
+				parse('A');
+			else if ( strcmp(argv[i], "--mpq-version-1") == 0 )
+				parse('M');
 			else if ( strcmp(argv[i], "--quiet") == 0 )
 				parse('q');
 			else if ( strcmp(argv[i], "--force") == 0 || strcmp(argv[i], "--overwrite") == 0 )
@@ -307,10 +308,6 @@ int main(int argc, char * argv[]) {
 				parse('v');
 			else if ( strcmp(argv[i], "--locale") == 0 )
 				parse('O');
-			else if ( strcmp(argv[i], "--mpq-version") == 0 )
-				parse('M');
-			else if ( strcmp(argv[i], "--no-attributes") == 0 )
-				parse('A');
 			else if ( strcmp(argv[i], "--hash-table-size") == 0 )
 				parse('H');
 			else if ( strcmp(argv[i], "--encrypt") == 0 )
@@ -399,30 +396,6 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	if ( flags & MPQ_VERSION ) {
-
-		if ( skipArg[MPQ_VERSION_ARG] > argc-1 || skipArg[MPQ_VERSION_ARG] == 0 ) {
-
-			fprintf(stderr, "%s Error: No MPQ version specified\n", app);
-			return -1;
-
-		}
-
-		int version = atoi(argv[skipArg[MPQ_VERSION_ARG]]);
-
-		if ( version == 1 )
-			flags |= MPQ_VERSION_1;
-		else if ( version == 2 )
-			flags |= MPQ_VERSION_2;
-		else {
-
-			fprintf(stderr, "%s Error: Unsupported MPQ archive version %d\n", app, version);
-			return -1;
-
-		}
-
-	}
-
 	int hashTableSize = 16;
 	
 	if ( flags & HASH_SIZE ) {
@@ -456,26 +429,62 @@ int main(int argc, char * argv[]) {
 
 		}
 
-		compression = argv[skipArg[MPQ_VERSION_ARG]];
+		compression = argv[skipArg[COMPRESSION_ARG]];
 
 	}
 
 	char * archive = argv[i++];
 
-	if ( action == 'i' )
+	if ( action == 'i' ) {
+
+		if ( i < argc-1 ) {
+
+			fprintf(stderr, "%s Error: Info need only one archive\n", app);
+			return -1;
+
+		}
+
 		return info(archive);
+
+	}
+
+	if ( action == 'R' ) {
+
+		if ( i+1 < argc-1 ) {
+
+			fprintf(stderr, "%s Error: Cannot rename more then one file\n", app);
+			return -1;
+
+		}
+
+		return rename(archive, argv[i], argv[i+1], flags, listfile, locale);
+
+	}
+
+	int parchivesc = argc - i;
+	char * parchives[parchivesc + 2];
+
+	if ( action == 'x' && strcmp(argv[i], "-p") ) {
+
+		while ( i < argc ) {
+
+			if ( strcmp(argv[i], "--") )
+				break;
+
+			parchives[parchivesc - argc + i] = argv[i];
+			++i;
+
+		}
+
+	}
+
+	parchives[parchivesc - argc + i] = NULL;
 
 	int filesc = argc - i;
 	char * files[filesc + 2];
 
-	for ( ; i < argc; ++i ) {
-
+	for ( ; i < argc; ++i )
 		files[filesc - argc + i] = argv[i];
-
-		if ( filesc == argc - i )
-			continue;
-
-	}
 
 	if ( action == 'x' ) {
 
@@ -502,13 +511,13 @@ int main(int argc, char * argv[]) {
 	switch ( action ) {
 
 		case 'a':
-			return append(archive, (const char * const *)files, flags, listfile);
+			return append(archive, (const char * const *)files, flags, listfile, locale, hashTableSize, compression);
 
 		case 'x':
-			return extract(archive, (const char * const *)files, flags, listfile);
+			return extract(archive, (const char * const *)files, flags, listfile, locale, (const char * const *)parchives);
 
 		case 'r':
-			return remove(archive, (const char * const *)files, flags, listfile);
+			return remove(archive, (const char * const *)files, flags, listfile, locale);
 
 	}
 

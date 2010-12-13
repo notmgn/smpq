@@ -31,6 +31,7 @@ typedef void * HANDLE;
 #define extract _smpq_extract
 #define info _smpq_info
 #define remove _smpq_remove
+#define rename _smpq_rename
 
 /**
  * Flags
@@ -42,33 +43,28 @@ typedef void * HANDLE;
 /* Options */
 #define LISTFILE	1 << 1
 #define LOCALE		1 << 2
-#define NO_SYSTEM	1 << 3
-#define NO_ARCHIVE	1 << 4
-#define QUIET		1 << 5
-#define OVERWRITE	1 << 6
-#define VERBOSE		1 << 7
-#define INDEX		1 << 8
-#define PATCHED		1 << 9
-
-/* Create archive */
-#define MPQ_VERSION	1 << 12
-#define MPQ_VERSION_1	1 << 13
-#define MPQ_VERSION_2	1 << 14
-#define NO_ATTRIBUTES	1 << 15
-#define HASH_SIZE	1 << 16
+#define NO_SYSTEM_LF	1 << 3
+#define NO_LISTFILE	1 << 4
+#define NO_ATTRIBUTES	1 << 5
+#define MPQ_VERSION_1	1 << 6
+#define SECTOR_CRC	1 << 7
+#define QUIET		1 << 8
+#define OVERWRITE	1 << 9
+#define VERBOSE		1 << 10
+#define INDEX		1 << 11
+#define PATCHED		1 << 12
 
 /* Append file */
+#define HASH_SIZE	1 << 19
 #define ENCRYPT		1 << 20
 #define DELETION_MARKER	1 << 21
-#define SECTOR_CRC	1 << 22
 #define SINGLE_UNIT	1 << 23
 #define COMPRESSION	1 << 24
 
 #define LOCALE_ARG	1
 #define LISTFILE_ARG	2
-#define MPQ_VERSION_ARG	3
-#define HASH_SIZE_ARG	4
-#define COMPRESSION_ARG	5
+#define HASH_SIZE_ARG	3
+#define COMPRESSION_ARG	4
 
 /**
  * Variables
@@ -82,16 +78,19 @@ extern char * app;
  */
 
 /* Create new archive and/or append files to archive */
-int append(const char * archive, const char * const files[], int flags, const char * listfile);
+int append(const char * archive, const char * const files[], int flags, const char * listfile, int locale, int hashTableSize, const char * compression);
 
 /* Extract or print list files from archive */
-int extract(const char * archive, const char * const files[], int flags, const char * listfile);
+int extract(const char * archive, const char * const files[], int flags, const char * listfile, int locale, const char * const parchives[]);
 
 /* Show info about archive */
 int info(const char * archive);
 
-/* Remove file(s) fro archive */
-int remove(const char * archive, const char * const files[], int flags, const char * listfile);
+/* Remove file(s) from archive */
+int remove(const char * archive, const char * const files[], int flags, const char * listfile, int locale);
+
+/* Rename file in archive */
+int rename(const char * archive, const char * oldName, const char * newName, int flags, const char * listfile, int locale);
 
 /* Load system listfiles for archive to memory */
 void systemListfiles(HANDLE SArchive, const char * archive, int flags);

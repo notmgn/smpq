@@ -25,22 +25,37 @@ extern "C" {
 
 #include "common.h"
 
-int remove(const char * archive, const char * const files[], int flags, const char * listfile) {
+int remove(const char * archive, const char * const files[], int flags, const char * listfile, int locale) {
 
 	int i;
 	int needCompact = 0;
 	HANDLE SArchive = NULL;
 
-	// TODO: Add flags
-	if ( ! SFileOpenArchive(archive, 0, 0 /*MPQ_OPEN_CHECK_SECTOR_CRC*/, &SArchive) ) {
+	int SFlags = 0;
+
+	if ( flags & NO_LISTFILE )
+		SFlags |= MPQ_OPEN_NO_LISTFILE;
+
+	if ( flags & NO_ATTRIBUTES )
+		SFlags |= MPQ_OPEN_NO_ATTRIBUTES;
+
+	if ( flags & MPQ_VERSION_1 )
+		SFlags |= MPQ_OPEN_FORCE_MPQ_V1;
+
+	if ( flags & SECTOR_CRC )
+		SFlags |= MPQ_OPEN_CHECK_SECTOR_CRC;
+
+	if ( ! SFileOpenArchive(archive, 0, SFlags, &SArchive) ) {
 
 		printError(archive, "Cannot open archive", archive, GetLastError());
 		return -1;
 
 	}
 
-	if ( ! ( flags & NO_SYSTEM ) )
+	if ( ! ( flags & NO_SYSTEM_LF ) )
 		systemListfiles(SArchive, archive, flags);
+
+	SFileSetLocale(locale);
 
 	for ( i = 0; files[i]; ++i ) {
 
@@ -49,17 +64,33 @@ int remove(const char * archive, const char * const files[], int flags, const ch
 
 		toArchivePath(SFileName, fileName);
 
-		if ( flags & VERBOSE )
-			printVerbose(archive, "Remove file", SFileName);
+		if ( flags & VERBOSE ) {
 
-		if ( ! SFileRemoveFile(SArchive, SFileName, SFILE_OPEN_FROM_MPQ) ) {
+			if ( flags & INDEX )
+				printVerbose(archive, "Remove file wich index", SFileName);
+			else
+				printVerbose(archive, "Remove file", SFileName);
 
-			printError(archive, "Cannot remove existing file", SFileName, GetLastError());
+		}
+
+		if ( flags & INDEX )
+			SFlags = SFILE_OPEN_BY_INDEX;
+		else
+			SFlags = SFILE_OPEN_FROM_MPQ;
+
+		if ( ! SFileRemoveFile(SArchive, SFileName, SFlags) ) {
+
+			if ( flags & INDEX )
+				printError(archive, "Cannot remove existing file with index", SFileName, GetLastError());
+			else
+				printError(archive, "Cannot remove existing file", SFileName, GetLastError());
+
 			continue;
 
 		}
 
-		needCompact = 1;
+		if ( ! needCompact )
+			needCompact = 1;
 
 		SFileFlushArchive(SArchive);
 
@@ -70,10 +101,10 @@ int remove(const char * archive, const char * const files[], int flags, const ch
 		if ( flags & VERBOSE )
 			printVerbose(archive, "Compact archive", archive);
 
-		SFileFlushArchive(SArchive);
-
 		if ( ! SFileCompactArchive(SArchive, listfile, 0) )
 			printError(archive, "Cannot compact archive", archive, GetLastError());
+
+		SFileFlushArchive(SArchive);
 
 	}
 

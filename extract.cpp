@@ -92,7 +92,7 @@ out:
 
 }
 
-int extract(const char * archive, const char * const files[], int flags, const char * listfile) {
+int extract(const char * archive, const char * const files[], int flags, const char * listfile, int locale, const char * const * parchives) {
 
 	int i, j;
 	HANDLE SArchive = NULL;
@@ -104,7 +104,7 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 	}
 
-	if ( ! ( flags & NO_SYSTEM ) )
+	if ( ! ( flags & NO_SYSTEM_LF ) )
 		systemListfiles(SArchive, archive, flags);
 
 	for ( i = 0; files[i]; ++i ) {

@@ -30,7 +30,7 @@ extern "C" {
 
 #include "common.h"
 
-int append(const char * archive, const char * const files[], int flags, const char * listfile) {
+int append(const char * archive, const char * const files[], int flags, const char * listfile, int locale, int hashTableSize, const char * compression) {
 
 	int i;
 	int needCompact = 0;
@@ -76,7 +76,7 @@ int append(const char * archive, const char * const files[], int flags, const ch
 
 	}
 
-	if ( ! ( flags & NO_SYSTEM ) )
+	if ( ! ( flags & NO_SYSTEM_LF ) )
 		systemListfiles(SArchive, archive, flags);
 
 	for ( i = 0; files[i]; ++i ) {
@@ -121,6 +121,8 @@ int append(const char * archive, const char * const files[], int flags, const ch
 		fseek(file, 0, SEEK_END);
 		fileSize = ftell(file);
 		rewind(file);
+
+		// TODO: Use MPQ_FILE_REPLACEEXISTING in SFileCreateFile
 
 		if ( ( flags & OVERWRITE ) && SFileOpenFileEx(SArchive, SFileName, SFILE_OPEN_FROM_MPQ, &SFile) ) {
 
