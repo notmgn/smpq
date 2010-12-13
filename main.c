@@ -68,6 +68,7 @@
 	"along with this program.  If not, see <http://www.gnu.org/licenses/>.\n"
 
 char * app;
+int skip = 0;
 int action = 0;
 int flags = 0;
 
@@ -77,6 +78,7 @@ void parse(char c) {
 
 		case 'L':
 			flags |= LISTFILE;
+			skip = LISTFILE_ARG;
 			break;
 
 		case 'n':
@@ -164,8 +166,17 @@ int main(int argc, char * argv[]) {
 	app = argv[0];
 
 	int i, j;
+	int skipArg[10];
 
 	for ( i = 1; i < argc; ++i ) {
+
+		if ( skip ) {
+
+			skipArg[skip] = i;
+			skip = 0;
+			continue;
+
+		}
 
 		if ( argv[i][0] != '-' )
 			break;
@@ -221,7 +232,7 @@ int main(int argc, char * argv[]) {
 
 	if ( flags & LISTFILE ) {
 
-		listfile = argv[i++];
+		listfile = argv[skipArg[LISTFILE_ARG]];
 
 		struct stat st;
 

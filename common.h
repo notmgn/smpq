@@ -44,6 +44,8 @@ typedef void * HANDLE;
 #define LISTFILE	1 << 3
 #define NO_SYSTEM	1 << 4
 
+#define LISTFILE_ARG	3
+
 /**
  * Variables
  */
