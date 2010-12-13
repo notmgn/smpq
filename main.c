@@ -254,7 +254,7 @@ int main(int argc, char * argv[]) {
 	app = argv[0];
 
 	int i, j;
-	int skipArg[10];
+	int skipArg[10] = { 0 };
 
 	for ( i = 1; i < argc; ++i ) {
 
@@ -345,6 +345,13 @@ int main(int argc, char * argv[]) {
 	char * listfile = NULL;
 
 	if ( flags & LISTFILE ) {
+
+		if ( skipArg[LISTFILE_ARG] > argc || skipArg[LISTFILE_ARG] == 0 ) {
+
+			fprintf(stderr, "%s Error: No listfile specified\n", app);
+			return -1;
+
+		}
 
 		listfile = argv[skipArg[LISTFILE_ARG]];
 

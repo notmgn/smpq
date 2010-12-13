@@ -36,19 +36,19 @@ typedef void * HANDLE;
  * Flags
  */
 
-#define CREATE		1
-#define LIST		1
+#define CREATE		1 << 0
+#define LIST		1 << 0
 
 /* Options */
-#define LISTFILE	1 << 0
-#define LOCALE		1 << 1
-#define NO_SYSTEM	1 << 2
-#define NO_ARCHIVE	1 << 3
-#define QUIET		1 << 4
-#define OVERWRITE	1 << 5
-#define VERBOSE		1 << 6
-#define INDEX		1 << 7
-#define PATCHED		1 << 8
+#define LISTFILE	1 << 1
+#define LOCALE		1 << 2
+#define NO_SYSTEM	1 << 3
+#define NO_ARCHIVE	1 << 4
+#define QUIET		1 << 5
+#define OVERWRITE	1 << 6
+#define VERBOSE		1 << 7
+#define INDEX		1 << 8
+#define PATCHED		1 << 9
 
 /* Create archive */
 #define MPQ_VERSION_1	1 << 13
