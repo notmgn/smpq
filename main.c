@@ -56,7 +56,7 @@
 	"          For all locale id see: http://msdn.microsoft.com/en-us/library/0h88fahh(v=VS.85).aspx\n" \
 	"\n" \
 	"Options for creating archive:\n" \
-	"     -M, --mpq <version>           MPQ Version of archive: 1, 2 (default 2)\n" \
+	"     -M, --mpq-version <version>   MPQ Version of archive: 1, 2 (default 2)\n" \
 	"     -A, --no-attributes           Do not allow using file attributes (time, checksum, hash)\n" \
 	"     -H, --hash-table-size <size>  Hash table size for storing file(s): must be between 4 and 524288 (default: 16)\n" \
 	"\n" \
@@ -116,17 +116,24 @@ int skip = 0;
 int action = 0;
 int flags = 0;
 
+int locale = 0;
+int hashTableSize = 16;
+char * compression = (char *)"none";
+
 void parse(char c) {
 
 	switch ( c ) {
 
 		case 'L':
-			flags |= LISTFILE;
 			skip = LISTFILE_ARG;
 			break;
 
 		case 'n':
 			flags |= NO_SYSTEM;
+			break;
+
+		case 'N':
+			flags |= NO_ARCHIVE;
 			break;
 
 		case 'f':
@@ -140,15 +147,55 @@ void parse(char c) {
 			flags |= VERBOSE;
 			break;
 
-		case 'a':
-		case 'c':
-		case 'd':
-		case 'e':
-		case 'i':
+		case 'O':
+			skip = LOCALE_ARG;
+			break;
+
+		case 'M':
+			skip = MPQ_VERSION_ARG;
+			break;
+
+		case 'A':
+			flags |= NO_ATTRIBUTES;
+			break;
+
+		case 'H':
+			skip = MPQ_VERSION_ARG;
+			break;
+
+		case 'E':
+			flags |= ENCRYPT;
+			break;
+
+		case 'D':
+			flags |= DELETION_MARKER;
+			break;
+
+		case 'S':
+			flags |= SECTOR_CRC;
+			break;
+
+		case 'U':
+			flags |= SINGLE_UNIT;
+			break;
+
 		case 'I':
-		case 'l':
+			flags |= INDEX;
+			break;
+
+		case 'p':
+			flags |= PATCHED;
+			break;
+
+		case 'c':
+		case 'a':
+		case 'd':
 		case 'r':
+		case 'R':
+		case 'l':
+		case 'e':
 		case 'x':
+		case 'i':
 
 			if ( action != 0 ) {
 
@@ -178,9 +225,6 @@ void parse(char c) {
 
 			if ( action == 'e' )
 				action = 'x';
-
-			if ( action == 'I' )
-				action = 'i';
 
 			break;
 
@@ -229,28 +273,54 @@ int main(int argc, char * argv[]) {
 
 			if ( strcmp(argv[i], "--create") == 0 )
 				parse('c');
-			else if ( strcmp(argv[i], "--delete") == 0 || strcmp(argv[i], "--remove") == 0 )
-				parse('r');
 			else if ( strcmp(argv[i], "--append") == 0 || strcmp(argv[i], "--add") == 0 )
 				parse('a');
+			else if ( strcmp(argv[i], "--delete") == 0 || strcmp(argv[i], "--remove") == 0 )
+				parse('r');
+			else if ( strcmp(argv[i], "--rename") == 0 )
+				parse('R');
 			else if ( strcmp(argv[i], "--list") == 0 )
 				parse('l');
 			else if ( strcmp(argv[i], "--extract") == 0 )
 				parse('x');
 			else if ( strcmp(argv[i], "--info") == 0 )
 				parse('i');
-			else if ( strcmp(argv[i], "--force") == 0 || strcmp(argv[i], "--overwrite") == 0 )
-				parse('f');
-			else if ( strcmp(argv[i], "--verbose") == 0 )
-				parse('v');
+			else if ( strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "--usage") == 0 )
+				parse('h');
+			else if ( strcmp(argv[i], "--license") == 0 || strcmp(argv[i], "--version") == 0 )
+				parse('V');
 			else if ( strcmp(argv[i], "--listfile") == 0 )
 				parse('L');
 			else if ( strcmp(argv[i], "--no-system-listfiles") == 0 )
 				parse('n');
-			else if ( strcmp(argv[i], "--license") == 0 || strcmp(argv[i], "--version") == 0 )
-				parse('V');
-			else if ( strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "--usage") == 0 )
-				parse('h');
+			else if ( strcmp(argv[i], "--no-archive-listfile") == 0 )
+				parse('N');
+			else if ( strcmp(argv[i], "--quiet") == 0 )
+				parse('q');
+			else if ( strcmp(argv[i], "--force") == 0 || strcmp(argv[i], "--overwrite") == 0 )
+				parse('f');
+			else if ( strcmp(argv[i], "--verbose") == 0 )
+				parse('v');
+			else if ( strcmp(argv[i], "--locale") == 0 )
+				parse('O');
+			else if ( strcmp(argv[i], "--mpq-version") == 0 )
+				parse('M');
+			else if ( strcmp(argv[i], "--no-attributes") == 0 )
+				parse('A');
+			else if ( strcmp(argv[i], "--hash-table-size") == 0 )
+				parse('H');
+			else if ( strcmp(argv[i], "--encrypt") == 0 )
+				parse('E');
+			else if ( strcmp(argv[i], "--deletion-marker") == 0 )
+				parse('D');
+			else if ( strcmp(argv[i], "--sector-crc") == 0 )
+				parse('S');
+			else if ( strcmp(argv[i], "--single-unit") == 0 )
+				parse('U');
+			else if ( strcmp(argv[i], "--compression") == 0 )
+				parse('C');
+			else if ( strcmp(argv[i], "--index") == 0 )
+				parse('I');
 			else {
 				fprintf(stderr, "%s Error: unknown option/action %s specified\n", app, argv[i]);
 				return -1;

@@ -39,12 +39,35 @@ typedef void * HANDLE;
 #define CREATE		1
 #define LIST		1
 
-#define OVERWRITE	1 << 1
-#define VERBOSE		1 << 2
-#define LISTFILE	1 << 3
-#define NO_SYSTEM	1 << 4
+/* Options */
+#define LISTFILE	1 << 0
+#define LOCALE		1 << 1
+#define NO_SYSTEM	1 << 2
+#define NO_ARCHIVE	1 << 3
+#define QUIET		1 << 4
+#define OVERWRITE	1 << 5
+#define VERBOSE		1 << 6
+#define INDEX		1 << 7
+#define PATCHED		1 << 8
 
-#define LISTFILE_ARG	3
+/* Create archive */
+#define MPQ_VERSION_1	1 << 13
+#define MPQ_VERSION_2	1 << 14
+#define NO_ATTRIBUTES	1 << 15
+#define HASH_SIZE	1 << 16
+
+/* Append file */
+#define ENCRYPT		1 << 20
+#define DELETION_MARKER	1 << 21
+#define SECTOR_CRC	1 << 22
+#define SINGLE_UNIT	1 << 23
+#define COMPRESSION	1 << 24
+
+#define LOCALE_ARG	1
+#define LISTFILE_ARG	2
+#define MPQ_VERSION_ARG	3
+#define HASH_SIZE_ARG	4
+#define COMPRESSION_ARG	5
 
 /**
  * Variables
