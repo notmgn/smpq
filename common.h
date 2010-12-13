@@ -51,6 +51,7 @@ typedef void * HANDLE;
 #define PATCHED		1 << 9
 
 /* Create archive */
+#define MPQ_VERSION	1 << 12
 #define MPQ_VERSION_1	1 << 13
 #define MPQ_VERSION_2	1 << 14
 #define NO_ATTRIBUTES	1 << 15

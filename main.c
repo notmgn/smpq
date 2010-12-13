@@ -116,15 +116,12 @@ int skip = 0;
 int action = 0;
 int flags = 0;
 
-int locale = 0;
-int hashTableSize = 16;
-char * compression = (char *)"none";
-
 void parse(char c) {
 
 	switch ( c ) {
 
 		case 'L':
+			flags |= LISTFILE;
 			skip = LISTFILE_ARG;
 			break;
 
@@ -148,10 +145,12 @@ void parse(char c) {
 			break;
 
 		case 'O':
+			flags |= LOCALE;
 			skip = LOCALE_ARG;
 			break;
 
 		case 'M':
+			flags |= MPQ_VERSION;
 			skip = MPQ_VERSION_ARG;
 			break;
 
@@ -160,7 +159,8 @@ void parse(char c) {
 			break;
 
 		case 'H':
-			skip = MPQ_VERSION_ARG;
+			flags |= HASH_SIZE;
+			skip = HASH_SIZE_ARG;
 			break;
 
 		case 'E':
@@ -178,6 +178,10 @@ void parse(char c) {
 		case 'U':
 			flags |= SINGLE_UNIT;
 			break;
+
+		case 'C':
+			flags |= COMPRESSION;
+			skip = COMPRESSION_ARG;
 
 		case 'I':
 			flags |= INDEX;
@@ -342,11 +346,18 @@ int main(int argc, char * argv[]) {
 
 	}
 
+	if ( argc - i <= 0 ) {
+
+		fprintf(stderr, "%s Error: No archive specified\n", app);
+		return -1;
+
+	}
+
 	char * listfile = NULL;
 
 	if ( flags & LISTFILE ) {
 
-		if ( skipArg[LISTFILE_ARG] > argc || skipArg[LISTFILE_ARG] == 0 ) {
+		if ( skipArg[LISTFILE_ARG] > argc-1 || skipArg[LISTFILE_ARG] == 0 ) {
 
 			fprintf(stderr, "%s Error: No listfile specified\n", app);
 			return -1;
@@ -373,10 +384,79 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	if ( argc - i <= 0 ) {
+	int locale = 0;
 
-		fprintf(stderr, "%s Error: No archive specified\n", app);
-		return -1;
+	if ( flags & LOCALE ) {
+
+		if ( skipArg[LOCALE_ARG] > argc-1 || skipArg[LOCALE_ARG] == 0 ) {
+
+			fprintf(stderr, "%s Error: No locale specified\n", app);
+			return -1;
+
+		}
+
+		locale = atoi(argv[skipArg[LOCALE_ARG]]);
+
+	}
+
+	if ( flags & MPQ_VERSION ) {
+
+		if ( skipArg[MPQ_VERSION_ARG] > argc-1 || skipArg[MPQ_VERSION_ARG] == 0 ) {
+
+			fprintf(stderr, "%s Error: No MPQ version specified\n", app);
+			return -1;
+
+		}
+
+		int version = atoi(argv[skipArg[MPQ_VERSION_ARG]]);
+
+		if ( version == 1 )
+			flags |= MPQ_VERSION_1;
+		else if ( version == 2 )
+			flags |= MPQ_VERSION_2;
+		else {
+
+			fprintf(stderr, "%s Error: Unsupported MPQ archive version %d\n", app, version);
+			return -1;
+
+		}
+
+	}
+
+	int hashTableSize = 16;
+	
+	if ( flags & HASH_SIZE ) {
+
+		if ( skipArg[HASH_SIZE_ARG] > argc-1 || skipArg[HASH_SIZE_ARG] == 0 ) {
+
+			fprintf(stderr, "%s Error: No hash table size specified\n", app);
+			return -1;
+
+		}
+
+		hashTableSize = atoi(argv[skipArg[HASH_SIZE_ARG]]);
+
+		if ( hashTableSize < 4 || hashTableSize > 524288 ) {
+
+			fprintf(stderr, "%s Error: Unsupported hash table size %d\n", app, hashTableSize);
+			return -1;
+
+		}
+
+	}
+
+	char * compression = (char *)"none";
+
+	if ( flags & COMPRESSION ) {
+
+		if ( skipArg[COMPRESSION_ARG] > argc-1 || skipArg[COMPRESSION_ARG] == 0 ) {
+
+			fprintf(stderr, "%s Error: No MPQ compression method specified\n", app);
+			return -1;
+
+		}
+
+		compression = argv[skipArg[MPQ_VERSION_ARG]];
 
 	}
 
