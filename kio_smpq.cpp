@@ -19,6 +19,7 @@
 
 #include <QCoreApplication>
 #include <QFile>
+#include <QFileInfo>
 #include <QTemporaryFile>
 #include <QByteArray>
 #include <QVarLengthArray>
@@ -68,6 +69,7 @@ struct SMPQSlavePrivate
 	HANDLE SArchive;
 	QString archive;
 	unsigned int flags;
+	QDateTime modified;
 
 	HANDLE SFile;
 	QByteArray file;
@@ -109,11 +111,9 @@ bool SMPQSlave::parseUrl(const KUrl &url, QString &fileName, QByteArray &archive
 	int pos = 0;
 	int nextPos = 0;
 
-	KDE_struct_stat statbuf;
-
 	while ( ( nextPos = path.indexOf(KDIR_SEPARATOR, pos + 1) ) != -1 ) {
 
-		if ( KDE_stat(QFile::encodeName(path.left(nextPos)), &statbuf) == -1 )
+		if ( ! QFileInfo(QFile::encodeName(path.left(nextPos))).exists() )
 			break;
 
 		pos = nextPos;
@@ -126,15 +126,12 @@ bool SMPQSlave::parseUrl(const KUrl &url, QString &fileName, QByteArray &archive
 	if ( appended )
 		path.chop(1);
 
-	fileName = path.left(pos);
+	fileName = QFile::encodeName(path.left(pos));
 
-	if ( KDE_stat(QFile::encodeName(fileName), &statbuf) == -1 )
+	if ( ! QFileInfo(fileName).isFile() )
 		return false;
 
-	if ( S_ISDIR(statbuf.st_mode) )
-		return false;
-
-	toArchivePath(archivePath, path.mid(pos + 1, -1));
+	toArchivePath(archivePath, path.mid(pos+1, -1));
 
 	return true;
 
@@ -144,7 +141,7 @@ bool SMPQSlave::openArchive(const QString &archive, unsigned int flags) {
 
 	kDebug(KIO_SMPQ);
 
-	if ( p->archive != archive || p->flags != flags || ! p->SArchive ) {
+	if ( p->archive != archive || p->flags != flags || ! p->SArchive || QFileInfo(archive).lastModified() > p->modified ) {
 
 		closeArchive();
 
@@ -153,6 +150,7 @@ bool SMPQSlave::openArchive(const QString &archive, unsigned int flags) {
 
 		p->archive = archive;
 		p->flags = flags;
+		p->modified = QFileInfo(archive).lastModified();
 
 	}
 
@@ -343,7 +341,6 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 	// TODO: check if archivePath is not File????????.??? (listfile) (signature) (attributes)
 
 	HANDLE SFile;
-	bool needCompact = false;
 
 	if ( ( flags & KIO::Overwrite ) && SFileOpenFileEx(p->SArchive, archivePath, SFILE_OPEN_FROM_MPQ, &SFile) ) {
 
@@ -356,7 +353,10 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 
 		}
 
-		needCompact = true;
+		SFileFlushArchive(p->SArchive);
+		SFileCompactArchive(p->SArchive, NULL, 0); // TODO: Add listfile
+
+		p->modified = QFileInfo(p->archive).lastModified();
 
 	}
 
@@ -373,14 +373,17 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 	KIO::filesize_t totalBytes = 0;
 	QByteArray buffer;
 
-	dataReq();
-	while ( ( bytes = readData(buffer) ) > 0 ) {
+	while ( true ) {
+
+		dataReq();
+		bytes = readData(buffer);
+
+		if ( bytes <= 0 )
+			break;
 
 		file.write(buffer);
 		totalBytes += bytes;
 		processedSize(totalBytes/2);
-
-		dataReq();
 
 	}
 
@@ -420,11 +423,12 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 
 	}
 
-	SFileFinishFile(SFile);
+	processedSize(fileSize);
 
+	SFileFinishFile(SFile);
 	SFileFlushArchive(p->SArchive);
-	SFileCompactArchive(p->SArchive, NULL, 0); // TODO: Add listfile
-	SFileFlushArchive(p->SArchive);
+
+	p->modified = QFileInfo(p->archive).lastModified();
 
 	finished();
 
@@ -498,6 +502,8 @@ void SMPQSlave::del(const KUrl &url, bool isfile) {
 
 	SFileCompactArchive(p->SArchive, NULL, 0);
 	SFileFlushArchive(p->SArchive);
+
+	p->modified = QFileInfo(p->archive).lastModified();
 
 	finished();
 
@@ -579,6 +585,9 @@ void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
 		}
 
 		SFileCompactArchive(p->SArchive, NULL, 0);
+		SFileFlushArchive(p->SArchive);
+
+		p->modified = QFileInfo(p->archive).lastModified();
 
 	}
 
@@ -590,6 +599,9 @@ void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
 	}
 
 	SFileFlushArchive(p->SArchive);
+
+	p->modified = QFileInfo(p->archive).lastModified();
+
 	finished();
 
 }
@@ -603,9 +615,7 @@ void SMPQSlave::listDir(const KUrl &url) {
 
 	if ( ! parseUrl(url, fileName, archivePath) ) {
 
-		KDE_struct_stat statbuf;
-
-		if ( KDE_stat(url.path().toUtf8(), &statbuf) == 0 ) {
+		if ( QFileInfo(url.path()).exists() ) {
 
 			redirection(KUrl(url.path()));
 			finished();
@@ -715,9 +725,7 @@ void SMPQSlave::stat(const KUrl &url) {
 
 	if ( ! parseUrl(url, fileName, archivePath) ) {
 
-		KDE_struct_stat statbuf;
-
-		if ( KDE_stat(url.path().toUtf8(), &statbuf) == 0 ) {
+		if ( QFileInfo(url.path()).exists() ) {
 
 			redirection(KUrl(url.path()));
 			finished();
