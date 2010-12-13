@@ -95,14 +95,14 @@ int append(const char * archive, const char * const files[], int flags, const ch
 
 		toArchivePath(SFileName, fileName);
 
-		if ( strncmp(SFileName, "File", 4) == 0 && strcmp(SFileName + 12, ".xxx") == 0 ) {
+		if ( strlen(SFileName) == 16 && strncasecmp(SFileName, "File", 4) == 0 && SFileName[12] == '.' ) {
 
-			printError(archive, "File `File????????.xxx' is not allowed. Cannot create new file", SFileName, EPERM);
+			printError(archive, "File with mask `File????????.???\' is not allowed. Cannot create new file", SFileName, EPERM);
 			continue;
 
 		}
 
-		if ( strcmp(SFileName, "(listfile)") == 0 || strcmp(SFileName, "(signature)") == 0 || strcmp(SFileName, "(attributes)") == 0 ) {
+		if ( strcasecmp(SFileName, "(listfile)") == 0 || strcasecmp(SFileName, "(signature)") == 0 || strcasecmp(SFileName, "(attributes)") == 0 ) {
 
 			printError(archive, "Files `(listfile)' `(signature)' `(attributes)' are for internal usage. Cannot create new file", SFileName, EPERM);
 			continue;
@@ -192,12 +192,10 @@ int append(const char * archive, const char * const files[], int flags, const ch
 
 	}
 
-	if ( flags & OVERWRITE && needCompact ) {
+	if ( needCompact ) {
 
 		if ( flags & VERBOSE )
 			printVerbose(archive, "Compact archive", archive);
-
-		SFileFlushArchive(SArchive);
 
 		if ( ! SFileCompactArchive(SArchive, listfile, 0) )
 			printError(archive, "Cannot compact archive", archive, GetLastError());

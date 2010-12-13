@@ -47,7 +47,7 @@ void systemListfiles(HANDLE Archive, const char * archive, int flags) {
 
 	while ( ( ent = readdir(dir) ) ) {
 
-		if ( strcmp(ent->d_name+strlen(ent->d_name)-4, ".txt") != 0 )
+		if ( strcasecmp(ent->d_name+strlen(ent->d_name)-4, ".txt") != 0 )
 			continue;
 
 		char listfile[strlen(LISTPATH)+strlen(ent->d_name)+2];
