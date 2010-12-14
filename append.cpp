@@ -165,11 +165,13 @@ int append(const char * archive, const char * const files[], int flags, int loca
 				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_BZIP2 | MPQ_COMPRESSION_PKWARE;
 			else if ( strcmp(compression, "choose") == 0 ) {
 
+				SFileCloseArchive(SArchive);
 				printError(archive, "Choose the best compression is not implemented yet", compression, EINVAL);
 				return -1;
 
 			} else {
 
+				SFileCloseArchive(SArchive);
 				printError(archive, "Specified unknow compression method", compression, EINVAL);
 				return -1;
 

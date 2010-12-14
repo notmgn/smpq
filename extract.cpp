@@ -92,28 +92,67 @@ out:
 
 }
 
-int extract(const char * archive, const char * const files[], int flags, const char * listfile, int locale, const char * const * parchives) {
+int extract(const char * archive, const char * const files[], int flags, const char * listfile, int locale, const char * const parchives[]) {
 
 	int i, j;
 	HANDLE SArchive = NULL;
 
-	if ( ! SFileOpenArchive(archive, 0, MPQ_OPEN_READ_ONLY, &SArchive) ) {
+	int SFlags = MPQ_OPEN_READ_ONLY;
+
+	if ( flags & NO_LISTFILE )
+		SFlags |= MPQ_OPEN_NO_LISTFILE;
+
+	if ( flags & NO_ATTRIBUTES )
+		SFlags |= MPQ_OPEN_NO_ATTRIBUTES;
+
+	if ( flags & MPQ_VERSION_1 )
+		SFlags |= MPQ_OPEN_FORCE_MPQ_V1;
+
+	if ( flags & SECTOR_CRC )
+		SFlags |= MPQ_OPEN_CHECK_SECTOR_CRC;
+
+	if ( ! SFileOpenArchive(archive, 0, SFlags, &SArchive) ) {
 
 		printError(archive, "Cannot open archive", archive, GetLastError());
 		return -1;
 
 	}
 
+	for ( i = 0; parchives[i]; ++i ) {
+
+		// TODO: Use prefix
+		if ( ! SFileOpenPatchArchive(SArchive, parchives[i], "", 0) ) {
+
+			SFileCloseArchive(SArchive);
+			printError(archive, "Cannot load patched archive", parchives[i], GetLastError());
+			return -1;
+
+		}
+
+	}
+
 	if ( ! ( flags & NO_SYSTEM_LF ) )
 		systemListfiles(SArchive, archive, flags);
 
+	SFileSetLocale(locale);
+
+	SFlags = SFILE_OPEN_PATCHED_FILE;
+
+	if ( flags & INDEX )
+		SFlags |= SFILE_OPEN_BY_INDEX;
+	else
+		SFlags |= SFILE_OPEN_FROM_MPQ;
+
 	for ( i = 0; files[i]; ++i ) {
 
-		char mask[strlen(files[i])+1];
+		char mask[512];
 		toArchivePath(mask, files[i]);
 
 		SFILE_FIND_DATA SFileFindData;
-		HANDLE SFileFind = SFileFindFirstFile(SArchive, mask, &SFileFindData, listfile);
+		HANDLE SFileFind = NULL;
+		
+		if ( ! ( flags & INDEX ) )
+			SFileFindFirstFile(SArchive, mask, &SFileFindData, listfile);
 
 		if ( ! SFileFind ) {
 
@@ -125,7 +164,9 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 			HANDLE SFile;
 
-			if ( SFileOpenFileEx(SArchive, mask, 0, &SFile) ) {
+			if ( SFileOpenFileEx(SArchive, mask, SFlags, &SFile) ) {
+
+				SFileGetFileName(SFile, mask);
 
 				unsigned int high = 0;
 				unsigned int low = SFileGetFileSize(SFile, &high);
@@ -163,9 +204,13 @@ int extract(const char * archive, const char * const files[], int flags, const c
 			if ( ! fromFileTime(&fileTime, SFileTime) )
 				fileTime = 0;
 
-			if ( ! SFileOpenFileEx(SArchive, SFileName, 0, &SFile) ) {
+			if ( ! SFileOpenFileEx(SArchive, SFileName, SFlags, &SFile) ) {
 
-				printError(archive, "Cannot open file", SFileName, GetLastError());
+				if ( flags & INDEX )
+					printError(archive, "Cannot open file with index", SFileName, GetLastError());
+				else
+					printError(archive, "Cannot open file", SFileName, GetLastError());
+
 				goto next;
 
 			}
