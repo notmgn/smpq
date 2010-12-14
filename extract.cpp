@@ -207,9 +207,9 @@ int extract(const char * archive, const char * const files[], int flags, const c
 			if ( ! SFileOpenFileEx(SArchive, SFileName, SFlags, &SFile) ) {
 
 				if ( flags & INDEX )
-					printError(archive, "Cannot open file with index", SFileName, GetLastError());
+					printError(archive, "Cannot open file in archive with index", SFileName, GetLastError());
 				else
-					printError(archive, "Cannot open file", SFileName, GetLastError());
+					printError(archive, "Cannot open file in archive", SFileName, GetLastError());
 
 				goto next;
 

@@ -477,7 +477,7 @@ int main(int argc, char * argv[]) {
 	int parchivesc = argc - i;
 	char * parchives[parchivesc + 2];
 
-	if ( action == 'x' && strcmp(argv[i], "-p") ) {
+	if ( action == 'x' && i < argc && strcmp(argv[i], "-p") ) {
 
 		while ( i < argc ) {
 
