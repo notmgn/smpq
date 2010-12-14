@@ -152,7 +152,7 @@ int extract(const char * archive, const char * const files[], int flags, const c
 		HANDLE SFileFind = NULL;
 		
 		if ( ! ( flags & INDEX ) )
-			SFileFindFirstFile(SArchive, mask, &SFileFindData, listfile);
+			SFileFind = SFileFindFirstFile(SArchive, mask, &SFileFindData, listfile);
 
 		if ( ! SFileFind ) {
 
