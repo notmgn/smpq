@@ -32,6 +32,89 @@ extern "C" {
 
 int append(const char * archive, const char * const files[], int flags, int locale, int hashTableSize, const char * compression) {
 
+	int SFlags = 0;
+	int SCompFlags = 0;
+
+	if ( flags & ENCRYPT )
+		SFlags |= MPQ_FILE_ENCRYPTED;
+
+	if ( flags & FIX_KEY )
+		SFlags |= MPQ_FILE_FIX_KEY;
+
+	if ( flags & DELETE_MARKER )
+		SFlags |= MPQ_FILE_DELETE_MARKER;
+
+	if ( flags & SECTOR_CRC )
+		SFlags |= MPQ_FILE_SECTOR_CRC;
+
+	if ( flags & SINGLE_UNIT )
+		SFlags |= MPQ_FILE_SINGLE_UNIT;
+
+	if ( flags & OVERWRITE )
+		SFlags |= MPQ_FILE_REPLACEEXISTING;
+
+	if ( compression != NULL ) {
+
+		if ( strcmp(compression, "none") == 0 ) {
+
+		} else if ( strcasecmp(compression, "IMPLODE") == 0 ) {
+
+			SFlags |= MPQ_FILE_IMPLODE;
+
+		} else {
+
+			SFlags |= MPQ_FILE_COMPRESS;
+
+			if ( strcasecmp(compression, "HUFFMANN") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_HUFFMANN;
+			else if ( strcasecmp(compression, "ADPCM_MONO") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_ADPCM_MONO;
+			else if ( strcasecmp(compression, "ADPCM_STEREO") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_ADPCM_STEREO;
+			else if ( strcasecmp(compression, "ZLIB") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_ZLIB;
+			else if ( strcasecmp(compression, "PKWARE") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_PKWARE;
+			else if ( strcasecmp(compression, "BZIP2") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_BZIP2;
+			else if ( strcasecmp(compression, "SPARSE") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_SPARSE;
+			else if ( strcasecmp(compression, "LZMA") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_LZMA;
+			else if ( strcasecmp(compression, "HUFFMANN+ADPCM_MONO") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_HUFFMANN | MPQ_COMPRESSION_ADPCM_MONO;
+			else if ( strcasecmp(compression, "HUFFMANN+ADPCM_STEREO") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_HUFFMANN | MPQ_COMPRESSION_ADPCM_STEREO;
+			else if ( strcasecmp(compression, "ZLIB+PKWARE") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_ZLIB | MPQ_COMPRESSION_PKWARE;
+			else if ( strcasecmp(compression, "BZIP2+PKWARE") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_BZIP2 | MPQ_COMPRESSION_PKWARE;
+			else if ( strcasecmp(compression, "SPARSE+ZLIB") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_ZLIB;
+			else if ( strcasecmp(compression, "SPARSE+PKWARE") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_PKWARE;
+			else if ( strcasecmp(compression, "SPARSE+BZIP2") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_BZIP2;
+			else if ( strcasecmp(compression, "SPARSE+ZLIB+PKWARE") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_ZLIB | MPQ_COMPRESSION_PKWARE;
+			else if ( strcasecmp(compression, "SPARSE+BZIP2+PKWARE") == 0 )
+				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_BZIP2 | MPQ_COMPRESSION_PKWARE;
+			else if ( strcasecmp(compression, "choose") == 0 ) {
+
+				printError(archive, "Choose the best compression is not implemented yet", compression, EINVAL);
+				return -1;
+
+			} else {
+
+				printError(archive, "Specified unknow compression method", compression, EINVAL);
+				return -1;
+
+			}
+
+		}
+
+	}
+
 	int i;
 	HANDLE SArchive = NULL;
 
@@ -55,7 +138,7 @@ int append(const char * archive, const char * const files[], int flags, int loca
 		if ( flags & VERBOSE )
 			printVerbose(archive, "Create new archive", archive);
 
-		int SFlags = 0;
+		int SOpenFlags = 0;
 
 		if ( flags & MPQ_VERSION_1 )
 			SFlags |= MPQ_CREATE_ARCHIVE_V1;
@@ -65,7 +148,7 @@ int append(const char * archive, const char * const files[], int flags, int loca
 		if ( ! ( flags & NO_ATTRIBUTES ) )
 			SFlags |= MPQ_CREATE_ATTRIBUTES;
 
-		if ( ! SFileCreateArchive(archive, SFlags, hashTableSize, &SArchive) ) {
+		if ( ! SFileCreateArchive(archive, SOpenFlags, hashTableSize, &SArchive) ) {
 
 			printError(archive, "Cannot create archive", archive, GetLastError());
 			return -1;
@@ -74,7 +157,7 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 	} else {
 
-		int SFlags = 0;
+		int SOpenFlags = 0;
 
 		if ( flags & NO_LISTFILE )
 			SFlags |= MPQ_OPEN_NO_LISTFILE;
@@ -85,7 +168,7 @@ int append(const char * archive, const char * const files[], int flags, int loca
 		if ( flags & MPQ_VERSION_1 )
 			SFlags |= MPQ_OPEN_FORCE_MPQ_V1;
 
-		if ( ! SFileOpenArchive(archive, 0, SFlags, &SArchive) ) {
+		if ( ! SFileOpenArchive(archive, 0, SOpenFlags, &SArchive) ) {
 
 			printError(archive, "Cannot open archive", archive, GetLastError());
 			return -1;
@@ -95,92 +178,6 @@ int append(const char * archive, const char * const files[], int flags, int loca
 	}
 
 	SFileSetLocale(locale);
-
-	int SFlags = 0;
-	int SCompFlags = 0;
-
-	if ( flags & ENCRYPT )
-		SFlags |= MPQ_FILE_ENCRYPTED;
-
-	if ( flags & FIX_KEY )
-		SFlags |= MPQ_FILE_FIX_KEY;
-
-	if ( flags & DELETE_MARKER )
-		SFlags |= MPQ_FILE_DELETE_MARKER;
-
-	if ( flags & SECTOR_CRC )
-		SFlags |= MPQ_FILE_SECTOR_CRC;
-
-	if ( flags & SINGLE_UNIT )
-		SFlags |= MPQ_FILE_SINGLE_UNIT;
-
-	if ( flags & OVERWRITE )
-		SFlags |= MPQ_FILE_REPLACEEXISTING;
-
-	if ( compression != NULL ) {
-	       
-		if ( strcmp(compression, "none") == 0 ) {
-		       
-		} else if ( strcmp(compression, "IMPLODE") != 0 ) {
-
-			SFlags |= MPQ_FILE_IMPLODE;
-
-		} else {
-
-			SFlags |= MPQ_FILE_COMPRESS;
-
-			if ( strcmp(compression, "HUFFMANN") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_HUFFMANN;
-			else if ( strcmp(compression, "ADPCM_MONO") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_ADPCM_MONO;
-			else if ( strcmp(compression, "ADPCM_STEREO") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_ADPCM_STEREO;
-			else if ( strcmp(compression, "ZLIB") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_ZLIB;
-			else if ( strcmp(compression, "PKWARE") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_PKWARE;
-			else if ( strcmp(compression, "BZIP2") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_BZIP2;
-			else if ( strcmp(compression, "SPARSE") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_SPARSE;
-			else if ( strcmp(compression, "LZMA") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_LZMA;
-			else if ( strcmp(compression, "HUFFMANN+ADPCM_MONO") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_HUFFMANN | MPQ_COMPRESSION_ADPCM_MONO;
-			else if ( strcmp(compression, "HUFFMANN+ADPCM_STEREO") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_HUFFMANN | MPQ_COMPRESSION_ADPCM_STEREO;
-			else if ( strcmp(compression, "ZLIB+PKWARE") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_ZLIB | MPQ_COMPRESSION_PKWARE;
-			else if ( strcmp(compression, "BZIP2+PKWARE") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_BZIP2 | MPQ_COMPRESSION_PKWARE;
-			else if ( strcmp(compression, "SPARSE+ZLIB") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_ZLIB;
-			else if ( strcmp(compression, "SPARSE+PKWARE") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_PKWARE;
-			else if ( strcmp(compression, "SPARSE+BZIP2") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_BZIP2;
-			else if ( strcmp(compression, "SPARSE+ZLIB+PKWARE") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_ZLIB | MPQ_COMPRESSION_PKWARE;
-			else if ( strcmp(compression, "SPARSE+BZIP2+PKWARE") == 0 )
-				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_BZIP2 | MPQ_COMPRESSION_PKWARE;
-			else if ( strcmp(compression, "choose") == 0 ) {
-
-				SFileCloseArchive(SArchive);
-				printError(archive, "Choose the best compression is not implemented yet", compression, EINVAL);
-				return -1;
-
-			} else {
-
-				SFileCloseArchive(SArchive);
-				printError(archive, "Specified unknow compression method", compression, EINVAL);
-				return -1;
-
-			}
-
-		}
-
-	}
-
 
 	for ( i = 0; files[i]; ++i ) {
 
@@ -274,6 +271,9 @@ int append(const char * archive, const char * const files[], int flags, int loca
 		SFileFlushArchive(SArchive);
 
 	}
+
+	if ( flags & OVERWRITE )
+		SFileCompactArchive(SArchive, NULL);
 
 	SFileCloseArchive(SArchive);
 

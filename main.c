@@ -64,7 +64,7 @@
 	"     -F, --fix-key                 Encryption key will be adjusted according to file size in the archive (need -E)\n" \
 	"     -D, --deletion-marker         Set deletion marker\n" \
 	"     -U, --single-unit             Add file as single unit, cannot be encrypted\n" \
-	"     -C, --compression <method>    Compression method: (default LZMA)\n" \
+	"     -C, --compression <method>    Compression method: (default ZLIB)\n" \
 	"          none                  None compression\n" \
 	"          IMPLODE               Pkware Data Compression IMPLODE method - OBSOLATE (It was used only in Diablo I)\n" \
 	"          HUFFMANN              Huffmann compression\n" \
@@ -431,7 +431,7 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	char * compression = (char *)"none";
+	char * compression = (char *)"ZLIB";
 
 	if ( flags & COMPRESSION ) {
 
