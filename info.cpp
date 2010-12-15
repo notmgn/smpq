@@ -25,7 +25,7 @@ extern "C" {
 
 #include "common.h"
 
-inline unsigned int GetInfo(HANDLE archive, unsigned int info) {
+static inline unsigned int GetInfo(HANDLE archive, unsigned int info) {
 	
 	unsigned int ret;
 
@@ -40,8 +40,7 @@ int info(const char * archive) {
 
 	HANDLE SArchive = NULL;
 
-	// TODO: Add flags
-	if ( ! SFileOpenArchive(archive, 0, MPQ_OPEN_READ_ONLY /*MPQ_OPEN_CHECK_SECTOR_CRC*/, &SArchive) ) {
+	if ( ! SFileOpenArchive(archive, 0, MPQ_OPEN_READ_ONLY, &SArchive) ) {
 
 		printError(archive, "Cannot open archive", archive, GetLastError());
 		return -1;

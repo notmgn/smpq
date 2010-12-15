@@ -91,8 +91,8 @@
 	"\n" \
 	"Options for extracting file(s) from archive:\n" \
 	"     -I, --index                   Specify file(s) by index(es) (not by name)\n" \
-	"     -p                            Open more (patched) archives, when file is in more archives, will be extracted from last\n" \
-	"          Usage with more (patched) archives: %s -l|-x [options] [archive] -p [(patched)archives] -- [files]\n" \
+	"     -p                            Open more (patched) archives with directory prefix (prefix:archive), when file is in more archives, will be extracted from last\n" \
+	"          Usage with more (patched) archives: %s -l|-x [options] [archive] -p [prefix1:parchive1] [prefix2:archive2] ... -- [files]\n" \
 	""
 
 #define LICENSE \
@@ -113,11 +113,12 @@
 	"along with this program.  If not, see <http://www.gnu.org/licenses/>.\n"
 
 char * app;
-int skip = 0;
-int action = 0;
-int flags = 0;
 
-void parse(char c) {
+static int skip = 0;
+static int action = 0;
+static int flags = 0;
+
+static void parse(char c) {
 
 	switch ( c ) {
 
@@ -474,24 +475,31 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	int parchivesc = argc - i;
+	int parchivesc = argc - i - 1;
 	char * parchives[parchivesc + 2];
 
-	if ( action == 'x' && i < argc && strcmp(argv[i], "-p") ) {
+	printf("action=%c i=%d argc=%d argv='%s'\n", action, i, argc, argv[i]);
+
+	if ( action == 'x' && i < argc && strcmp(argv[i], "-p") == 0 ) {
+
+		printf("patched\n");
 
 		while ( i < argc ) {
 
-			if ( strcmp(argv[i], "--") )
+			if ( strcmp(argv[i], "--") == 0 )
 				break;
 
-			parchives[parchivesc - argc + i] = argv[i];
 			++i;
+
+			parchives[parchivesc - argc + i] = argv[i];
 
 		}
 
 	}
 
 	parchives[parchivesc - argc + i] = NULL;
+
+	++i;
 
 	int filesc = argc - i;
 	char * files[filesc + 2];

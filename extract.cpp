@@ -47,7 +47,7 @@ extern "C" {
 
 #include "common.h"
 
-int mkpath(const char * s, mode_t mode) {
+static int mkpath(const char * s, mode_t mode) {
 
 	char * q = NULL;
 	char * r = NULL;
@@ -120,11 +120,29 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 	for ( i = 0; parchives[i]; ++i ) {
 
-		// TODO: Use prefix
-		if ( ! SFileOpenPatchArchive(SArchive, parchives[i], "", 0) ) {
+		char * parchive;
+		char * prefix;
+
+		if ( ( parchive = strchr((char *)parchives[i], ':') ) ) {
+
+			*parchive = 0;
+			++parchive;
+			prefix = (char *)parchives[i];
+
+		} else {
+
+			parchive = (char *)parchives[i];
+			prefix = (char *)"";
+
+		}
+
+		if ( flags & VERBOSE )
+			printVerbose(archive, "Opening patched archive", parchive);
+
+		if ( ! SFileOpenPatchArchive(SArchive, parchive, prefix, 0) ) {
 
 			SFileCloseArchive(SArchive);
-			printError(archive, "Cannot load patched archive", parchives[i], GetLastError());
+			printError(archive, "Cannot open patched archive", parchive, GetLastError());
 			return -1;
 
 		}
