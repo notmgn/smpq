@@ -236,14 +236,14 @@ void SMPQSlave::get(const KUrl &url) {
 
 	if ( ! parseUrl(url, fileName, archivePath) ) {
 
-		error(KIO::ERR_DOES_NOT_EXIST, url.path());
+		error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 		return;
 
 	}
 
 	if ( ! openArchive(fileName, MPQ_OPEN_READ_ONLY) ) {
 
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 		return;
 
 	}
@@ -252,7 +252,7 @@ void SMPQSlave::get(const KUrl &url) {
 
 	if ( ! SFileOpenFileEx(p->SArchive, archivePath, 0, &SFile) ) {
 
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 		return;
 
 	}
@@ -292,7 +292,7 @@ void SMPQSlave::get(const KUrl &url) {
 			if ( ! eof ) {
 
 				SFileCloseFile(SFile);
-				error(0, ""); // TODO: Better error
+				error(KIO::ERR_COULD_NOT_READ, url.prettyUrl());
 				return;
 
 			}
@@ -326,19 +326,31 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 
 	if ( ! parseUrl(url, fileName, archivePath) ) {
 
-		error(KIO::ERR_DOES_NOT_EXIST, url.path());
+		error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 		return;
 
 	}
 
 	if ( ! openArchive(fileName) ) {
 
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 		return;
 
 	}
 
-	// TODO: check if archivePath is not File????????.??? (listfile) (signature) (attributes)
+	if ( archivePath.size() == 16 && archivePath.left(4) == "File" && archivePath.at(12) == '.' ) {
+
+		error(KIO::ERR_WRITE_ACCESS_DENIED, url.prettyUrl());
+		return;
+
+	}
+
+	if ( archivePath == "(listfile)" || archivePath == "(signature)" || archivePath == "(attributes)" ) {
+
+		error(KIO::ERR_WRITE_ACCESS_DENIED, url.prettyUrl());
+		return;
+
+	}
 
 	HANDLE SFile;
 
@@ -348,7 +360,7 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 
 		if ( ! SFileRemoveFile(p->SArchive, archivePath, SFILE_OPEN_FROM_MPQ) ) {
 
-			error(0, ""); // TODO: Better error
+			error(KIO::ERR_COULD_NOT_WRITE , url.prettyUrl());
 			return;
 
 		}
@@ -364,7 +376,7 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 
 	if ( ! file.open() ) {
 
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_DISK_FULL, QString());
 		return;
 
 	}
@@ -401,7 +413,7 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 	// TODO: Add flags
 	if ( ! SFileCreateFile(p->SArchive, archivePath, SFileTime, fileSize, 0 /*locale*/, MPQ_FILE_COMPRESS, &SFile) ) {
 
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_COULD_NOT_WRITE , url.prettyUrl());
 		return;
 
 	}
@@ -413,7 +425,7 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 
 		if ( ! SFileWriteFile(SFile, buffer, buffer.size(), MPQ_COMPRESSION_LZMA) ) {
 
-			error(0, ""); // TODO: Better error
+			error(KIO::ERR_COULD_NOT_WRITE , url.prettyUrl());
 			return;
 
 		}
@@ -443,14 +455,14 @@ void SMPQSlave::del(const KUrl &url, bool isfile) {
 
 	if ( ! parseUrl(url, fileName, archivePath) ) {
 
-		error(KIO::ERR_DOES_NOT_EXIST, url.path());
+		error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 		return;
 
 	}
 
 	if ( ! openArchive(fileName) ) {
 
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 		return;
 
 	}
@@ -458,7 +470,7 @@ void SMPQSlave::del(const KUrl &url, bool isfile) {
 	// Skip internal files in MPQ archive
 	if ( archivePath == "(listfile)" || archivePath == "(signature)" || archivePath == "(attributes)" ) {
 
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_WRITE_ACCESS_DENIED, url.prettyUrl());
 		return;
 
 	}
@@ -495,7 +507,7 @@ void SMPQSlave::del(const KUrl &url, bool isfile) {
 
 	if ( ! SFileRemoveFile(p->SArchive, archivePath, SFILE_OPEN_FROM_MPQ) ) {
 
-		error(0, "");  // TODO: Better error
+		error(KIO::ERR_CANNOT_DELETE, url.prettyUrl());
 		return;
 
 	}
@@ -521,35 +533,35 @@ void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
 
 	if ( ! parseUrl(src, srcFileName, srcArchivePath) ) {
 
-		error(KIO::ERR_DOES_NOT_EXIST, src.path());
+		error(KIO::ERR_DOES_NOT_EXIST, src.prettyUrl());
 		return;
 
 	}
 
 	if ( ! parseUrl(dest, destFileName, destArchivePath) ) {
 
-		error(KIO::ERR_DOES_NOT_EXIST, dest.path());
+		error(KIO::ERR_DOES_NOT_EXIST, dest.prettyUrl());
 		return;
 
 	}
 
 	if ( srcFileName != destFileName ) {
 
-		error(KIO::ERR_UNSUPPORTED_ACTION, "");
+		error(KIO::ERR_UNSUPPORTED_ACTION, QString());
 		return;
 
 	}
 
 	if ( srcArchivePath.isEmpty() || srcArchivePath.at(srcArchivePath.size() - 1) == '\\' ) {
 
-		error(0, ""); // TODO: Implement rename directory
+		error(KIO::ERR_UNSUPPORTED_ACTION, QString());
 		return;
 
 	}
 
 	if ( ! openArchive(srcFileName) ) {
 
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_DOES_NOT_EXIST, src.prettyUrl());
 		return;
 
 	}
@@ -557,7 +569,7 @@ void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
 	// Skip internal files in MPQ archive
 	if ( destArchivePath == "(listfile)" || destArchivePath == "(signature)" || destArchivePath == "(attributes)" ) {
 
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_DOES_NOT_EXIST, dest.prettyUrl());
 		return;
 
 	}
@@ -570,7 +582,7 @@ void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
 
 	if ( found && ! ( flags & KIO::Overwrite ) ) {
 
-		error(KIO::ERR_FILE_ALREADY_EXIST, destArchivePath);
+		error(KIO::ERR_FILE_ALREADY_EXIST, dest.prettyUrl());
 		return;
 
 	}
@@ -579,7 +591,7 @@ void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
 
 		if ( ! SFileRemoveFile(p->SArchive, destArchivePath, SFILE_OPEN_FROM_MPQ) ) {
 
-			error(0, "");  // TODO: Better error
+			error(KIO::ERR_CANNOT_RENAME, src.prettyUrl());
 			return;
 
 		}
@@ -593,7 +605,7 @@ void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
 
 	if ( ! SFileRenameFile(p->SArchive, srcArchivePath, destArchivePath) ) {
 
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_CANNOT_RENAME, src.prettyUrl());
 		return;
 
 	}
@@ -623,7 +635,7 @@ void SMPQSlave::listDir(const KUrl &url) {
 
 		}
 
-		error(KIO::ERR_CANNOT_ENTER_DIRECTORY, url.path());
+		error(KIO::ERR_CANNOT_ENTER_DIRECTORY, url.prettyUrl());
 		return;
 
 	}
@@ -633,7 +645,7 @@ void SMPQSlave::listDir(const KUrl &url) {
 
 	if ( ! openArchive(fileName) ) {
 
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_CANNOT_ENTER_DIRECTORY, url.prettyUrl());
 		return;
 
 	}
@@ -655,7 +667,7 @@ void SMPQSlave::listDir(const KUrl &url) {
 
 	if ( ! SFileFind ) {
 
-		error(KIO::ERR_CANNOT_ENTER_DIRECTORY, archivePath);
+		error(KIO::ERR_CANNOT_ENTER_DIRECTORY, url.prettyUrl());
 		return;
 
 	}
@@ -733,7 +745,7 @@ void SMPQSlave::stat(const KUrl &url) {
 
 		}
 
-		error(KIO::ERR_DOES_NOT_EXIST, url.path());
+		error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 		return;
 
 	}
@@ -746,7 +758,7 @@ void SMPQSlave::stat(const KUrl &url) {
 
 	if ( ! openArchive(fileName) ) {
 
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 		return;
 
 	}
@@ -815,7 +827,7 @@ void SMPQSlave::stat(const KUrl &url) {
 
 	if ( ! found ) {
 
-		error(KIO::ERR_DOES_NOT_EXIST, url.path());
+		error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 		return;
 
 	}
@@ -879,7 +891,7 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 
 	if ( ! parseUrl(url, fileName, archivePath) ) {
 
-		error(KIO::ERR_DOES_NOT_EXIST, url.path());
+		error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 		return;
 
 	}
@@ -908,13 +920,13 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 	} else if ( mode == 1 ) {
 
 		// TODO: Add support for write only mode
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_CANNOT_OPEN_FOR_WRITING, url.prettyUrl());
 		return;
 
 	} else if ( mode == 2 ) {
 
 		// TODO: Add support for append mode
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_CANNOT_OPEN_FOR_WRITING, url.prettyUrl());
 		return;
 
 	} else if ( mode == 3 ) {
@@ -925,23 +937,28 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 
 	} else {
 
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_UNSUPPORTED_ACTION, url.prettyUrl());
 		return;
 
 	}
 
 	if ( ! openArchive(fileName, flags) ) {
 
-		error(0, ""); // TODO: Better error
+		error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 		return;
 
 	}
 
 	// Skip internal files in MPQ archive
-	if ( myMode != 0 && ( archivePath == "(listfile)" || archivePath == "(signature)" || archivePath == "(attributes)" ) ) {
+	if ( myMode != 0 ) {
+		
+		if ( archivePath == "(listfile)" || archivePath == "(signature)" || archivePath == "(attributes)" ||
+			( archivePath.size() == 16 && archivePath.left(4) == "File" && archivePath.at(12) == '.' ) ) {
 
-		error(0, ""); // TODO: Better error
-		return;
+			error(KIO::ERR_WRITE_ACCESS_DENIED, url.prettyUrl());
+			return;
+
+		}
 
 	}
 
@@ -949,7 +966,7 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 
 		if ( ! SFileOpenFileEx(p->SArchive, archivePath, 0, &p->SFile) ) {
 
-			error(0, ""); // TODO: Better error
+			error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 			return;
 
 		}
