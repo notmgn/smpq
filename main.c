@@ -84,7 +84,6 @@
 	"          SPARSE+BZIP2          Together SPARSE and BZIP2 compression\n" \
 	"          SPARSE+ZLIB+PKWARE    Together SPARSE, ZLIB and Pkware Data compression\n" \
 	"          SPARSE+BZIP2+PKWARE   Together SPARSE. BZIP2 and Pkware Data compression\n" \
-	"          choose                Try all compression (expect ADPCM_MONO and ADPCM_STEREO) and choose the best for each file - This will spend a lot of time\n" \
 	"\n" \
 	"Options for deleting file(s) from archive:\n" \
 	"     -I, --index                   Specify file(s) by index(es) (not by name)\n" \
@@ -478,11 +477,7 @@ int main(int argc, char * argv[]) {
 	int parchivesc = argc - i - 1;
 	char * parchives[parchivesc + 2];
 
-	printf("action=%c i=%d argc=%d argv='%s'\n", action, i, argc, argv[i]);
-
 	if ( action == 'x' && i < argc && strcmp(argv[i], "-p") == 0 ) {
-
-		printf("patched\n");
 
 		while ( i < argc ) {
 
@@ -497,9 +492,16 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	parchives[parchivesc - argc + i] = NULL;
+	if ( parchivesc - argc + i <= 0 ) {
 
-	++i;
+		parchives[0] = NULL;
+
+	} else {
+
+		parchives[parchivesc - argc + i] = NULL;
+		++i;
+
+	}
 
 	int filesc = argc - i;
 	char * files[filesc + 2];
