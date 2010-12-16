@@ -92,6 +92,70 @@ out:
 
 }
 
+struct trie {
+
+	struct trie * t[255];
+	int end;
+
+};
+
+static const struct trie * trie_alloc() {
+
+	struct trie * t = (struct trie *)calloc(1, sizeof(struct trie));
+	return t;
+
+}
+
+static void trie_free(const struct trie * t) {
+
+	unsigned int i;
+
+	for ( i = 0; i < 255; ++i )
+		if ( t->t[i] )
+			trie_free(t->t[i]);
+
+	free((struct trie *)t);
+
+}
+
+static void trie_add(const struct trie * tr, const char * str) {
+
+	unsigned int i;
+
+	struct trie * t = (struct trie *)tr;
+
+	for ( i = 0; i < strlen(str); ++i ) {
+
+	if ( ! t->t[(int)str[i]] )
+			t->t[(int)str[i]] = (struct trie *)trie_alloc();
+
+		t = t->t[(int)str[i]];
+
+	}
+
+	t->end = 1;
+
+}
+
+static int trie_find(const struct trie * tr, const char * str) {
+
+	unsigned int i;
+
+	struct trie * t = (struct trie *)tr;
+
+	for ( i = 0; i < strlen(str); ++i ) {
+
+		t = t->t[(int)str[i]];
+
+		if ( ! t )
+			return 0;
+
+	}
+
+	return t->end;
+
+}
+
 int extract(const char * archive, const char * const files[], int flags, const char * listfile, int locale, const char * const parchives[]) {
 
 	int i, j;
@@ -202,6 +266,8 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 		}
 
+		const struct trie * t = trie_alloc();
+
 		while ( SFileFind ) {
 
 			struct stat st;
@@ -223,6 +289,11 @@ int extract(const char * archive, const char * const files[], int flags, const c
 				goto next;
 
 			fromArchivePath(fileName, SFileName);
+
+			if ( trie_find(t, SFileName) )
+				goto next;
+			else
+				trie_add(t, SFileName);
 
 			if ( ! fromFileTime(&fileTime, SFileTime) )
 				fileTime = 0;
@@ -378,6 +449,8 @@ next:
 				break;
 
 		}
+
+		trie_free(t);
 
 		if ( SFileFind != (HANDLE)0xFFFFFFFF )
 			SFileFindClose(SFileFind);

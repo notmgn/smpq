@@ -499,7 +499,9 @@ int main(int argc, char * argv[]) {
 	} else {
 
 		parchives[parchivesc - argc + i] = NULL;
-		++i;
+
+		if ( i < argc )
+			++i;
 
 	}
 
