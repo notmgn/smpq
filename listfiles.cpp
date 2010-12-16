@@ -24,7 +24,7 @@ extern "C" {
 ///
 
 #if defined(WIN32) || defined(_MSC_VER)
-void systemListfiles(HANDLE Archive) { }
+void systemListfiles(HANDLE SArchive, const char * archive, int flags) { (void)SArchive; (void)archive; (void)flags; }
 #else
 
 #include <sys/types.h>
@@ -36,7 +36,7 @@ void systemListfiles(HANDLE Archive) { }
 
 #define LISTPATH "/usr/share/stormlib"
 
-void systemListfiles(HANDLE Archive, const char * archive, int flags) {
+void systemListfiles(HANDLE SArchive, const char * archive, int flags) {
 
 	DIR * dir = opendir(LISTPATH);
 
@@ -67,7 +67,7 @@ void systemListfiles(HANDLE Archive, const char * archive, int flags) {
 		if ( flags & VERBOSE )
 			printVerbose(archive, "Loading system listfile", listfile);
 
-		SFileAddListFile(Archive, listfile);
+		SFileAddListFile(SArchive, listfile);
 
 	}
 
