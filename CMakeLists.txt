@@ -23,7 +23,14 @@ cmake_minimum_required(VERSION 2.6)
 option(WITH_CMD "Enable smpq console application" ON)
 option(WITH_KDE "Enable KDE4 kio_smpq plugin" ON)
 
-# TODO: Find StormLib in system
+find_path(STORMLIB_INCLUDE_DIR StormLib.h)
+find_library(STORMLIB_LIBRARY NAMES StormLib)
+
+if(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
+	message(FATAL "StormLib header or library not found")
+endif(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
+
+include_directories(${STORMLIB_INCLUDE_DIR})
 
 set(smpq_SRCS
 	append.cpp
@@ -43,7 +50,7 @@ set(kio_smpq_SRCS
 if(WITH_CMD)
 
 	add_executable(smpq ${smpq_SRCS})
-	target_link_libraries(smpq StormLib)
+	target_link_libraries(smpq ${STORMLIB_LIBRARY})
 	install(TARGETS smpq DESTINATION bin)
 
 endif(WITH_CMD)
@@ -56,7 +63,7 @@ if(WITH_KDE)
 	include_directories(${KDE4_INCLUDES})
 
 	kde4_add_plugin(kio_smpq ${kio_smpq_SRCS})
-	target_link_libraries(kio_smpq ${KDE4_KIO_LIBS} StormLib)
+	target_link_libraries(kio_smpq ${KDE4_KIO_LIBS} ${STORMLIB_LIBRARY})
 
 	install(TARGETS kio_smpq DESTINATION ${PLUGIN_INSTALL_DIR})
 	install(FILES smpq.protocol DESTINATION ${SERVICES_INSTALL_DIR})
