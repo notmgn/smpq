@@ -113,7 +113,9 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 	if ( ! SFileOpenArchive(archive, 0, SFlags, &SArchive) ) {
 
-		printError(archive, "Cannot open archive", archive, GetLastError());
+		if ( ! ( flags & QUIET ) )
+			printError(archive, "Cannot open archive", archive, GetLastError());
+
 		return -1;
 
 	}
@@ -141,8 +143,11 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 		if ( ! SFileOpenPatchArchive(SArchive, parchive, prefix, 0) ) {
 
+			if ( ! ( flags & QUIET ) )
+				printError(archive, "Cannot open patched archive", parchive, GetLastError());
+
 			SFileCloseArchive(SArchive);
-			printError(archive, "Cannot open patched archive", parchive, GetLastError());
+
 			return -1;
 
 		}
@@ -224,10 +229,14 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 			if ( ! SFileOpenFileEx(SArchive, SFileName, SFlags, &SFile) ) {
 
-				if ( flags & INDEX )
-					printError(archive, "Cannot open file in archive with index", SFileName, GetLastError());
-				else
-					printError(archive, "Cannot open file in archive", SFileName, GetLastError());
+				if ( ! ( flags & QUIET ) ) {
+
+					if ( flags & INDEX )
+						printError(archive, "Cannot open file in archive with index", SFileName, GetLastError());
+					else
+						printError(archive, "Cannot open file in archive", SFileName, GetLastError());
+
+				}
 
 				goto next;
 
@@ -260,8 +269,13 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 				if ( mkpath(fileDir, S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH) != 0 ) {
 
-					printError(archive, "Cannot create directory", fileDir, errno);
-					printError(archive, "Cannot extract file", fileName, ENOENT);
+					if ( ! ( flags & QUIET ) ) {
+
+						printError(archive, "Cannot create directory", fileDir, errno);
+						printError(archive, "Cannot extract file", fileName, ENOENT);
+
+					}
+
 					goto next;
 
 				}
@@ -272,14 +286,18 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 				if ( ! ( flags & OVERWRITE ) ) {
 
-					printError(archive, "Cannot extract file", fileName, EEXIST);
+					if ( ! ( flags & QUIET ) )
+						printError(archive, "Cannot extract file", fileName, EEXIST);
+
 					goto next;
 
 				}
 
 				if ( S_ISDIR(st.st_mode) ) {
 
-					printError(archive, "Cannot extract file", fileName, EISDIR);
+					if ( ! ( flags & QUIET ) )
+						printError(archive, "Cannot extract file", fileName, EISDIR);
+
 					goto next;
 
 				}
@@ -289,7 +307,9 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 				if ( unlink(fileName) != 0 ) {
 
-					printError(archive, "Cannot remove existing file", fileName, errno);
+					if ( ! ( flags & QUIET ) )
+						printError(archive, "Cannot remove existing file", fileName, errno);
+
 					goto next;
 
 				}
@@ -300,7 +320,9 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 			if ( ! file ) {
 
-				printError(archive, "Cannot open file", fileName, errno);
+				if ( ! ( flags & QUIET ) )
+					printError(archive, "Cannot open file", fileName, errno);
+
 				goto next;
 
 			}
@@ -315,7 +337,9 @@ int extract(const char * archive, const char * const files[], int flags, const c
 				       
 					if ( ! eof ) {
 
-						printError(archive, "Cannot read file", SFileName, GetLastError());
+						if ( ! ( flags & QUIET ) )
+							printError(archive, "Cannot read file", SFileName, GetLastError());
+
 						break;
 
 					}
@@ -324,7 +348,9 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 				if ( fwrite(buffer, 1, bytes, file) != bytes ) {
 
-					printError(archive, "Cannot write file", fileName, errno);
+					if ( ! ( flags & QUIET ) )
+						printError(archive, "Cannot write file", fileName, errno);
+
 					break;
 
 				}

@@ -47,7 +47,9 @@ int remove(const char * archive, const char * const files[], int flags, const ch
 
 	if ( ! SFileOpenArchive(archive, 0, SFlags, &SArchive) ) {
 
-		printError(archive, "Cannot open archive", archive, GetLastError());
+		if ( ! ( flags & QUIET ) )
+			printError(archive, "Cannot open archive", archive, GetLastError());
+
 		return -1;
 
 	}
@@ -80,10 +82,14 @@ int remove(const char * archive, const char * const files[], int flags, const ch
 
 		if ( ! SFileRemoveFile(SArchive, SFileName, SFlags) ) {
 
-			if ( flags & INDEX )
-				printError(archive, "Cannot remove existing file with index", SFileName, GetLastError());
-			else
-				printError(archive, "Cannot remove existing file", SFileName, GetLastError());
+			if ( ! ( flags & QUIET ) ) {
+
+				if ( flags & INDEX )
+					printError(archive, "Cannot remove existing file with index", SFileName, GetLastError());
+				else
+					printError(archive, "Cannot remove existing file", SFileName, GetLastError());
+
+			}
 
 			continue;
 
@@ -102,7 +108,8 @@ int remove(const char * archive, const char * const files[], int flags, const ch
 			printVerbose(archive, "Compact archive", archive);
 
 		if ( ! SFileCompactArchive(SArchive, listfile, 0) )
-			printError(archive, "Cannot compact archive", archive, GetLastError());
+			if ( ! ( flags & QUIET ) )
+				printError(archive, "Cannot compact archive", archive, GetLastError());
 
 		SFileFlushArchive(SArchive);
 

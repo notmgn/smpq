@@ -101,12 +101,16 @@ int append(const char * archive, const char * const files[], int flags, int loca
 				SCompFlags |= MPQ_COMPRESSION_SPARSE | MPQ_COMPRESSION_BZIP2 | MPQ_COMPRESSION_PKWARE;
 			else if ( strcasecmp(compression, "choose") == 0 ) {
 
-				printError(archive, "Choose the best compression is not implemented yet", compression, EINVAL);
+				if ( ! ( flags & QUIET ) )
+					printError(archive, "Choose the best compression is not implemented yet", compression, EINVAL);
+
 				return -1;
 
 			} else {
 
-				printError(archive, "Specified unknow compression method", compression, EINVAL);
+				if ( ! ( flags & QUIET ) )
+					printError(archive, "Specified unknow compression method", compression, EINVAL);
+
 				return -1;
 
 			}
@@ -128,7 +132,9 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 			if ( unlink(archive) != 0 ) {
 
-				printError(archive, "Cannot remove existing archive", archive, errno);
+				if ( ! ( flags & QUIET ) )
+					printError(archive, "Cannot remove existing archive", archive, errno);
+
 				return -1;
 
 			}
@@ -150,7 +156,9 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 		if ( ! SFileCreateArchive(archive, SOpenFlags, hashTableSize, &SArchive) ) {
 
-			printError(archive, "Cannot create archive", archive, GetLastError());
+			if ( ! ( flags & QUIET ) )
+				printError(archive, "Cannot create archive", archive, GetLastError());
+
 			return -1;
 
 		}
@@ -170,7 +178,9 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 		if ( ! SFileOpenArchive(archive, 0, SOpenFlags, &SArchive) ) {
 
-			printError(archive, "Cannot open archive", archive, GetLastError());
+			if ( ! ( flags & QUIET ) )
+				printError(archive, "Cannot open archive", archive, GetLastError());
+
 			return -1;
 
 		}
@@ -197,14 +207,18 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 		if ( strlen(SFileName) == 16 && strncasecmp(SFileName, "File", 4) == 0 && SFileName[12] == '.' ) {
 
-			printError(archive, "File with mask `File????????.???\' is not allowed. Cannot create new file", SFileName, EPERM);
+			if ( ! ( flags & QUIET ) )
+				printError(archive, "File with mask `File????????.???\' is not allowed. Cannot create new file", SFileName, EPERM);
+
 			continue;
 
 		}
 
 		if ( strcasecmp(SFileName, "(listfile)") == 0 || strcasecmp(SFileName, "(signature)") == 0 || strcasecmp(SFileName, "(attributes)") == 0 ) {
 
-			printError(archive, "Files `(listfile)' `(signature)' `(attributes)' are for internal usage. Cannot create new file", SFileName, EPERM);
+			if ( ! ( flags & QUIET ) )
+				printError(archive, "Files `(listfile)' `(signature)' `(attributes)' are for internal usage. Cannot create new file", SFileName, EPERM);
+
 			continue;
 
 		}
@@ -213,7 +227,9 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 		if ( ! file ) {
 
-			printError(archive, "Cannot open file", fileName, errno);
+			if ( ! ( flags & QUIET ) )
+				printError(archive, "Cannot open file", fileName, errno);
+
 			continue;
 
 		}
@@ -227,7 +243,9 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 		if ( stat(fileName, &st) == -1 ) {
 
-			printError(archive, "Cannot stat file", fileName, errno);
+			if ( ! ( flags & QUIET ) )
+				printError(archive, "Cannot stat file", fileName, errno);
+
 			fclose(file);
 			continue;
 
@@ -237,7 +255,9 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 		if ( ! SFileCreateFile(SArchive, SFileName, SFileTime, fileSize, locale, SFlags, &SFile) ) {
 
-			printError(archive, "Cannot create new file", SFileName, GetLastError());
+			if ( ! ( flags & QUIET ) )
+				printError(archive, "Cannot create new file", SFileName, GetLastError());
+
 			fclose(file);
 			continue;
 
@@ -249,14 +269,18 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 			if ( ferror(file) ) {
 
-				printError(archive, "Cannot read file", fileName, errno);
+				if ( ! ( flags & QUIET ) )
+					printError(archive, "Cannot read file", fileName, errno);
+
 				break;
 
 			}
 
 			if ( ! SFileWriteFile(SFile, buffer, bytes, SCompFlags) ) {
 
-				printError(archive, "Cannot write file new", SFileName, GetLastError());
+				if ( ! ( flags & QUIET ) )
+					printError(archive, "Cannot write file new", SFileName, GetLastError());
+
 				break;
 
 			}
