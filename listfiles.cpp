@@ -23,20 +23,73 @@
 extern "C" {
 ///
 
-#if defined(WIN32) || defined(_MSC_VER)
-void systemListfiles(HANDLE SArchive, const char * archive, int flags) { (void)SArchive; (void)archive; (void)flags; }
-#else
-
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <dirent.h>
+#include <string.h>
 #include <stdlib.h>
+
+#if defined(WIN32) || defined(_MSC_VER)
+
+static inline char * dirname(char * path) {
+	    
+	static char drive[_MAX_DRIVE+_MAX_DIR];
+	static char dir[_MAX_DIR];
+
+	_splitpath(path, drive, dir, NULL, NULL);
+	strcat(drive, dir);
+
+	return drive;
+}
+
+#else
+
+#include <dirent.h>
+
+#endif
 
 #include "common.h"
 
-#define LISTPATH "/usr/share/stormlib"
-
 void systemListfiles(HANDLE SArchive, const char * archive, int flags) {
+
+#if defined(WIN32) || defined(_MSC_VER)
+
+	char processPath[512];
+	GetModuleFileName(GetModuleHandle(NULL), processPath, sizeof(processPath));
+	const char * LISTPATH = dirname(processPath);
+
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hFind;
+
+	hFind = FindFirstFile(LISTPATH, &FindFileData);
+
+	if ( hFind == INVALID_HANDLE_VALUE )
+		return;
+
+	while ( true ) {
+
+		if ( FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
+			continue;
+
+		char listfile[strlen(LISTPATH) + strlen(FindFileData.cFileName) + 2];
+
+		strcpy(listfile, LISTPATH);
+		strcpy(listfile+strlen(LISTPATH) + 1, FindFileData.cFileName);
+		listfile[strlen(LISTPATH)] = '\\';
+
+		if ( flags & VERBOSE )
+			printVerbose(archive, "Loading system listfile", listfile);
+
+		SFileAddListFile(SArchive, listfile);
+
+		if ( ! FindNextFile(hFind, &FindFileData) )
+			break;
+
+	}
+
+
+#else
+
+#define LISTPATH "/usr/share/stormlib"
 
 	DIR * dir = opendir(LISTPATH);
 
@@ -71,9 +124,9 @@ void systemListfiles(HANDLE SArchive, const char * archive, int flags) {
 
 	}
 
-}
-
 #endif
+
+}
 
 ///
 }

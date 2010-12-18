@@ -21,10 +21,6 @@
 #include <string.h>
 #include <time.h>
 
-#if defined(WIN32) || defined(_MSC_VER)
-#include <windows.h>
-#endif
-
 #include "common.h"
 
 void printError(const char * archive, const char * message, const char * file, int errnum) {
