@@ -23,21 +23,8 @@
 extern "C" {
 ///
 
-#if defined(WIN32) || defined(_MSC_VER)
-
-#include <direct.h>
-#include <io.h>
-
-#define mkdir(dir,) _mkdir(dir)
-
-#else
-
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <libgen.h>
-
-#endif
-
 #include <errno.h>
 #include <string.h>
 #include <time.h>
@@ -45,9 +32,34 @@ extern "C" {
 #include <stdlib.h>
 #include <stdio.h>
 
+#if defined(WIN32) || defined(_MSC_VER)
+
+#include <direct.h>
+#include <io.h>
+
+#define mkdir _mkdir
+#define stat _stat
+
+static inline char * dirname(char * path) {
+	
+	static char drive[_MAX_DRIVE+_MAX_DIR];
+	static char dir[_MAX_DIR];
+
+	_splitpath(path, drive, dir, NULL, NULL);
+	strcat(drive, dir);
+
+	return drive;
+}
+
+#else
+
+#include <libgen.h>
+
+#endif
+
 #include "common.h"
 
-static int mkpath(const char * s, mode_t mode) {
+static int mkpath(const char * s) {
 
 	char * q = NULL;
 	char * r = NULL;
@@ -75,10 +87,14 @@ static int mkpath(const char * s, mode_t mode) {
 	if ( ( up = strdup(r) ) == NULL )
 		return -1;
 
-	if ( ( mkpath(up, mode) == -1 ) && ( errno != EEXIST ) )
+	if ( ( mkpath(up) == -1 ) && ( errno != EEXIST ) )
 		goto out;
 
-	if ( ( mkdir(path, mode) != -1 ) || ( errno == EEXIST ) )
+#if defined(WIN32) || defined(_MSC_VER)
+	if ( ( mkdir(path) != -1 ) || ( errno == EEXIST ) )
+#else
+	if ( ( mkdir(path, S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH) != -1 ) || ( errno == EEXIST ) )
+#endif
 		rv = 0;
 
 out:
@@ -256,7 +272,7 @@ int extract(const char * archive, const char * const files[], int flags, const c
 				SFileGetFileName(SFile, mask);
 
 				unsigned int high = 0;
-				unsigned int low = SFileGetFileSize(SFile, &high);
+				unsigned int low = SFileGetFileSize(SFile, (DWORD*)&high);
 
 				SFileFindData.dwFileSize = low | ( (unsigned long long int)high << 32 );
 
@@ -338,7 +354,7 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 			if ( last != 0 ) {
 
-				if ( mkpath(fileDir, S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH) != 0 ) {
+				if ( mkpath(fileDir) != 0 ) {
 
 					if ( ! ( flags & QUIET ) ) {
 
@@ -402,7 +418,7 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 				int eof = 0;
 
-				if ( ! SFileReadFile(SFile, buffer, sizeof(buffer), &bytes, NULL) ) {
+				if ( ! SFileReadFile(SFile, buffer, sizeof(buffer), (DWORD *)&bytes, NULL) ) {
 
 					eof = GetLastError() == ERROR_HANDLE_EOF;
 				       
