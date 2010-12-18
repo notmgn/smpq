@@ -27,6 +27,12 @@ extern "C" {
 #include <sys/stat.h>
 #include <utime.h>
 #include <errno.h>
+#include <string.h>
+
+#if defined(WIN32) || defined(_MSC_VER)
+#define strcasecmp _stricmp
+#define strcasestr strstr
+#endif
 
 #include "common.h"
 

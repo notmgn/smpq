@@ -39,6 +39,8 @@ extern "C" {
 
 #define mkdir _mkdir
 #define stat _stat
+#define strcasecmp _stricmp
+#define strcasestr strstr
 
 static inline char * dirname(char * path) {
 	
