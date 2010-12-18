@@ -345,7 +345,7 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 
 	}
 
-	if ( archivePath == "(listfile)" || archivePath == "(signature)" || archivePath == "(attributes)" ) {
+	if ( archivePath == "(listfile)" || archivePath == "(signature)" || archivePath == "(attributes)" || archivePath.contains("(patch_metadata)") ) {
 
 		error(KIO::ERR_WRITE_ACCESS_DENIED, url.prettyUrl());
 		return;
@@ -468,7 +468,7 @@ void SMPQSlave::del(const KUrl &url, bool isfile) {
 	}
 
 	// Skip internal files in MPQ archive
-	if ( archivePath == "(listfile)" || archivePath == "(signature)" || archivePath == "(attributes)" ) {
+	if ( archivePath == "(listfile)" || archivePath == "(signature)" || archivePath == "(attributes)" || archivePath.contains("(patch_metadata)") ) {
 
 		error(KIO::ERR_WRITE_ACCESS_DENIED, url.prettyUrl());
 		return;
@@ -567,7 +567,7 @@ void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
 	}
 
 	// Skip internal files in MPQ archive
-	if ( destArchivePath == "(listfile)" || destArchivePath == "(signature)" || destArchivePath == "(attributes)" ) {
+	if ( destArchivePath == "(listfile)" || destArchivePath == "(signature)" || destArchivePath == "(attributes)" || destArchivePath.contains("(patch_metadata)") ) {
 
 		error(KIO::ERR_DOES_NOT_EXIST, dest.prettyUrl());
 		return;
@@ -952,7 +952,7 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 	// Skip internal files in MPQ archive
 	if ( myMode != 0 ) {
 		
-		if ( archivePath == "(listfile)" || archivePath == "(signature)" || archivePath == "(attributes)" ||
+		if ( archivePath == "(listfile)" || archivePath == "(signature)" || archivePath == "(attributes)" || archivePath.contains("(patch_metadata)") ||
 			( archivePath.size() == 16 && archivePath.left(4) == "File" && archivePath.at(12) == '.' ) ) {
 
 			error(KIO::ERR_WRITE_ACCESS_DENIED, url.prettyUrl());

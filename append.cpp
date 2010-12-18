@@ -214,10 +214,10 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 		}
 
-		if ( strcasecmp(SFileName, "(listfile)") == 0 || strcasecmp(SFileName, "(signature)") == 0 || strcasecmp(SFileName, "(attributes)") == 0 ) {
+		if ( strcasecmp(SFileName, "(listfile)") == 0 || strcasecmp(SFileName, "(signature)") == 0 || strcasecmp(SFileName, "(attributes)") == 0 || strcasestr(SFileName, "(patch_metadata)") == 0 ) {
 
 			if ( ! ( flags & QUIET ) )
-				printError(archive, "Files `(listfile)' `(signature)' `(attributes)' are for internal usage. Cannot create new file", SFileName, EPERM);
+				printError(archive, "Files `(listfile)' `(signature)' `(attributes)' `(patch_metadata)' are for internal usage. Cannot create new file", SFileName, EPERM);
 
 			continue;
 
