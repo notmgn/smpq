@@ -303,7 +303,7 @@ int extract(const char * archive, const char * const files[], int flags, const c
 			char buffer[0x10000];
 			size_t bytes = 1;
 
-			if ( strcasecmp(SFileName, "(listfile)") == 0 || strcasecmp(SFileName, "(signature)") == 0 || strcasecmp(SFileName, "(attributes)") == 0 || strcasestr(SFileName, "(patch_metadata)") == 0 )
+			if ( strcasecmp(SFileName, "(listfile)") == 0 || strcasecmp(SFileName, "(signature)") == 0 || strcasecmp(SFileName, "(attributes)") == 0 || strcasestr(SFileName, "(patch_metadata)") != NULL )
 				goto next;
 
 			fromArchivePath(fileName, SFileName);
