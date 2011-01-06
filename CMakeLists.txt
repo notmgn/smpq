@@ -43,15 +43,25 @@ set(smpq_SRCS
 	rename.cpp
 )
 
+set(smpq_mangen_SRCS
+	mangen.c
+)
+
 set(kio_smpq_SRCS
 	kio_smpq.cpp
 )
 
 if(WITH_CMD)
 
+	add_executable(mangen ${smpq_mangen_SRCS})
 	add_executable(smpq ${smpq_SRCS})
 	target_link_libraries(smpq ${STORMLIB_LIBRARY})
+
+	add_custom_command(OUTPUT smpq.1 COMMAND mangen > smpq.1 DEPENDS mangen)
+	add_custom_target(man ALL DEPENDS smpq.1)
+
 	install(TARGETS smpq DESTINATION bin)
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/smpq.1 DESTINATION share/man/man1)
 
 endif(WITH_CMD)
 
