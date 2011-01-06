@@ -65,25 +65,25 @@
 	"     -D, --deletion-marker         Set deletion marker\n" \
 	"     -U, --single-unit             Add file as single unit, cannot be encrypted\n" \
 	"     -C, --compression <method>    Compression method: (default ZLIB)\n" \
-	"          none                  None compression\n" \
-	"          IMPLODE               Pkware Data Compression IMPLODE method - OBSOLATE (It was used only in Diablo I)\n" \
-	"          HUFFMANN              Huffmann compression\n" \
-	"          ADPCM_MONO            IMA ADPCM compression for 1-channel (mono) WAVE files - Lossy compression, only for WAVE files (Now it is not used)\n" \
-	"          ADPCM_STEREO          IMA ADPCM compression for 2-channel (stereo) WAVE files - Lossy compression, only for WAVE files (Now it is not used)\n" \
-	"          ZLIB                  ZLIB compression\n" \
-	"          PKWARE                Pkware Data compression\n" \
-	"          BZIP2                 BZIP2 compression\n" \
-	"          SPARSE                SPARSE compression\n" \
-	"          LZMA                  LZMA compression\n" \
-	"          HUFFMANN+ADPCM_MONO   Together Huffmann and IMA ADPCM compression for 1-channel (mono) WAVE files\n" \
-	"          HUFFMANN+ADPCM_STEREO Together Huffmann and IMA ADPCM compression for 2-channel (stereo) WAVE files\n" \
-	"          ZLIB+PKWARE           Together ZLIB and Pkware Data compression\n" \
-	"          BZIP2+PKWARE          Together BZIP2 and Pkware Data compression\n" \
-	"          SPARSE+ZLIB           Together SPARSE and ZLIB compression\n" \
-	"          SPARSE+PKWARE         Together SPARSE and Pkware Data compression\n" \
-	"          SPARSE+BZIP2          Together SPARSE and BZIP2 compression\n" \
-	"          SPARSE+ZLIB+PKWARE    Together SPARSE, ZLIB and Pkware Data compression\n" \
-	"          SPARSE+BZIP2+PKWARE   Together SPARSE. BZIP2 and Pkware Data compression\n" \
+	"          none                   None compression\n" \
+	"          IMPLODE                Pkware Data Compression IMPLODE method - OBSOLATE (It was used only in Diablo I)\n" \
+	"          HUFFMANN               Huffmann compression\n" \
+	"          ADPCM_MONO             IMA ADPCM compression for 1-channel (mono) WAVE files - Lossy compression, only for WAVE files (Now it is not used)\n" \
+	"          ADPCM_STEREO           IMA ADPCM compression for 2-channel (stereo) WAVE files - Lossy compression, only for WAVE files (Now it is not used)\n" \
+	"          ZLIB                   ZLIB compression\n" \
+	"          PKWARE                 Pkware Data compression\n" \
+	"          BZIP2                  BZIP2 compression\n" \
+	"          SPARSE                 SPARSE compression\n" \
+	"          LZMA                   LZMA compression\n" \
+	"          HUFFMANN+ADPCM_MONO    Together Huffmann and IMA ADPCM compression for 1-channel (mono) WAVE files\n" \
+	"          HUFFMANN+ADPCM_STEREO  Together Huffmann and IMA ADPCM compression for 2-channel (stereo) WAVE files\n" \
+	"          ZLIB+PKWARE            Together ZLIB and Pkware Data compression\n" \
+	"          BZIP2+PKWARE           Together BZIP2 and Pkware Data compression\n" \
+	"          SPARSE+ZLIB            Together SPARSE and ZLIB compression\n" \
+	"          SPARSE+PKWARE          Together SPARSE and Pkware Data compression\n" \
+	"          SPARSE+BZIP2           Together SPARSE and BZIP2 compression\n" \
+	"          SPARSE+ZLIB+PKWARE     Together SPARSE, ZLIB and Pkware Data compression\n" \
+	"          SPARSE+BZIP2+PKWARE    Together SPARSE. BZIP2 and Pkware Data compression\n" \
 	"\n" \
 	"Options for deleting file(s) from archive:\n" \
 	"     -I, --index                   Specify file(s) by index(es) (not by name)\n" \
