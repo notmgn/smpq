@@ -21,11 +21,11 @@
 #include "main.c"
 #undef main
 
-int append(const char * archive, const char * const files[], int flags, int locale, int hashTableSize, const char * compression) {}
-int extract(const char * archive, const char * const files[], int flags, const char * listfile, int locale, const char * const parchives[]) {}
-int info(const char * archive) {}
-int remove(const char * archive, const char * const files[], int flags, const char * listfile, int locale) {}
-int rename(const char * archive, const char * oldName, const char * newName, int flags, const char * listfile, int locale) {}
+int append(const char * archive, const char * const files[], int flags, int locale, int hashTableSize, const char * compression) { (void)archive; (void)files; (void)flags; (void)locale; (void)hashTableSize; (void)compression; return 0; }
+int extract(const char * archive, const char * const files[], int flags, const char * listfile, int locale, const char * const parchives[]) { (void)archive; (void)files; (void)flags; (void)listfile; (void)locale; (void)parchives; return 0; }
+int info(const char * archive) { (void)archive; return 0; }
+int remove(const char * archive, const char * const files[], int flags, const char * listfile, int locale) { (void)archive; (void)files; (void)flags; (void)listfile; (void)locale; return 0; }
+int rename(const char * archive, const char * oldName, const char * newName, int flags, const char * listfile, int locale) { (void)archive; (void)oldName; (void)newName; (void)newName; (void)flags; (void)listfile; (void)locale; return 0; }
 
 #include <stdio.h>
 #include <string.h>
@@ -36,7 +36,7 @@ int main() {
 
 	printf(".TH SMPQ 1 \"Dec 2010\" \"smpq - StormLib MPQ archiving utility, version " VERSION "\"\n");
 
-	char * start = HELP;
+	char * start = (char *)HELP;
 	char * end = start;
 	char * len = start + strlen(HELP) + 1;
 
