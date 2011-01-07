@@ -101,9 +101,10 @@ int append(const char * archive, const char * const files[], int flags, int loca
  * file names must be stored in other list text file (MPQ archives does not support directory structures, so for this is used standard
  * windows separator = char backslash '\'). So SFileFindFirstFile only tries check if file witch given name from list is correct
  * for stored hashes. When we use more patched archives it is normal that file with same name is in more patched archives (so search
- * function return one file name more times). To prevent extracting one file more times, smpq use struct trie for quick insert and check
- * if file name (witch path) is in archive. When is needed to extract file with long path, it is used function mkpath recursive create
- * needed directories (if does not exist).
+ * function return one file name more times). To prevent extracting one file more times, smpq remember extracted files. For this is used
+ * dictionary struct trie, which spend linear time (of path) for remeber file and linear time too for check if file is in this structre
+ * (if file was extracted). When is needed to extract file with long path and subdirs does not exist, smpq will use function mkpath,
+ * which recursive create needed directories (find separator '/').
  */
 int extract(const char * archive, const char * const files[], int flags, const char * listfile, int locale, const char * const parchives[]);
 
@@ -153,6 +154,11 @@ void printVerbose(const char * archive, const char * message, const char * file)
  * Functions for FILETIME conversion *
  *************************************/
 
+/**
+ * MPQ archives stores modification time of files in FILETIME format.
+ * These function convert FILETIME to/from Unix timestamp which is default format
+ */
+
 #define OFFSET 116444736000000000ULL /* Number of 100 ns units between 01/01/1601 and 01/01/1970 */
 #define NSEC 10000000ULL /* Convert 100 ns to sec */
 
@@ -187,6 +193,12 @@ static inline int fromFileTime(time_t * to, unsigned long long int from) {
 /**********************************************
  * Functions for path conversation in archive *
  **********************************************/
+
+/**
+ * MPQ archives does not support directory structures. Instead it store full path to file in file name
+ * As default MPQ archives are designed for Windows, so dir separator is backslash character.
+ * These functions convert Windows file path to/from Unix
+ */
 
 /* Replace all chars '/' in path to '\\' on other OS than Windows */
 static inline void toArchivePath(char * to, const char * from) {
