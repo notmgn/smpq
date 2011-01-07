@@ -154,16 +154,16 @@ int append(const char * archive, const char * const files[], int flags, int loca
 		int SOpenFlags = 0;
 
 		if ( flags & MPQ_VERSION_1 )
-			SFlags |= MPQ_CREATE_ARCHIVE_V1;
+			SOpenFlags |= MPQ_CREATE_ARCHIVE_V1;
 		else if ( flags & MPQ_VERSION_2 )
-			SFlags |= MPQ_CREATE_ARCHIVE_V2;
+			SOpenFlags |= MPQ_CREATE_ARCHIVE_V2;
 		else if ( flags & MPQ_VERSION_3 )
-			SFlags |= MPQ_CREATE_ARCHIVE_V3;
+			SOpenFlags |= MPQ_CREATE_ARCHIVE_V3;
 		else
-			SFlags |= MPQ_CREATE_ARCHIVE_V4;
+			SOpenFlags |= MPQ_CREATE_ARCHIVE_V4;
 
 		if ( ! ( flags & NO_ATTRIBUTES ) )
-			SFlags |= MPQ_CREATE_ATTRIBUTES;
+			SOpenFlags |= MPQ_CREATE_ATTRIBUTES;
 
 		if ( ! SFileCreateArchive(archive, SOpenFlags, hashTableSize, &SArchive) ) {
 
@@ -179,13 +179,13 @@ int append(const char * archive, const char * const files[], int flags, int loca
 		int SOpenFlags = 0;
 
 		if ( flags & NO_LISTFILE )
-			SFlags |= MPQ_OPEN_NO_LISTFILE;
+			SOpenFlags |= MPQ_OPEN_NO_LISTFILE;
 
 		if ( flags & NO_ATTRIBUTES )
-			SFlags |= MPQ_OPEN_NO_ATTRIBUTES;
+			SOpenFlags |= MPQ_OPEN_NO_ATTRIBUTES;
 
 		if ( flags & MPQ_VERSION_1 )
-			SFlags |= MPQ_OPEN_FORCE_MPQ_V1;
+			SOpenFlags |= MPQ_OPEN_FORCE_MPQ_V1;
 
 		if ( ! SFileOpenArchive(archive, 0, SOpenFlags, &SArchive) ) {
 
