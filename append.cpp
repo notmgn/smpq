@@ -134,7 +134,8 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 		if ( ( flags & OVERWRITE ) && stat(archive, &st) == 0 ) {
 
-			printVerbose(archive, "Remove old archive", archive);
+			if ( flags & VERBOSE )
+				printVerbose(archive, "Remove old archive", archive);
 
 			if ( unlink(archive) != 0 ) {
 
