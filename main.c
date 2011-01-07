@@ -48,9 +48,13 @@
 	"Options:\n" \
 	"     -L, --listfile <file>         Additional external listfile (not used when appending file)\n" \
 	"     -n, --no-system-listfiles     Do not load system listfile(s) (not used when appending file)\n" \
-	"     -N, --no-archive-listfile     Do not use/create archive listfile (no file names will be read/stored)\n" \
+	"     -N, --no-archive-listfile     Do not use/create archive listfile (file names will not be read/stored)\n" \
 	"     -A, --no-attributes           Do not allow using file attributes (time, checksum, hash)\n" \
-	"     -M, --mpq-version-1           Use MPQ archive version 1 (default: use new version 2)\n" \
+	"     -M, --mpq-version <version>   Specify MPQ archive version: (default: use new version 4)\n" \
+	"          1  support up to 4GB size of archive \n" \
+	"          2  support greater then 4GB size of archive (Introduced in World of Warcraft: The Burning Crusade)\n" \
+	"          3  (Introduced in World of Warcraft: Cataclysm Beta)\n" \
+	"          4  (Introduced in World of Warcraft: Cataclysm)\n" \
 	"     -S, --sector-crc              Store/Check CRC for each sector, ignored if file has none compression or is single unit\n" \
 	"     -q, --quiet                   Be quiet, do not show any output\n" \
 	"     -f, -o, --force, --overwrite  Enable overwrite file(s)\n" \
@@ -67,14 +71,15 @@
 	"     -C, --compression <method>    Compression method: (default ZLIB)\n" \
 	"          none                   None compression\n" \
 	"          IMPLODE                Pkware Data Compression IMPLODE method - OBSOLATE (It was used only in Diablo I)\n" \
-	"          HUFFMANN               Huffmann compression\n" \
+	"          PKWARE                 Pkware Data compression\n" \
+	"          HUFFMANN               Huffmann compression (Introduced in Starcraft I)\n" \
 	"          ADPCM_MONO             IMA ADPCM compression for 1-channel (mono) WAVE files - Lossy compression, only for WAVE files (Now it is not used)\n" \
 	"          ADPCM_STEREO           IMA ADPCM compression for 2-channel (stereo) WAVE files - Lossy compression, only for WAVE files (Now it is not used)\n" \
-	"          ZLIB                   ZLIB compression\n" \
-	"          PKWARE                 Pkware Data compression\n" \
-	"          BZIP2                  BZIP2 compression\n" \
-	"          SPARSE                 SPARSE compression\n" \
-	"          LZMA                   LZMA compression\n" \
+	"          ZLIB                   ZLIB compression (Introduced in Warcraft III)\n" \
+	"          BZIP2                  BZIP2 compression (Introduced in World of Warcraft: The Burning Crusade)\n" \
+	"          SPARSE                 SPARSE compression (Introduced in Starcraft II)\n" \
+	"          LZMA                   LZMA compression (Introduced in Starcraft II)\n" \
+	"\n" \
 	"          HUFFMANN+ADPCM_MONO    Together Huffmann and IMA ADPCM compression for 1-channel (mono) WAVE files\n" \
 	"          HUFFMANN+ADPCM_STEREO  Together Huffmann and IMA ADPCM compression for 2-channel (stereo) WAVE files\n" \
 	"          ZLIB+PKWARE            Together ZLIB and Pkware Data compression\n" \
@@ -90,6 +95,7 @@
 	"\n" \
 	"Options for extracting file(s) from archive:\n" \
 	"     -I, --index                   Specify file(s) by index(es) (not by name)\n" \
+	"     -X, --encrypted               Extract file(s) from encrypted archive (Used in Starcraft II installation)\n" \
 	"     -p                            Open more (patched) archives with directory prefix (prefix:archive), when file is in more archives, will be extracted from last\n" \
 	"          Usage with more (patched) archives: %s -l|-x [options] [archive] -p [prefix1:parchive1] [prefix2:archive2] ... -- [files]\n" \
 	""
@@ -139,7 +145,8 @@ static void parse(char c) {
 			break;
 
 		case 'M':
-			flags |= MPQ_VERSION_1;
+			flags |= MPQ_VERSION;
+			skip = MPQ_VERSION_ARG;
 			break;
 
 		case 'S':
@@ -197,6 +204,10 @@ static void parse(char c) {
 
 		case 'p':
 			flags |= PATCHED;
+			break;
+
+		case 'X':
+			flags |= ENCRYPTED;
 			break;
 
 		case 'c':
@@ -309,7 +320,7 @@ int main(int argc, char * argv[]) {
 				parse('N');
 			else if ( strcmp(argv[i], "--no-attributes") == 0 )
 				parse('A');
-			else if ( strcmp(argv[i], "--mpq-version-1") == 0 )
+			else if ( strcmp(argv[i], "--mpq-version") == 0 )
 				parse('M');
 			else if ( strcmp(argv[i], "--sector-crc") == 0 )
 				parse('S');
@@ -335,6 +346,8 @@ int main(int argc, char * argv[]) {
 				parse('C');
 			else if ( strcmp(argv[i], "--index") == 0 )
 				parse('I');
+			else if ( strcmp(argv[i], "--encrypted") == 0 )
+				parse('X');
 			else {
 				fprintf(stderr, "%s Error: unknown option/action %s specified\n", app, argv[i]);
 				return -1;
@@ -362,6 +375,37 @@ int main(int argc, char * argv[]) {
 		return -1;
 
 	}
+
+	int mpq_version = 4;
+
+	if ( flags & MPQ_VERSION ) {
+
+		if ( skipArg[MPQ_VERSION_ARG] > argc-1 || skipArg[MPQ_VERSION_ARG] == 0 ) {
+ 
+			fprintf(stderr, "%s Error: No MPQ archive version specified\n", app);
+			return -1;
+ 
+		}
+ 
+		mpq_version = atoi(argv[skipArg[MPQ_VERSION_ARG]]);
+
+		if ( mpq_version < 1 || mpq_version > 4 ) {
+
+			fprintf(stderr, "%s Error: Unsupported MPQ archive version specified\n", app);
+			return -1;
+
+		}
+
+	}
+
+	if ( mpq_version == 1 )
+		flags |= MPQ_VERSION_1;
+	else if ( mpq_version == 2 )
+		flags |= MPQ_VERSION_2;
+	else if ( mpq_version == 3 )
+		flags |= MPQ_VERSION_3;
+	else if ( mpq_version == 4 )
+		flags |= MPQ_VERSION_4;
 
 	char * listfile = NULL;
 

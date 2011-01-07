@@ -33,9 +33,9 @@ typedef void * HANDLE;
 #define remove _smpq_remove
 #define rename _smpq_rename
 
-/**
- * Flags
- */
+/*********
+ * Flags *
+ *********/
 
 #define CREATE		1 << 0
 #define LIST		1 << 0
@@ -46,59 +46,99 @@ typedef void * HANDLE;
 #define NO_SYSTEM_LF	1 << 3
 #define NO_LISTFILE	1 << 4
 #define NO_ATTRIBUTES	1 << 5
-#define MPQ_VERSION_1	1 << 6
-#define SECTOR_CRC	1 << 7
-#define QUIET		1 << 8
-#define OVERWRITE	1 << 9
-#define VERBOSE		1 << 10
-#define INDEX		1 << 11
-#define PATCHED		1 << 12
+#define MPQ_VERSION	1 << 6
+#define MPQ_VERSION_1	1 << 7
+#define MPQ_VERSION_2	1 << 8
+#define MPQ_VERSION_3	1 << 9
+#define MPQ_VERSION_4	1 << 10
+#define SECTOR_CRC	1 << 11
+#define QUIET		1 << 12
+#define OVERWRITE	1 << 13
+#define VERBOSE		1 << 14
+#define INDEX		1 << 15
+#define PATCHED		1 << 16
 
 /* Append file */
-#define HASH_SIZE	1 << 19
-#define ENCRYPT		1 << 20
-#define FIX_KEY		1 << 21
-#define DELETE_MARKER	1 << 22
-#define SINGLE_UNIT	1 << 23
-#define COMPRESSION	1 << 24
+#define HASH_SIZE	1 << 20
+#define ENCRYPT		1 << 21
+#define FIX_KEY		1 << 22
+#define DELETE_MARKER	1 << 23
+#define SINGLE_UNIT	1 << 24
+#define COMPRESSION	1 << 25
+#define ENCRYPTED	1 << 26
 
 #define LOCALE_ARG	1
-#define LISTFILE_ARG	2
-#define HASH_SIZE_ARG	3
-#define COMPRESSION_ARG	4
+#define MPQ_VERSION_ARG	2
+#define LISTFILE_ARG	3
+#define HASH_SIZE_ARG	4
+#define COMPRESSION_ARG	5
 
-/**
- * Variables
- */
+/*************
+ * Variables *
+ *************/
 
 /* Application name */
 extern char * app;
 
-/**
- * Functions for manipulating with MPQ archive
- */
+/***********************************************
+ * Functions for manipulating with MPQ archive *
+ ***********************************************/
 
-/* Create new archive and/or append files to archive */
+/**
+ * Create new archive and/or append file(s) to archive
+ *
+ * Internaly this function calls SFileCreateArchive or SFileOpenArchive for getting access to archive.
+ * For each file check if it has correct name and calls SFileCreateFile. Next it uses SFileWriteFile for writing file data to archive.
+ */
 int append(const char * archive, const char * const files[], int flags, int locale, int hashTableSize, const char * compression);
 
-/* Extract or print list files from archive */
+/**
+ * Extract or print list files from archive
+ *
+ * Internaly this function open archive throw SFileOpenArchive and append all patched archives to memmory by calling SFileOpenPatchArchive
+ * For each file mask it calls SFileFindFirstFile. Is return first (and then continue searching) valid file with mask and then it try
+ * extract using functions SFileOpenFileEx and SFileReadFile. MPQ archives does not have stored real filenames (only hashes) so original
+ * file names must be stored in other list text file (MPQ archives does not support directory structures, so for this is used standard
+ * windows separator = char backslash '\'). So SFileFindFirstFile only tries check if file witch given name from list is correct
+ * for stored hashes. When we use more patched archives it is normal that file with same name is in more patched archives (so search
+ * function return one file name more times). To prevent extracting one file more times, smpq use struct trie for quick insert and check
+ * if file name (witch path) is in archive. When is needed to extract file with long path, it is used function mkpath recursive create
+ * needed directories (if does not exist).
+ */
 int extract(const char * archive, const char * const files[], int flags, const char * listfile, int locale, const char * const parchives[]);
 
-/* Show info about archive */
+/**
+ * Show info about archive
+ *
+ * Internaly this function only calls StormLib GetInfo function.
+ */
 int info(const char * archive);
 
-/* Remove file(s) from archive */
+/**
+ * Remove file(s) from archive
+ *
+ * Internaly this function only calls for each specified file SFileRemoveFile if exist.
+ */
 int remove(const char * archive, const char * const files[], int flags, const char * listfile, int locale);
 
-/* Rename file in archive */
+/**
+ * Rename file in archive
+ *
+ * Internaly this function only calls for each specified file SFileRenameFile if exist.
+ */
 int rename(const char * archive, const char * oldName, const char * newName, int flags, const char * listfile, int locale);
 
-/* Load system listfiles for archive to memory */
+/**
+ * Load system listfiles for archive to memory
+ *
+ * Internaly this function looks for all *.txt files in system StormLib directory and tries load all text list files to memory
+ * by calling SFileAddListFile. On Windows is this directory same with directory where are smpq executable.
+ */
 void systemListfiles(HANDLE SArchive, const char * archive, int flags);
 
-/**
- * Functions for output
- */
+/************************
+ * Functions for output *
+ ************************/
 
 /* Print formatted error message */
 void printError(const char * archive, const char * file, const char * message, int errnum);
@@ -109,9 +149,9 @@ void printVerbose(const char * archive, const char * message, const char * file)
 /* Print normal message */
 #define printMessage(message, ...) do { printf(message "\n", ##__VA_ARGS__); fflush(stdout); } while (0)
 
-/**
- * Functions for FILETIME conversion
- */
+/*************************************
+ * Functions for FILETIME conversion *
+ *************************************/
 
 #define OFFSET 116444736000000000ULL /* Number of 100 ns units between 01/01/1601 and 01/01/1970 */
 #define NSEC 10000000ULL /* Convert 100 ns to sec */
@@ -144,11 +184,11 @@ static inline int fromFileTime(time_t * to, unsigned long long int from) {
 #undef OFFSET
 #undef NSEC
 
-/**
- * Functions for path conversation in archive
- */
+/**********************************************
+ * Functions for path conversation in archive *
+ **********************************************/
 
-/* Replace all chars '/' in path to '\\' */
+/* Replace all chars '/' in path to '\\' on other OS than Windows */
 static inline void toArchivePath(char * to, const char * from) {
 
 #if defined(WIN32) || defined(_MSC_VER)
@@ -173,7 +213,7 @@ static inline void toArchivePath(char * to, const char * from) {
 
 }
 
-/* Replace all chars '\\' in path to '/' */
+/* Replace all chars '\\' in path to '/' on other OS than Windows */
 static inline void fromArchivePath(char * to, const char * from) {
 
 #if defined(WIN32) || defined(_MSC_VER)

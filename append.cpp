@@ -154,8 +154,12 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 		if ( flags & MPQ_VERSION_1 )
 			SFlags |= MPQ_CREATE_ARCHIVE_V1;
-		else
+		else if ( flags & MPQ_VERSION_2 )
 			SFlags |= MPQ_CREATE_ARCHIVE_V2;
+		else if ( flags & MPQ_VERSION_3 )
+			SFlags |= MPQ_CREATE_ARCHIVE_V3;
+		else
+			SFlags |= MPQ_CREATE_ARCHIVE_V4;
 
 		if ( ! ( flags & NO_ATTRIBUTES ) )
 			SFlags |= MPQ_CREATE_ATTRIBUTES;

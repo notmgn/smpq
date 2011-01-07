@@ -144,7 +144,7 @@ static void trie_add(const struct trie * tr, const char * str) {
 
 	for ( i = 0; i < strlen(str); ++i ) {
 
-	if ( ! t->t[(int)str[i]] )
+		if ( ! t->t[(int)str[i]] )
 			t->t[(int)str[i]] = (struct trie *)trie_alloc();
 
 		t = t->t[(int)str[i]];
@@ -192,6 +192,9 @@ int extract(const char * archive, const char * const files[], int flags, const c
 
 	if ( flags & SECTOR_CRC )
 		SFlags |= MPQ_OPEN_CHECK_SECTOR_CRC;
+
+	if ( flags & ENCRYPTED )
+		SFlags |= MPQ_OPEN_ENCRYPTED;
 
 	if ( ! SFileOpenArchive(archive, 0, SFlags, &SArchive) ) {
 
