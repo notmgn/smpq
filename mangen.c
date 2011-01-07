@@ -104,6 +104,8 @@ int main() {
 
 	}
 
+	printf("\n.SH AUTHOR\nSMPQ is written by Pali Rohár <pali.rohar@gmail.com>\n\n.SH LICENSE\nSMPQ is distributed under GNU GPL v3\n");
+
 	return 0;
 
 }
