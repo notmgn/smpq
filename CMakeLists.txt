@@ -28,6 +28,9 @@ find_library(STORMLIB_LIBRARY NAMES StormLib)
 
 if(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
 	message(FATAL "StormLib header or library not found")
+else(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
+	message(STATUS "Found StormLib header: ${STORMLIB_INCLUDE_DIR}/StormLib.h")
+	message(STATUS "Found StormLib library: ${STORMLIB_LIBRARY}")
 endif(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
 
 include_directories(${STORMLIB_INCLUDE_DIR})
