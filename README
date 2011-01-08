@@ -2,8 +2,19 @@
      About
 ================
 
-SMPQ is StormLib MPQ archiving utility. It is utility for manipulating
-Blizzard MPQ archives [1] which is using multiplatform C++ StormLib library [2].
+SMPQ is StormLib MPQ archiving utility. This utility is designed for full
+manipulating with Blizzard MPQ archives [1]. It supports extracting, appending,
+renaming and deleting files in MPQ archives. It also can create MPQ archive.
+SMPQ can access to different type of MPQ archives and version. It support
+encrypted, compressed, partial and patched MPQ archives with version 1-4.
+SMPQ is free opensource command line utility written in C/C++ which use
+multiplatform C++ StormLib library [2].
+
+Part of SMPQ is KDE4 KIO plugin which add support for all KDE4 applications
+(e.g. Konqueror, Dolphin, Kate, ... and all KDE4 open/save dialogs) access to
+MPQ archives like to directory or network drive (or FTP). This is simple way
+how to integrate MPQ support on KDE4 desktop (There is no need to use some MPQ
+viewer/editor. All KDE4 application can open MPQ archvies in read/write mode).
 
 Author: Pali Rohár <pali.rohar@gmail.com>
 Version: 1.0
@@ -14,7 +25,7 @@ Homepage: https://launchpad.net/smpq
   How to build
 ================
 
-1. Download StormLib
+1. Download StormLib [2]
 2. Download CMake
 
 $ mkdir -p build && cd build
