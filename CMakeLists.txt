@@ -70,10 +70,14 @@ if(WITH_KDE)
 	find_package(KDE4 REQUIRED)
 	include(KDE4Defaults)
 
+	set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+	set_target_properties(KDE4__kdecore PROPERTIES IMPORTED_LINK_INTERFACE_LIBRARIES_DEBIAN "Qt4::QtCore")
+	set_target_properties(KDE4__kio PROPERTIES IMPORTED_LINK_INTERFACE_LIBRARIES_DEBIAN "KDE4__kdecore")
+
 	include_directories(${KDE4_INCLUDES})
 
 	kde4_add_plugin(kio_smpq ${kio_smpq_SRCS})
-	target_link_libraries(kio_smpq ${KDE4_KIO_LIBS} ${STORMLIB_LIBRARY})
+	target_link_libraries(kio_smpq ${STORMLIB_LIBRARY} ${KDE4_KIO_LIBS})
 
 	install(TARGETS kio_smpq DESTINATION ${PLUGIN_INSTALL_DIR})
 	install(FILES smpq.protocol DESTINATION ${SERVICES_INSTALL_DIR})
