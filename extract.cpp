@@ -42,6 +42,10 @@ extern "C" {
 #define strcasecmp _stricmp
 #define strcasestr strstr
 
+#endif
+
+#ifdef _MSC_VER
+
 char * dirname(char *);
 
 #else

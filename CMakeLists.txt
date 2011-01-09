@@ -58,16 +58,16 @@ set(smpq_SRCS
 	rename.cpp
 )
 
-if(WIN32)
+if(MSVC)
 
 	set(smpq_SRCS
 		${smpq_SRCS}
 		dirname.c
 	)
 
-endif(WIN32)
+endif(MSVC)
 
-set(smpq_mangen_SRCS
+set(mangen_SRCS
 	mangen.c
 )
 
@@ -80,15 +80,15 @@ if(WITH_CMD)
 	add_executable(smpq ${smpq_SRCS})
 	target_link_libraries(smpq ${STORMLIB_LIBRARY})
 
-	if(WIN32)
+	if(WIN32 AND NOT MSVC)
 		set_target_properties(smpq PROPERTIES LINK_FLAGS -static)
-	endif(WIN32)
+	endif(WIN32 AND NOT MSVC)
 
 	install(TARGETS smpq DESTINATION bin)
 
 	if(NOT CMAKE_CROSSCOMPILING)
 
-		add_executable(mangen ${smpq_mangen_SRCS})
+		add_executable(mangen ${mangen_SRCS})
 		add_custom_command(OUTPUT smpq.1 COMMAND mangen > smpq.1 DEPENDS mangen)
 		add_custom_target(man ALL DEPENDS smpq.1)
 
