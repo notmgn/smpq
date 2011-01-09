@@ -31,7 +31,7 @@
 #define HELP \
 	"Usage: %s [action] [options] [archive] [files]\n" \
 	"\n" \
-	"smpq - StormLib MPQ archiving utility, version " VERSION "\n" \
+	"SMPQ - StormLib MPQ archiving utility, version " VERSION "\n" \
 	"\n" \
 	"Action:\n" \
 	"     -c, --create                  Create new archive with file(s)\n" \
@@ -97,11 +97,12 @@
 	"     -I, --index                   Specify file(s) by index(es) (not by name)\n" \
 	"     -X, --encrypted               Extract file(s) from encrypted archive (Used in Starcraft II installation)\n" \
 	"     -p                            Open more (patched) archives with directory prefix (prefix:archive), when file is in more archives, will be extracted from last\n" \
-	"          Usage with more (patched) archives: %s -l|-x [options] [archive] -p [prefix1:parchive1] [prefix2:archive2] ... -- [files]\n" \
+	"          Usage with more (patched) archives:\n" \
+	"            %s -l|-x [options] [archive] -p [prefix1:parchive1] [prefix2:archive2] ... -- [files]\n" \
 	""
 
 #define LICENSE \
-	"smpq - StormLib MPQ archiving utility, version " VERSION "\n" \
+	"SMPQ - StormLib MPQ archiving utility, version " VERSION "\n" \
 	"Copyright (C) 2010  Pali Rohár <pali.rohar@gmail.com>\n" \
 	"\n" \
 	"This program is free software: you can redistribute it and/or modify\n" \
@@ -115,7 +116,8 @@
 	"GNU General Public License for more details.\n" \
 	"\n" \
 	"You should have received a copy of the GNU General Public License\n" \
-	"along with this program.  If not, see <http://www.gnu.org/licenses/>.\n"
+	"along with this program.  If not, see <http://www.gnu.org/licenses/>.\n" \
+	""
 
 char * app;
 
@@ -259,7 +261,7 @@ static void parse(char c) {
 
 		case 'V':
 
-			printf(LICENSE);
+			printf(LICENSE "\n\nSMPQ use %s\n", StormLibCopyright);
 			exit(0);
 
 		default:

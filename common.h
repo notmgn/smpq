@@ -77,6 +77,9 @@ typedef void * HANDLE;
  * Variables *
  *************/
 
+/* StormLib copyright stored in StormLib library */
+extern char StormLibCopyright[];
+
 /* Application name */
 extern char * app;
 

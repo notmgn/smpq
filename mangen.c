@@ -21,6 +21,7 @@
 #include "main.c"
 #undef main
 
+char StormLibCopyright[] = { 0 };
 int append(const char * archive, const char * const files[], int flags, int locale, int hashTableSize, const char * compression) { (void)archive; (void)files; (void)flags; (void)locale; (void)hashTableSize; (void)compression; return 0; }
 int extract(const char * archive, const char * const files[], int flags, const char * listfile, int locale, const char * const parchives[]) { (void)archive; (void)files; (void)flags; (void)listfile; (void)locale; (void)parchives; return 0; }
 int info(const char * archive) { (void)archive; return 0; }
@@ -34,7 +35,7 @@ int rename(const char * archive, const char * oldName, const char * newName, int
 
 int main() {
 
-	printf(".TH SMPQ 1 \"Dec 2010\" \"smpq - StormLib MPQ archiving utility, version " VERSION "\"\n");
+	printf(".TH SMPQ 1 \"Dec 2010\" \"SMPQ - StormLib MPQ archiving utility, version " VERSION "\"\n");
 
 	char * start = (char *)HELP;
 	char * end = start;
@@ -54,7 +55,7 @@ int main() {
 			prints(next, end);
 			putchar('\n');
 
-		} else if ( strncmp(start, "smpq", 4) == 0 ) {
+		} else if ( strncmp(start, "SMPQ", 4) == 0 ) {
 
 			printf("\n.SH NAME\n");
 			prints(start, end);
