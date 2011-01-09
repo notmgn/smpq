@@ -32,6 +32,12 @@ if(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
 		message(FATAL_ERROR "StormLib header or library not found")
 	endif(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
 
+	try_compile(CHECK ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/check.cpp COMPILE_DEFINITIONS -I${STORMLIB_INCLUDE_DIR})
+
+	if(NOT CHECK)
+		message(FATAL_ERROR "Found old StormLib version")
+	endif(NOT CHECK)
+
 	message(STATUS "Found StormLib header: ${STORMLIB_INCLUDE_DIR}/StormLib.h")
 	message(STATUS "Found StormLib library: ${STORMLIB_LIBRARY}")
 
