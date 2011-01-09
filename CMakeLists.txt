@@ -23,14 +23,20 @@ cmake_minimum_required(VERSION 2.6)
 option(WITH_CMD "Enable smpq console application" ON)
 option(WITH_KDE "Enable KDE4 kio_smpq plugin" ON)
 
-find_path(STORMLIB_INCLUDE_DIR StormLib.h)
-find_library(STORMLIB_LIBRARY NAMES StormLib)
-
 if(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
-	message(FATAL "StormLib header or library not found")
-else(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
+
+	find_path(STORMLIB_INCLUDE_DIR StormLib.h)
+	find_library(STORMLIB_LIBRARY NAMES StormLib)
+
+	if(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
+		message(FATAL_ERROR "StormLib header or library not found")
+	endif(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
+
 	message(STATUS "Found StormLib header: ${STORMLIB_INCLUDE_DIR}/StormLib.h")
 	message(STATUS "Found StormLib library: ${STORMLIB_LIBRARY}")
+
+	mark_as_advanced(STORMLIB_INCLUDE_DIR STORMLIB_LIBRARY)
+
 endif(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
 
 include_directories(${STORMLIB_INCLUDE_DIR})
@@ -46,6 +52,15 @@ set(smpq_SRCS
 	rename.cpp
 )
 
+if(WIN32)
+
+	set(smpq_SRCS
+		${smpq_SRCS}
+		dirname.c
+	)
+
+endif(WIN32)
+
 set(smpq_mangen_SRCS
 	mangen.c
 )
@@ -56,15 +71,45 @@ set(kio_smpq_SRCS
 
 if(WITH_CMD)
 
-	add_executable(mangen ${smpq_mangen_SRCS})
 	add_executable(smpq ${smpq_SRCS})
 	target_link_libraries(smpq ${STORMLIB_LIBRARY})
 
-	add_custom_command(OUTPUT smpq.1 COMMAND mangen > smpq.1 DEPENDS mangen)
-	add_custom_target(man ALL DEPENDS smpq.1)
+	if(WIN32)
+		set_target_properties(smpq PROPERTIES LINK_FLAGS -static)
+	endif(WIN32)
 
 	install(TARGETS smpq DESTINATION bin)
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/smpq.1 DESTINATION share/man/man1)
+
+	if(NOT CMAKE_CROSSCOMPILING)
+
+		add_executable(mangen ${smpq_mangen_SRCS})
+		add_custom_command(OUTPUT smpq.1 COMMAND mangen > smpq.1 DEPENDS mangen)
+		add_custom_target(man ALL DEPENDS smpq.1)
+
+		install(FILES ${CMAKE_CURRENT_BINARY_DIR}/smpq.1 DESTINATION share/man/man1)
+
+	endif(NOT CMAKE_CROSSCOMPILING)
+
+	if(WIN32)
+
+		file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/COPYING DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+		set(MAKENSIS_FLAGS -NOCD ${CMAKE_CURRENT_SOURCE_DIR}/smpq.nsi)
+
+		if(CMAKE_SIZEOF_VOID_P STREQUAL 4)
+
+			set(MAKENSIS_OUTPUT SMPQ-1.0.exe)
+
+		else(CMAKE_SIZEOF_VOID_P STREQUAL 4)
+	
+			set(MAKENSIS_FLAGS -DAMD64 ${MAKENSIS_FLAGS})
+			set(MAKENSIS_OUTPUT SMPQ-1.0-x86_64.exe)
+
+		endif(CMAKE_SIZEOF_VOID_P STREQUAL 4)
+
+		add_custom_command(OUTPUT ${MAKENSIS_OUTPUT} COMMAND makensis ARGS ${MAKENSIS_FLAGS} DEPENDS smpq smpq.nsi COPYING)
+		add_custom_target(installer ALL DEPENDS ${MAKENSIS_OUTPUT})
+
+	endif(WIN32)
 
 endif(WITH_CMD)
 
