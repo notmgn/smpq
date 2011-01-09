@@ -200,15 +200,8 @@ static inline int fromFileTime(time_t * to, unsigned long long int from) {
  * These functions convert Windows file path to/from Unix
  */
 
-/* Replace all chars '/' in path to '\\' on other OS than Windows */
+/* Replace all chars '/' in path to '\\' */
 static inline void toArchivePath(char * to, const char * from) {
-
-#if defined(WIN32) || defined(_MSC_VER)
-
-	strcpy(to, from);
-	return;
-
-#endif
 
 	int i = -1;
 

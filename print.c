@@ -27,18 +27,6 @@ void printError(const char * archive, const char * message, const char * file, i
 
 	char * error = NULL;
 
-#if defined(WIN32) || defined(_MSC_VER)
-
-	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, errnum, 0, error, 0, NULL);
-
-#elif defined(__APPLE__)
-
-	/* TODO: Convert errnum to message */
-	error = malloc(20 * sizeof(char));
-	sprintf(error, "Error code %d", errnum);
-
-#else
-
 	if ( errnum < 105 )
 		error = strerror(errnum);
 	else if ( errnum == 105 )
@@ -52,20 +40,8 @@ void printError(const char * archive, const char * message, const char * file, i
 	else if ( errnum == 109 )
 		error = (char *)"File corrupted";
 
-#endif
-
 	fprintf(stderr, "%s: %s: Error: %s `%s': %s\n", app, archive, message, file, error);
 	fflush(stderr);
-
-#if defined(WIN32) || defined(_MSC_VER)
-
-	LocalFree(error);
-
-#elif defined(__APPLE__)
-
-	free(error);
-
-#endif
 
 }
 
