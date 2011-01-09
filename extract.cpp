@@ -42,16 +42,7 @@ extern "C" {
 #define strcasecmp _stricmp
 #define strcasestr strstr
 
-static inline char * dirname(char * path) {
-	
-	static char drive[_MAX_DRIVE+_MAX_DIR];
-	static char dir[_MAX_DIR];
-
-	_splitpath(path, drive, dir, NULL, NULL);
-	strcat(drive, dir);
-
-	return drive;
-}
+char * dirname(char *);
 
 #else
 
