@@ -3,12 +3,12 @@
 ================
 
 SMPQ is StormLib MPQ archiving utility. This utility is designed for full
-manipulating with Blizzard MPQ archives [1]. It supports extracting, appending,
+manipulating with Blizzard MPQ archives. It supports extracting, appending,
 renaming and deleting files in MPQ archives. It also can create MPQ archive.
 SMPQ can access to different type of MPQ archives and version. It support
 encrypted, compressed, partial and patched MPQ archives with version 1-4.
 SMPQ is free opensource command line utility written in C/C++ which use
-multiplatform C++ StormLib library [2].
+multiplatform C++ StormLib library.
 
 Part of SMPQ is KDE4 KIO plugin which add support for all KDE4 applications
 (e.g. Konqueror, Dolphin, Kate, ... and all KDE4 open/save dialogs) access to
@@ -25,21 +25,51 @@ Homepage: https://launchpad.net/smpq
   How to build
 ================
 
-1. Download StormLib [2]
-2. Download CMake
+Dependences for SMPQ:
+ * C and C++ compiler (gcc/g++ work fine)
+ * StormLib (minimal version 8.00) from http://www.zezula.net/en/mpq/download.html#StormLib
+ * CMake (minimal version 2.6) from http://www.cmake.org/cmake/resources/software.html
 
-$ mkdir -p build && cd build
-$ cmake ..
-$ make
-$ sudo make install
+Additional depenedences for KDE4 KIO plugin:
+ * KDE4 libs headers (part of kdelibs packgage) from http://www.kde.org/download/
+
+Commands to build only SMPQ command line utility (without KDE4 KIO plugin):
+ $ rm -rf build && mkdir -p build && cd build
+ $ cmake -DWITH_KDE=off -DCMAKE_INSTALL_PREFIX=/usr ..
+ $ make
+ $ sudo make install
+
+Commands to build SMPQ with KDE4 KIO plugin:
+ $ rm -rf build && mkdir -p build && cd build
+ $ cmake -DCMAKE_INSTALL_PREFIX=`kde4-config --prefix` ..
+ $ make
+ $ sudo make install
+
+Commands to build only KDE4 KIO plugin:
+ $ rm -rf build && mkdir -p build && cd build
+ $ cmake -DWITH_CMD=off -DCMAKE_INSTALL_PREFIX=`kde4-config --prefix` ..
+ $ make
+ $ sudo make install
+
+Note:
+ Sometimes after (re)installing KDE4 KIO plugin is needed to restart KDE4.
 
 ================
    How to use
 ================
 
-For detailed info see user manpage.
+SMPQ command line utility:
+ For detailed info see
+ * user manpage: man smpq
+ * run: smpq --help
 
+KDE4 KIO plugin:
+ Open Konqueror, Dolphin or other KDE4 file manager and simply open MPQ archive
 
+================
+     Links
+================
 
-[1] - http://wiki.devklog.net/index.php?title=The_MoPaQ_Archive_Format
-[2] - http://www.zezula.net/en/mpq/stormlib.html
+CMake homepage: http://www.cmake.org
+StormLib library: http://www.zezula.net/en/mpq/stormlib.html
+MPQ documentation: http://wiki.devklog.net/index.php?title=The_MoPaQ_Archive_Format
