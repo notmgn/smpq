@@ -30,26 +30,53 @@ Dependences for SMPQ:
  * StormLib (minimal version 8.00) from http://www.zezula.net/en/mpq/download.html#StormLib
  * CMake (minimal version 2.6) from http://www.cmake.org/cmake/resources/software.html
 
-Additional depenedences for KDE4 KIO plugin:
+Additional dependences for KDE4 KIO plugin:
  * KDE4 libs headers (part of kdelibs packgage) from http://www.kde.org/download/
 
-Commands to build only SMPQ command line utility (without KDE4 KIO plugin):
- $ rm -rf build && mkdir -p build && cd build
- $ cmake -DWITH_KDE=off -DCMAKE_INSTALL_PREFIX=/usr ..
- $ make
- $ sudo make install
+Additional dependences for Windows NSIS Installer:
+ * NSIS from http://nsis.sourceforge.net/
+ * UPX from http://upx.sourceforge.net/
 
-Commands to build SMPQ with KDE4 KIO plugin:
- $ rm -rf build && mkdir -p build && cd build
- $ cmake -DCMAKE_INSTALL_PREFIX=`kde4-config --prefix` ..
- $ make
- $ sudo make install
+Building on Debian/*buntu and Debian like linux distros:
+  $ sudo apt-get install fakeroot debhelper cdbs cmake stormlib-dev kdelibs5-dev
+  $ dpkg-buildpackage -b -rfakeroot
+  $ sudo dpkg -i ../*.deb
 
-Commands to build only KDE4 KIO plugin:
- $ rm -rf build && mkdir -p build && cd build
- $ cmake -DWITH_CMD=off -DCMAKE_INSTALL_PREFIX=`kde4-config --prefix` ..
- $ make
- $ sudo make install
+Building on other *nix:
+
+ Commands to build only SMPQ command line utility (without KDE4 KIO plugin):
+  $ rm -rf build && mkdir -p build && cd build
+  $ cmake -DWITH_KDE=OFF -DCMAKE_INSTALL_PREFIX=/usr ..
+  $ make
+  $ sudo make install
+
+ Commands to build SMPQ with KDE4 KIO plugin:
+  $ rm -rf build && mkdir -p build && cd build
+  $ cmake -DCMAKE_INSTALL_PREFIX=`kde4-config --prefix` ..
+  $ make
+  $ sudo make install
+
+ Commands to build only KDE4 KIO plugin:
+  $ rm -rf build && mkdir -p build && cd build
+  $ cmake -DWITH_CMD=OFF -DCMAKE_INSTALL_PREFIX=`kde4-config --prefix` ..
+  $ make
+  $ sudo make install
+
+Building on Windows:
+
+ Commands to build only SMPQ command line utility:
+  Download and unpack smpq to C:\smpq. Open command line in folder C:\smpq
+  C:\smpq> del /r /q build && md build && cd build
+  C:\smpq\build> cmake -DWITH_KDE=OFF ..
+  C:\smpq\build> make
+  This will build executable C:\smpq\build\smpq.exe
+
+ Commands to build SMPQ command line utility into Windows NSIS Installer:
+  Download and unpack smpq to C:\smpq. Open command line in folder C:\smpq
+  C:\smpq> del /r /q build && md build && cd build
+  C:\smpq\build> cmake -DWITH_KDE=OFF -DWITH_NSIS=ON ..
+  C:\smpq\build> make
+  This will build installer executable C:\smpq\build\SMPQ-1.0.exe
 
 Note:
  Sometimes after (re)installing KDE4 KIO plugin is needed to restart KDE4.
@@ -71,5 +98,7 @@ KDE4 KIO plugin:
 ================
 
 CMake homepage: http://www.cmake.org
+NSIS homepage: http://nsis.sourceforge.net
+UPX homepage: http://upx.sourceforge.net
 StormLib library: http://www.zezula.net/en/mpq/stormlib.html
 MPQ documentation: http://wiki.devklog.net/index.php?title=The_MoPaQ_Archive_Format
