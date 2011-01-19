@@ -17,11 +17,15 @@
 #
 #
 
-project(smpq)
+project(SMPQ)
 cmake_minimum_required(VERSION 2.6)
 
 option(WITH_CMD "Enable smpq console application" ON)
 option(WITH_KDE "Enable KDE4 kio_smpq plugin" ON)
+
+if(WIN32)
+	option(WITH_NSIS "Create Windows NSIS Installer" OFF)
+endif(WIN32)
 
 if(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
 
@@ -47,7 +51,7 @@ endif(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
 
 include_directories(${STORMLIB_INCLUDE_DIR})
 
-set(smpq_SRCS
+set(SMPQ_SRCS
 	append.cpp
 	extract.cpp
 	info.cpp
@@ -60,24 +64,28 @@ set(smpq_SRCS
 
 if(MSVC)
 
-	set(smpq_SRCS
+	set(SMPQ_SRCS
 		${smpq_SRCS}
 		dirname.c
 	)
 
 endif(MSVC)
 
-set(mangen_SRCS
+set(MANGEN_SRCS
 	mangen.c
 )
 
-set(kio_smpq_SRCS
+set(KIO_SMPQ_SRCS
 	kio_smpq.cpp
+)
+
+set(SMPQ_NSIS
+	${CMAKE_CURRENT_SOURCE_DIR}/smpq.nsi
 )
 
 if(WITH_CMD)
 
-	add_executable(smpq ${smpq_SRCS})
+	add_executable(smpq ${SMPQ_SRCS})
 	target_link_libraries(smpq ${STORMLIB_LIBRARY})
 
 	if(WIN32 AND NOT MSVC)
@@ -88,7 +96,7 @@ if(WITH_CMD)
 
 	if(NOT CMAKE_CROSSCOMPILING)
 
-		add_executable(mangen ${mangen_SRCS})
+		add_executable(mangen ${MANGEN_SRCS})
 		add_custom_command(OUTPUT smpq.1 COMMAND mangen > smpq.1 DEPENDS mangen)
 		add_custom_target(man ALL DEPENDS smpq.1)
 
@@ -96,26 +104,61 @@ if(WITH_CMD)
 
 	endif(NOT CMAKE_CROSSCOMPILING)
 
-	if(WIN32)
+	if(WIN32 AND WITH_NSIS)
+
+		if(NOT UPX)
+
+			find_program(UPX upx)
+
+			if(NOT UPX)
+				message(FATAL_ERROR "upx not found")
+			else(NOT UPX)
+				message(STATUS "Found upx: ${UPX}")
+			endif(NOT UPX)
+
+			set(UPX_FLAGS ${UPX_FLAGS} -qq -9)
+
+			mark_as_advanced(UPX UPX_FLAGS)
+
+		endif(NOT UPX)
+
+		if(NOT MAKENSIS)
+
+			find_program(MAKENSIS makensis)
+
+			if(NOT MAKENSIS)
+				message(FATAL_ERROR "makensis not found")
+			else(NOT MAKENSIS)
+				message(STATUS "Found makensis: ${MAKENSIS}")
+			endif(NOT MAKENSIS)
+
+			if(CMAKE_SIZEOF_VOID_P STREQUAL 4)
+
+				set(MAKENSIS_OUTPUT SMPQ-1.0.exe)
+
+			else(CMAKE_SIZEOF_VOID_P STREQUAL 4)
+	
+				set(MAKENSIS_FLAGS -DX86_64 ${MAKENSIS_FLAGS})
+				set(MAKENSIS_OUTPUT SMPQ-1.0-x86_64.exe)
+
+			endif(CMAKE_SIZEOF_VOID_P STREQUAL 4)
+
+			mark_as_advanced(MAKENSIS MAKENSIS_FLAGS)
+
+		endif(NOT MAKENSIS)
+
+		if(NOT CMAKE_VERBOSE_MAKEFILE)
+			set(MAKENSIS_FLAGS -V2 -DQUIET ${MAKENSIS_FLAGS})
+		endif(NOT CMAKE_VERBOSE_MAKEFILE)
+
+		set(MAKENSIS_FLAGS ${MAKENSIS_FLAGS} -DUPX="${UPX}" -NOCD)
 
 		file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/COPYING DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-		set(MAKENSIS_FLAGS -NOCD ${CMAKE_CURRENT_SOURCE_DIR}/smpq.nsi)
-
-		if(CMAKE_SIZEOF_VOID_P STREQUAL 4)
-
-			set(MAKENSIS_OUTPUT SMPQ-1.0.exe)
-
-		else(CMAKE_SIZEOF_VOID_P STREQUAL 4)
-	
-			set(MAKENSIS_FLAGS -DAMD64 ${MAKENSIS_FLAGS})
-			set(MAKENSIS_OUTPUT SMPQ-1.0-x86_64.exe)
-
-		endif(CMAKE_SIZEOF_VOID_P STREQUAL 4)
-
-		add_custom_command(OUTPUT ${MAKENSIS_OUTPUT} COMMAND makensis ARGS ${MAKENSIS_FLAGS} DEPENDS smpq smpq.nsi COPYING)
+		add_custom_command(TARGET smpq POST_BUILD COMMAND ${UPX} ARGS ${UPX_FLAGS} smpq${CMAKE_EXECUTABLE_SUFFIX})
+		add_custom_command(OUTPUT ${MAKENSIS_OUTPUT} COMMAND ${MAKENSIS} ARGS ${MAKENSIS_FLAGS} ${SMPQ_NSIS} DEPENDS smpq smpq.nsi COPYING)
 		add_custom_target(installer ALL DEPENDS ${MAKENSIS_OUTPUT})
 
-	endif(WIN32)
+	endif(WIN32 AND WITH_NSIS)
 
 endif(WITH_CMD)
 
@@ -130,7 +173,7 @@ if(WITH_KDE)
 
 	include_directories(${KDE4_INCLUDES})
 
-	kde4_add_plugin(kio_smpq ${kio_smpq_SRCS})
+	kde4_add_plugin(kio_smpq ${KIO_SMPQ_SRCS})
 	target_link_libraries(kio_smpq ${STORMLIB_LIBRARY} ${KDE4_KIO_LIBS})
 
 	install(TARGETS kio_smpq DESTINATION ${PLUGIN_INSTALL_DIR})
