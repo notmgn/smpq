@@ -17,6 +17,20 @@
 ;
 ;
 
+;--------------------------------
+
+!ifdef QUIET
+!verbose 2
+!endif
+
+!define redefine "!insertmacro redefine"
+!macro redefine symbol value
+!undef ${symbol}
+!define ${symbol} "${value}"
+!macroend
+
+;--------------------------------
+
 !include "MUI2.nsh"
 
 ;--------------------------------
@@ -37,13 +51,10 @@
 !define INSTALLDIR "$PROGRAMFILES\${NAME}\"
 !define LANGUAGE "English"
 
-!ifdef AMD64
-!undef INSTALLER
-!define INSTALLER "${NAME}-${VERSION}-x86_64.exe"
-!undef INSTALLDIR
-!define INSTALLDIR "$PROGRAMFILES64\${NAME}\"
-!undef NAME
-!define NAME "SMPQ (64 bit)"
+!ifdef x86_64
+${redefine} INSTALLER "${NAME}-${VERSION}-x86_64.exe"
+${redefine} INSTALLDIR "$PROGRAMFILES64\${NAME}\"
+${redefine} NAME "${NAME} (64 bit)"
 !endif
 
 !define REGKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${NAME}"
@@ -54,8 +65,8 @@ LangString INSTALLER_RUNNING ${LANG_ENGLISH} "${NAME} Installer is already runni
 LangString REMOVEPREVIOUS ${LANG_ENGLISH} "Removing previous installation"
 LangString DESC_REMOVEEXE ${LANG_ENGLISH} "Remove ${NAME} executable"
 
-!ifdef AMD64
-LangString AMD64ONLY ${LANG_ENGLISH} "This version is for 64 bits computers only."
+!ifdef x86_64
+LangString x86_64_ONLY ${LANG_ENGLISH} "This version is for 64 bits computers only."
 !endif
 
 ;--------------------------------
@@ -114,13 +125,13 @@ Function .onInit
 	MessageBox MB_OK|MB_ICONEXCLAMATION "$(INSTALLER_RUNNING)"
 	Abort
 
-!ifdef AMD64
+!ifdef x86_64
 
 	System::Call "kernel32::GetCurrentProcess() i .s"
 	System::Call "kernel32::IsWow64Process(i s, *i .r0)"
 	IntCmp $0 0 0 0 +3
 
-	MessageBox MB_OK|MB_ICONSTOP "$(AMD64ONLY)"
+	MessageBox MB_OK|MB_ICONSTOP "$(x86_64_ONLY)"
 	Abort
 
 !endif
@@ -185,8 +196,21 @@ SectionEnd
 
 ;--------------------------------
 
-!packhdr "exehead.tmp" "upx -9 exehead.tmp"
+!ifndef UPX
+!define UPX "upx"
+!endif
+
+!ifndef UPX_FLAGS
+!define UPX_FLAGS "-9"
+!else
+${redefine} UPX_FLAGS "${UPX_FLAGS} -9"
+!endif
+
+!ifdef QUIET
+${redefine} UPX_FLAGS "${UPX_FLAGS} -qq"
+!endif
+
+!packhdr "exehead.tmp" "${UPX} ${UPX_FLAGS} exehead.tmp"
 ;!finalize "gpg --armor --sign --detach-sig %1"
 
 ;--------------------------------
-
