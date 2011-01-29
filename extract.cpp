@@ -188,7 +188,7 @@ int extract(const char * archive, const char * const files[], int flags, const c
 	if ( flags & SECTOR_CRC )
 		SFlags |= MPQ_OPEN_CHECK_SECTOR_CRC;
 
-	if ( flags & ENCRYPTED )
+	if ( flags & MPQ_ENCRYPTED )
 		SFlags |= MPQ_OPEN_ENCRYPTED;
 
 	if ( ! SFileOpenArchive(archive, 0, SFlags, &SArchive) ) {

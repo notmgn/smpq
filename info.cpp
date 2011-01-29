@@ -45,7 +45,7 @@ int info(const char * archive, int flags) {
 	if ( flags & MPQ_VERSION_1 )
 		SFlags |= MPQ_OPEN_FORCE_MPQ_V1;
 
-	if ( flags & ENCRYPTED )
+	if ( flags & MPQ_ENCRYPTED )
 		SFlags |= MPQ_OPEN_ENCRYPTED;
 
 	if ( ! SFileOpenArchive(archive, 0, SFlags, &SArchive) ) {

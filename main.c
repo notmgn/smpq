@@ -205,11 +205,11 @@ static void parse(char c) {
 			break;
 
 		case 'p':
-			flags |= PATCHED;
+			flags |= MPQ_PATCHED;
 			break;
 
 		case 'X':
-			flags |= NOT_ENCRYPTED;
+			flags |= MPQ_NOT_ENCRYPTED;
 			break;
 
 		case 'c':
@@ -494,8 +494,8 @@ int main(int argc, char * argv[]) {
 
 	char * archive = argv[i++];
 
-	if ( ! ( flags & NOT_ENCRYPTED ) && strlen(archive) > 5 && strcasecmp(archive+strlen(archive)-5, ".mpqe") == 0 )
-		flags |= ENCRYPTED;
+	if ( ! ( flags & MPQ_NOT_ENCRYPTED ) && strlen(archive) > 5 && strcasecmp(archive+strlen(archive)-5, ".mpqe") == 0 )
+		flags |= MPQ_ENCRYPTED;
 
 	if ( action == 'i' ) {
 

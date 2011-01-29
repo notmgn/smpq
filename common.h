@@ -37,42 +37,47 @@ typedef void * HANDLE;
  * Flags *
  *********/
 
-#define CREATE		1 << 0
-#define LIST		1 << 0
+#define CREATE			1 << 0
+#define LIST			1 << 0
 
-/* Options */
-#define LISTFILE	1 << 1
-#define LOCALE		1 << 2
-#define NO_SYSTEM_LF	1 << 3
-#define NO_LISTFILE	1 << 4
-#define NO_ATTRIBUTES	1 << 5
-#define MPQ_VERSION	1 << 6
-#define MPQ_VERSION_1	1 << 7
-#define MPQ_VERSION_2	1 << 8
-#define MPQ_VERSION_3	1 << 9
-#define MPQ_VERSION_4	1 << 10
-#define SECTOR_CRC	1 << 11
-#define QUIET		1 << 12
-#define OVERWRITE	1 << 13
-#define VERBOSE		1 << 14
-#define INDEX		1 << 15
-#define PATCHED		1 << 16
+/* Options - program */
+#define QUIET			1 << 1
+#define OVERWRITE		1 << 2
+#define VERBOSE			1 << 3
 
-/* Append file */
-#define HASH_SIZE	1 << 20
-#define ENCRYPT		1 << 21
-#define FIX_KEY		1 << 22
-#define DELETE_MARKER	1 << 23
-#define SINGLE_UNIT	1 << 24
-#define COMPRESSION	1 << 25
-#define ENCRYPTED	1 << 26
-#define NOT_ENCRYPTED	1 << 27
+/* Options - archive types */
+#define MPQ_VERSION		1 << 4
+#define MPQ_VERSION_1		1 << 5
+#define MPQ_VERSION_2		1 << 6
+#define MPQ_VERSION_3		1 << 7
+#define MPQ_VERSION_4		1 << 8
+#define MPQ_PATCHED		1 << 9
+#define MPQ_ENCRYPTED		1 << 10
+#define MPQ_NOT_ENCRYPTED	1 << 11
 
-#define LOCALE_ARG	1
-#define MPQ_VERSION_ARG	2
-#define LISTFILE_ARG	3
-#define HASH_SIZE_ARG	4
-#define COMPRESSION_ARG	5
+/* Options - archive open/create */
+#define NO_SYSTEM_LF		1 << 12
+#define NO_LISTFILE		1 << 13
+#define LISTFILE		1 << 14
+#define NO_ATTRIBUTES		1 << 15
+#define SECTOR_CRC		1 << 16
+#define HASH_SIZE		1 << 17
+
+/* Options - file */
+#define LOCALE			1 << 20
+#define INDEX			1 << 21
+#define ENCRYPT			1 << 22
+#define FIX_KEY			1 << 23
+#define DELETE_MARKER		1 << 24
+#define SINGLE_UNIT		1 << 25
+#define COMPRESSION		1 << 26
+
+/* Options - with arguments */
+#define MPQ_VERSION_ARG		1
+#define LISTFILE_ARG		2
+#define HASH_SIZE_ARG		3
+#define LOCALE_ARG		4
+#define COMPRESSION_ARG		5
 
 /*************
  * Variables *
