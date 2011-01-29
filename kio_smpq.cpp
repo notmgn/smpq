@@ -18,12 +18,14 @@
 */
 
 #include <QCoreApplication>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QTemporaryFile>
 #include <QByteArray>
 #include <QVarLengthArray>
 #include <QString>
+#include <QStringList>
 #include <QSet>
 #include <QDateTime>
 
@@ -35,6 +37,12 @@
 #include <StormLib.h>
 
 #include "kio_smpq.h"
+
+#ifdef Q_OS_UNIX
+#define LISTPATH "/usr/share/stormlib"
+#else
+#define LISTPATH KDEDIR "/share/stormlib"
+#endif //Q_OS_UNIX
 
 extern "C" {
 
@@ -145,12 +153,23 @@ bool SMPQSlave::openArchive(const QString &archive, unsigned int flags) {
 
 		closeArchive();
 
+		if ( archive.endsWith(".mpqe", Qt::CaseInsensitive) )
+			flags |= MPQ_OPEN_ENCRYPTED;
+
 		if ( ! SFileOpenArchive(archive.toUtf8(), 0, flags, &p->SArchive) )
 			return false;
 
 		p->archive = archive;
 		p->flags = flags;
 		p->modified = QFileInfo(archive).lastModified();
+
+	        QDir dir(LISTPATH);
+		dir.setFilter(QDir::Files | QDir::Hidden);
+		dir.setNameFilters(QStringList() << "*.txt" << "*.TXT");
+		QStringList files = dir.entryList();
+
+		for ( QStringList::Iterator it = files.begin(); it != files.end(); ++it )
+			SFileAddListFile(p->SArchive, dir.absoluteFilePath(*it).toUtf8());
 
 	}
 
@@ -250,7 +269,7 @@ void SMPQSlave::get(const KUrl &url) {
 
 	HANDLE SFile = NULL;
 
-	if ( ! SFileOpenFileEx(p->SArchive, archivePath, 0, &SFile) ) {
+	if ( ! SFileOpenFileEx(p->SArchive, archivePath, SFILE_OPEN_FROM_MPQ, &SFile) ) {
 
 		error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 		return;
@@ -352,26 +371,6 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 
 	}
 
-	HANDLE SFile;
-
-	if ( ( flags & KIO::Overwrite ) && SFileOpenFileEx(p->SArchive, archivePath, SFILE_OPEN_FROM_MPQ, &SFile) ) {
-
-		SFileCloseFile(SFile);
-
-		if ( ! SFileRemoveFile(p->SArchive, archivePath, SFILE_OPEN_FROM_MPQ) ) {
-
-			error(KIO::ERR_COULD_NOT_WRITE , url.prettyUrl());
-			return;
-
-		}
-
-		SFileFlushArchive(p->SArchive);
-		SFileCompactArchive(p->SArchive, NULL, 0); // TODO: Add listfile
-
-		p->modified = QFileInfo(p->archive).lastModified();
-
-	}
-
 	QTemporaryFile file;
 
 	if ( ! file.open() ) {
@@ -399,6 +398,8 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 
 	}
 
+	quint64 fileSize = file.size();
+
 	quint64 SFileTime = 0;
 	quint64 fileTime = 0;
 	const QString metaDataTime = metaData("modified");
@@ -408,12 +409,20 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 
 	toFileTime(SFileTime, fileTime);
 
-	qint64 fileSize = file.size();
+	unsigned int SFlags = MPQ_FILE_COMPRESS;
 
-	// TODO: Add flags
-	if ( ! SFileCreateFile(p->SArchive, archivePath, SFileTime, fileSize, 0 /*locale*/, MPQ_FILE_COMPRESS, &SFile) ) {
+	if ( flags & KIO::Overwrite )
+		SFlags |= MPQ_FILE_REPLACEEXISTING;
 
-		error(KIO::ERR_COULD_NOT_WRITE , url.prettyUrl());
+	HANDLE SFile;
+
+	if ( ! SFileCreateFile(p->SArchive, archivePath, SFileTime, fileSize, 0, SFlags, &SFile) ) {
+
+		if ( GetLastError() == ERROR_ALREADY_EXISTS )
+			error(KIO::ERR_FILE_ALREADY_EXIST, url.prettyUrl());
+		else
+			error(KIO::ERR_COULD_NOT_WRITE, url.prettyUrl());
+
 		return;
 
 	}
@@ -423,9 +432,9 @@ void SMPQSlave::put(const KUrl &url, int, KIO::JobFlags flags) {
 
 	while ( ( buffer = file.read(0x10000) ).size() > 0 ) {
 
-		if ( ! SFileWriteFile(SFile, buffer, buffer.size(), MPQ_COMPRESSION_LZMA) ) {
+		if ( ! SFileWriteFile(SFile, buffer, buffer.size(), MPQ_COMPRESSION_ZLIB) ) {
 
-			error(KIO::ERR_COULD_NOT_WRITE , url.prettyUrl());
+			error(KIO::ERR_COULD_NOT_WRITE, url.prettyUrl());
 			return;
 
 		}
@@ -485,7 +494,7 @@ void SMPQSlave::del(const KUrl &url, bool isfile) {
 			mask.append("*");
 
 		SFILE_FIND_DATA SFileFindData;
-		HANDLE SFileFind = SFileFindFirstFile(p->SArchive, mask, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+		HANDLE SFileFind = SFileFindFirstFile(p->SArchive, mask, &SFileFindData, NULL);
 
 		// MPQ archives does not support directory structure
 		// There are no files in this directory, so directory is empty
@@ -577,7 +586,7 @@ void SMPQSlave::rename(const KUrl &src, const KUrl &dest, KIO::JobFlags flags) {
 	HANDLE SFile;
 	bool found;
 
-	if ( ( found = SFileOpenFileEx(p->SArchive, destArchivePath, 0, &SFile) ) )
+	if ( ( found = SFileOpenFileEx(p->SArchive, destArchivePath, SFILE_OPEN_FROM_MPQ, &SFile) ) )
 		SFileCloseFile(SFile);
 
 	if ( found && ! ( flags & KIO::Overwrite ) ) {
@@ -663,7 +672,7 @@ void SMPQSlave::listDir(const KUrl &url) {
 	QSet <QByteArray> directories;
 
 	SFILE_FIND_DATA SFileFindData;
-	HANDLE SFileFind = SFileFindFirstFile(p->SArchive, archivePath + '*', &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+	HANDLE SFileFind = SFileFindFirstFile(p->SArchive, archivePath + '*', &SFileFindData, NULL);
 
 	if ( ! SFileFind ) {
 
@@ -771,7 +780,7 @@ void SMPQSlave::stat(const KUrl &url) {
 
 	if ( ! found ) {
 
-		SFileFind = SFileFindFirstFile(p->SArchive, archivePath, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+		SFileFind = SFileFindFirstFile(p->SArchive, archivePath, &SFileFindData, NULL);
 
 		if ( SFileFind ) {
 
@@ -792,7 +801,7 @@ void SMPQSlave::stat(const KUrl &url) {
 		else
 			mask.append("*");
 
-		SFileFind = SFileFindFirstFile(p->SArchive, mask, &SFileFindData, NULL /*ListFileName*/); // TODO: add listfile
+		SFileFind = SFileFindFirstFile(p->SArchive, mask, &SFileFindData, NULL);
 
 		if ( SFileFind ) {
 
@@ -806,7 +815,7 @@ void SMPQSlave::stat(const KUrl &url) {
 
 	if ( ! found ) {
 
-		if ( SFileOpenFileEx(p->SArchive, archivePath, 0, &SFile) ) {
+		if ( SFileOpenFileEx(p->SArchive, archivePath, SFILE_OPEN_FROM_MPQ, &SFile) ) {
 
 			found = true;
 			dir = false;
@@ -964,7 +973,7 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 
 	if ( myMode == 0 ) {
 
-		if ( ! SFileOpenFileEx(p->SArchive, archivePath, 0, &p->SFile) ) {
+		if ( ! SFileOpenFileEx(p->SArchive, archivePath, SFILE_OPEN_FROM_MPQ, &p->SFile) ) {
 
 			error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 			return;

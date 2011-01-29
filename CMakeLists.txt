@@ -173,6 +173,13 @@ if(WITH_KDE)
 
 	include_directories(${KDE4_INCLUDES})
 
+	set(CMAKE_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES};${QT_INCLUDE_DIR}")
+	check_symbol_exists(Q_OS_UNIX "QtCore/qglobal.h" Q_OS_UNIX)
+
+	if(NOT Q_OS_UNIX)
+		add_definitions(-DKDEDIR=${CMAKE_INSTALL_PREFIX})
+	endif(NOT Q_OS_UNIX)
+
 	kde4_add_plugin(kio_smpq ${KIO_SMPQ_SRCS})
 	target_link_libraries(kio_smpq ${STORMLIB_LIBRARY} ${KDE4_KIO_LIBS})
 
