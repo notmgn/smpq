@@ -287,11 +287,19 @@ void SMPQSlave::get(const KUrl &url) {
 	size_t bytes = 1024;
 	QVarLengthArray <char> buffer(bytes);
 
-	SFileReadFile(SFile, buffer.data(), buffer.size(), &bytes, NULL);
+	if ( QString::fromUtf8(archivePath).endsWith(".mpq", Qt::CaseInsensitive) )
+		mimeType("application/x-mpq");
+	else if ( QString::fromUtf8(archivePath).endsWith(".mpqe", Qt::CaseInsensitive) )
+		mimeType("application/x-mpqe");
+	else {
 
-	QByteArray fileData = QByteArray::fromRawData(buffer.data(), bytes);
-	KMimeType::Ptr fileMimeType = KMimeType::findByNameAndContent(url.fileName(), fileData);
-	mimeType(fileMimeType->name());
+		SFileReadFile(SFile, buffer.data(), buffer.size(), &bytes, NULL);
+
+		QByteArray fileData = QByteArray::fromRawData(buffer.data(), bytes);
+		KMimeType::Ptr fileMimeType = KMimeType::findByNameAndContent(url.fileName(), fileData);
+		mimeType(fileMimeType->name());
+
+	}
 
 	// TODO: signed or unsigned? SFileSetFilePointer needs LONG
 	int low = 0;
@@ -720,6 +728,12 @@ void SMPQSlave::listDir(const KUrl &url) {
 			entry.insert(KIO::UDSEntry::UDS_SIZE, SFileFindData.dwFileSize);
 			entry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, fileTime);
 			entry.insert(KIO::UDSEntry::UDS_ACCESS, (S_IRWXU | S_IRWXG | S_IRWXO));
+
+			if ( QFile::decodeName(fileName).endsWith(".mpq", Qt::CaseInsensitive) )
+				entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, "application/x-mpq");
+			else if ( QFile::decodeName(fileName).endsWith(".mpqe", Qt::CaseInsensitive) )
+				entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, "application/x-mpqe");
+
 			listEntry(entry, false);
 
 		}
@@ -856,6 +870,11 @@ void SMPQSlave::stat(const KUrl &url) {
 		entry.insert(KIO::UDSEntry::UDS_SIZE, SFileFindData.dwFileSize);
 		entry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME, fileTime);
 
+		if ( QString::fromUtf8(archivePath).endsWith(".mpq", Qt::CaseInsensitive) )
+			entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, "application/x-mpq");
+		else if ( QString::fromUtf8(archivePath).endsWith(".mpqe", Qt::CaseInsensitive) )
+			entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, "application/x-mpqe");
+
 	} else {
 
 		entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
@@ -989,19 +1008,27 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 
 	if ( myMode == 0 || myMode == 3 ) {
 
-		size_t bytes = 1024;
-		QVarLengthArray <char> buffer(bytes);
+		if ( QString::fromUtf8(archivePath).endsWith(".mpq", Qt::CaseInsensitive) )
+			mimeType("application/x-mpq");
+		else if ( QString::fromUtf8(archivePath).endsWith(".mpqe", Qt::CaseInsensitive) )
+			mimeType("application/x-mpqe");
+		else {
 
-		SFileReadFile(p->SFile, buffer.data(), buffer.size(), &bytes, NULL);
+			size_t bytes = 1024;
+			QVarLengthArray <char> buffer(bytes);
 
-		QByteArray fileData = QByteArray::fromRawData(buffer.data(), bytes);
-		KMimeType::Ptr fileMimeType = KMimeType::findByNameAndContent(url.fileName(), fileData);
-		mimeType(fileMimeType->name());
+			SFileReadFile(p->SFile, buffer.data(), buffer.size(), &bytes, NULL);
 
-		// TODO: signed or unsigned? SFileSetFilePointer needs LONG
-		int low = 0;
-		int high = 0;
-		SFileSetFilePointer(p->SFile, low, &high, FILE_BEGIN);
+			QByteArray fileData = QByteArray::fromRawData(buffer.data(), bytes);
+			KMimeType::Ptr fileMimeType = KMimeType::findByNameAndContent(url.fileName(), fileData);
+			mimeType(fileMimeType->name());
+
+			// TODO: signed or unsigned? SFileSetFilePointer needs LONG
+			int low = 0;
+			int high = 0;
+			SFileSetFilePointer(p->SFile, low, &high, FILE_BEGIN);
+
+		}
 
 	}
 
