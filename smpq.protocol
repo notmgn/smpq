@@ -1,7 +1,7 @@
 [Protocol]
 exec=kio_smpq
 protocol=mpq
-archiveMimetype=application/x-mpq;application/x-mpqe;application/x-ms-dos-executable
+archiveMimetype=application/x-mpq,application/x-mpqe,application/x-ms-dos-executable
 input=filesystem
 output=filesystem
 listing=Name,Type,Size,Date
