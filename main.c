@@ -68,7 +68,7 @@
 	"     -F, --fix-key                 Encryption key will be adjusted according to file size in the archive (need -E)\n" \
 	"     -D, --deletion-marker         Set deletion marker\n" \
 	"     -U, --single-unit             Add file as single unit, cannot be encrypted\n" \
-	"     -C, --compression <method>    Compression method: (default ZLIB)\n" \
+	"     -C, --compression <method>    Compression method: (default: ZLIB)\n" \
 	"          none                   None compression\n" \
 	"          IMPLODE                Pkware Data Compression IMPLODE method - OBSOLATE (It was used only in Diablo I)\n" \
 	"          PKWARE                 Pkware Data compression\n" \
@@ -95,7 +95,7 @@
 	"\n" \
 	"Options for extracting file(s) from archive:\n" \
 	"     -I, --index                   Specify file(s) by index(es) (not by name)\n" \
-	"     -X, --encrypted               Extract file(s) from encrypted archive (Used in Starcraft II installation)\n" \
+	"     -X, --not-encrypted           Archive is not encrypted (default: autodetect) (Encrypted archives have Starcraft II installation)\n" \
 	"     -p                            Open more (patched) archives with directory prefix (prefix:archive), when file is in more archives, will be extracted from last\n" \
 	"          Usage with more (patched) archives:\n" \
 	"            %s -l|-x [options] [archive] -p [prefix1:parchive1] [prefix2:archive2] ... -- [files]\n" \
@@ -209,7 +209,7 @@ static void parse(char c) {
 			break;
 
 		case 'X':
-			flags |= ENCRYPTED;
+			flags |= NOT_ENCRYPTED;
 			break;
 
 		case 'c':
@@ -348,7 +348,7 @@ int main(int argc, char * argv[]) {
 				parse('C');
 			else if ( strcmp(argv[i], "--index") == 0 )
 				parse('I');
-			else if ( strcmp(argv[i], "--encrypted") == 0 )
+			else if ( strcmp(argv[i], "--not-encrypted") == 0 )
 				parse('X');
 			else {
 				fprintf(stderr, "%s Error: unknown option/action %s specified\n", app, argv[i]);
@@ -493,6 +493,9 @@ int main(int argc, char * argv[]) {
 	}
 
 	char * archive = argv[i++];
+
+	if ( ! ( flags & NOT_ENCRYPTED ) && strlen(archive) > 5 && strcasecmp(archive+strlen(archive)-5, ".mpqe") == 0 )
+		flags |= ENCRYPTED;
 
 	if ( action == 'i' ) {
 

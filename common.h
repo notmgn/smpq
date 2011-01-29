@@ -66,6 +66,7 @@ typedef void * HANDLE;
 #define SINGLE_UNIT	1 << 24
 #define COMPRESSION	1 << 25
 #define ENCRYPTED	1 << 26
+#define NOT_ENCRYPTED	1 << 27
 
 #define LOCALE_ARG	1
 #define MPQ_VERSION_ARG	2
