@@ -308,7 +308,7 @@ int append(const char * archive, const char * const files[], int flags, int loca
 	}
 
 	if ( flags & OVERWRITE )
-		SFileCompactArchive(SArchive, NULL);
+		SFileCompactArchive(SArchive, NULL, 0);
 
 	SFileCloseArchive(SArchive);
 

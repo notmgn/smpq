@@ -28,21 +28,13 @@ extern "C" {
 #include <string.h>
 #include <stdlib.h>
 
-#if defined(WIN32) || defined(_MSC_VER)
+#ifdef _MSC_VER
 
-static inline char * dirname(char * path) {
-	    
-	static char drive[_MAX_DRIVE+_MAX_DIR];
-	static char dir[_MAX_DIR];
-
-	_splitpath(path, drive, dir, NULL, NULL);
-	strcat(drive, dir);
-
-	return drive;
-}
+char * dirname(char *); 
 
 #else
 
+#include <libgen.h>
 #include <dirent.h>
 
 #endif
@@ -123,6 +115,8 @@ void systemListfiles(HANDLE SArchive, const char * archive, int flags) {
 		SFileAddListFile(SArchive, listfile);
 
 	}
+
+#undef LISTPATH
 
 #endif
 
