@@ -116,9 +116,7 @@ if(WITH_CMD)
 				message(STATUS "Found upx: ${UPX}")
 			endif(NOT UPX)
 
-			set(UPX_FLAGS ${UPX_FLAGS} -qq -9)
-
-			mark_as_advanced(UPX UPX_FLAGS)
+			mark_as_advanced(UPX)
 
 		endif(NOT UPX)
 
@@ -132,20 +130,22 @@ if(WITH_CMD)
 				message(STATUS "Found makensis: ${MAKENSIS}")
 			endif(NOT MAKENSIS)
 
-			if(CMAKE_SIZEOF_VOID_P STREQUAL 4)
-
-				set(MAKENSIS_OUTPUT SMPQ-1.0.exe)
-
-			else(CMAKE_SIZEOF_VOID_P STREQUAL 4)
-	
-				set(MAKENSIS_FLAGS -DX86_64 ${MAKENSIS_FLAGS})
-				set(MAKENSIS_OUTPUT SMPQ-1.0-x86_64.exe)
-
-			endif(CMAKE_SIZEOF_VOID_P STREQUAL 4)
-
-			mark_as_advanced(MAKENSIS MAKENSIS_FLAGS)
+			mark_as_advanced(MAKENSIS)
 
 		endif(NOT MAKENSIS)
+
+		set(UPX_FLAGS ${UPX_FLAGS} -qq -9)
+
+		if(CMAKE_SIZEOF_VOID_P STREQUAL 4)
+
+			set(MAKENSIS_OUTPUT SMPQ-1.0.exe)
+
+		else(CMAKE_SIZEOF_VOID_P STREQUAL 4)
+	
+			set(MAKENSIS_FLAGS -DX86_64 ${MAKENSIS_FLAGS})
+			set(MAKENSIS_OUTPUT SMPQ-1.0-x86_64.exe)
+
+		endif(CMAKE_SIZEOF_VOID_P STREQUAL 4)
 
 		if(NOT CMAKE_VERBOSE_MAKEFILE)
 			set(MAKENSIS_FLAGS -V2 -DQUIET ${MAKENSIS_FLAGS})
