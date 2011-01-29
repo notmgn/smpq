@@ -116,7 +116,7 @@ int extract(const char * archive, const char * const files[], int flags, const c
  *
  * Internaly this function only calls StormLib GetInfo function.
  */
-int info(const char * archive);
+int info(const char * archive, int flags);
 
 /**
  * Remove file(s) from archive

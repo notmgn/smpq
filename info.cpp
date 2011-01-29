@@ -36,11 +36,19 @@ static inline unsigned int GetInfo(HANDLE archive, unsigned int info) {
 
 }
 
-int info(const char * archive) {
+int info(const char * archive, int flags) {
 
 	HANDLE SArchive = NULL;
 
-	if ( ! SFileOpenArchive(archive, 0, MPQ_OPEN_READ_ONLY, &SArchive) ) {
+	int SFlags = MPQ_OPEN_READ_ONLY;
+
+	if ( flags & MPQ_VERSION_1 )
+		SFlags |= MPQ_OPEN_FORCE_MPQ_V1;
+
+	if ( flags & ENCRYPTED )
+		SFlags |= MPQ_OPEN_ENCRYPTED;
+
+	if ( ! SFileOpenArchive(archive, 0, SFlags, &SArchive) ) {
 
 		printError(archive, "Cannot open archive", archive, GetLastError());
 		return -1;
@@ -53,6 +61,21 @@ int info(const char * archive) {
 	printMessage("Block table size: %u", GetInfo(SArchive, SFILE_INFO_BLOCK_TABLE_SIZE));
 	printMessage("Sector size: %u", GetInfo(SArchive, SFILE_INFO_SECTOR_SIZE));
 	printMessage("Number of files in archive: %u", GetInfo(SArchive, SFILE_INFO_NUM_FILES));
+
+	int verify = SFileVerifyArchive(SArchive);
+
+	if ( verify == ERROR_NO_SIGNATURE )
+		printMessage("Archive signature: No signature");
+	else if ( verify == ERROR_VERIFY_FAILED )
+		printMessage("Archive signature: Verification failed");
+	else if ( verify == ERROR_WEAK_SIGNATURE_OK )
+		printMessage("Archive signature: Weak digital signature - Valid");
+	else if ( verify == ERROR_WEAK_SIGNATURE_ERROR )
+		printMessage("Archive signature: Weak digital signature - Invalid");
+	else if ( verify == ERROR_STRONG_SIGNATURE_OK )
+		printMessage("Archive signature: Strong digital signature - Valid");
+	else if ( verify == ERROR_STRONG_SIGNATURE_ERROR )
+		printMessage("Archive signature: Strong digital signature - Invalid or No public key");
 
 	SFileCloseArchive(SArchive);
 
