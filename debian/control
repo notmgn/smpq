@@ -2,7 +2,7 @@ Source: smpq
 Section: utils
 Priority: extra
 Maintainer: Pali Rohár <pali.rohar@gmail.com>
-Build-Depends: debhelper (>= 7), cdbs, cmake, stormlib-dev, kdelibs5-dev
+Build-Depends: debhelper (>= 7), cdbs, cmake, stormlib-dev (>= 8.01), kdelibs5-dev
 Standards-Version: 3.8.4
 Homepage: https://launchpad.net/smpq
 Vcs-Bzr: lp:smpq
@@ -17,7 +17,7 @@ Description: StormLib MPQ archiving utility
  renaming and deleting files in MPQ archives. It also can create MPQ archive.
  SMPQ can access to different type of MPQ archives and version. It support
  encrypted, compressed, partial and patched MPQ archives with version 1-4.
- SMPQ is free opensource command line utility written in C/C++ which use 
+ SMPQ is free opensource command line utility written in C/C++ which use
  multiplatform C++ StormLib library.
 
 Package: kio-smpq
@@ -30,4 +30,4 @@ Description: KDE4 kio plugin for StormLib MPQ archiving utility
  how to integrate MPQ support on KDE4 desktop (There is no need to use some MPQ 
  viewer/editor. All KDE4 application can open MPQ archvies in read/write mode).
  .
- This plugin is part of SMPQ. But it does not depends SMPQ applicaion binary.
+ This plugin is part of SMPQ. But it does not depend on SMPQ application binary.

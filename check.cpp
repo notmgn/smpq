@@ -1,6 +1,6 @@
 #include <StormLib.h>
 
-#if STORMLIB_VERSION < 0x0800
+#if STORMLIB_VERSION < 0x0801
 #error You have old Stormlib version
 #endif
 
