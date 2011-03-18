@@ -456,6 +456,9 @@ int main(int argc, char * argv[]) {
 	}
 
 	int hashTableSize = 16;
+
+	if ( action == 'a' )
+		hashTableSize = 0;
 	
 	if ( flags & HASH_SIZE ) {
 

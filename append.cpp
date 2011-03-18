@@ -196,6 +196,19 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 		}
 
+		if ( hashTableSize != 0 ) {
+
+			printVerbose(archive, "Change hash table size", archive);
+
+			if ( ! SFileSetMaxFileCount(SArchive, hashTableSize) ) {
+
+				printError(archive, "Cannot change hash table size", archive, GetLastError());
+				return -1;
+
+			}
+
+		}
+
 	}
 
 	SFileSetLocale(locale);
