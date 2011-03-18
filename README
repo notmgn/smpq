@@ -7,14 +7,14 @@ manipulating with Blizzard MPQ archives. It supports extracting, appending,
 renaming and deleting files in MPQ archives. It also can create MPQ archive.
 SMPQ can access to different type of MPQ archives and version. It support
 encrypted, compressed, partial and patched MPQ archives with version 1-4.
-SMPQ is free opensource command line utility written in C/C++ which use
+SMPQ is free open source command line utility written in C/C++ which use
 multiplatform C++ StormLib library.
 
 Part of SMPQ is KDE4 KIO plugin which add support for all KDE4 applications
 (e.g. Konqueror, Dolphin, Kate, ... and all KDE4 open/save dialogs) access to
 MPQ archives like to directory or network drive (or FTP). This is simple way
 how to integrate MPQ support on KDE4 desktop (There is no need to use some MPQ
-viewer/editor. All KDE4 application can open MPQ archvies in read/write mode).
+viewer/editor. All KDE4 application can open MPQ archives in read/write mode).
 
 Author: Pali Rohár <pali.rohar@gmail.com>
 Version: 1.0
@@ -25,19 +25,19 @@ Homepage: https://launchpad.net/smpq
   How to build
 ================
 
-Dependences for SMPQ:
+Dependencies for SMPQ:
  * C and C++ compiler (gcc/g++ work fine)
- * StormLib (minimal version 8.00) from http://www.zezula.net/en/mpq/download.html#StormLib
+ * StormLib (minimal version 8.01) from http://www.zezula.net/en/mpq/download.html#StormLib
  * CMake (minimal version 2.6) from http://www.cmake.org/cmake/resources/software.html
 
-Additional dependences for KDE4 KIO plugin:
+Additional dependencies for KDE4 KIO plugin:
  * KDE4 libs headers (part of kdelibs packgage) from http://www.kde.org/download/
 
-Additional dependences for Windows NSIS Installer:
+Additional dependencies for Windows NSIS Installer:
  * NSIS from http://nsis.sourceforge.net/
  * UPX from http://upx.sourceforge.net/
 
-Building on Debian/*buntu and Debian like linux distros:
+Building on Debian/*buntu and Debian like Linux distributions:
   $ sudo apt-get install fakeroot debhelper cdbs cmake stormlib-dev kdelibs5-dev
   $ dpkg-buildpackage -b -rfakeroot
   $ sudo dpkg -i ../*.deb
@@ -65,14 +65,14 @@ Building on other *nix:
 Building on Windows:
 
  Commands to build only SMPQ command line utility:
-  Download and unpack smpq to C:\smpq. Open command line in folder C:\smpq
+  Download and unpack SMPQ to C:\smpq. Open command line in folder C:\smpq
   C:\smpq> del /r /q build && md build && cd build
   C:\smpq\build> cmake -DWITH_KDE=OFF ..
   C:\smpq\build> make
   This will build executable C:\smpq\build\smpq.exe
 
  Commands to build SMPQ command line utility into Windows NSIS Installer:
-  Download and unpack smpq to C:\smpq. Open command line in folder C:\smpq
+  Download and unpack SMPQ to C:\smpq. Open command line in folder C:\smpq
   C:\smpq> del /r /q build && md build && cd build
   C:\smpq\build> cmake -DWITH_KDE=OFF -DWITH_NSIS=ON ..
   C:\smpq\build> make
@@ -87,8 +87,8 @@ Note:
 
 SMPQ command line utility:
  For detailed info see
- * user manpage: man smpq
- * run: smpq --help
+ * user manpage: $ man smpq
+ * run: $ smpq --help
 
 KDE4 KIO plugin:
  Open Konqueror, Dolphin or other KDE4 file manager and simply open MPQ archive
@@ -97,7 +97,9 @@ KDE4 KIO plugin:
      Links
 ================
 
+SMPQ Homepage: https://launchpad.net/smpq
 CMake homepage: http://www.cmake.org
+KDE homepage: http://www.kde.org
 NSIS homepage: http://nsis.sourceforge.net
 UPX homepage: http://upx.sourceforge.net
 StormLib library: http://www.zezula.net/en/mpq/stormlib.html
