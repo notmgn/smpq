@@ -1101,13 +1101,15 @@ void SMPQSlave::seek(KIO::filesize_t offset) {
 	int low = offset;
 	int high = offset >> 32;
 
-	if ( ( low = SFileSetFilePointer(p->SFile, low, &high, FILE_BEGIN) ) == SFILE_INVALID_SIZE ) {
+	unsigned int low_ret;
+
+	if ( ( low_ret = SFileSetFilePointer(p->SFile, low, &high, FILE_BEGIN) ) == SFILE_INVALID_SIZE ) {
 
 		error(KIO::ERR_COULD_NOT_SEEK, p->url.prettyUrl());
 		return;
 
 	}
 
-	position(((KIO::filesize_t)high << 31) | low);
+	position(((KIO::filesize_t)high << 31) | low_ret);
 
 }
