@@ -17,7 +17,7 @@ how to integrate MPQ support on KDE4 desktop (There is no need to use some MPQ
 viewer/editor. All KDE4 application can open MPQ archives in read/write mode).
 
 Author: Pali Rohár <pali.rohar@gmail.com>
-Version: 1.0
+Version: 1.1
 License: GNU GPL v3
 Homepage: https://launchpad.net/smpq
 
@@ -26,7 +26,7 @@ Homepage: https://launchpad.net/smpq
 ================
 
 Dependencies for SMPQ:
- * C and C++ compiler (gcc/g++ work fine)
+ * C and C++ compiler (gcc/g++ works fine)
  * StormLib (minimal version 8.01) from http://www.zezula.net/en/mpq/download.html#StormLib
  * CMake (minimal version 2.6) from http://www.cmake.org/cmake/resources/software.html
 
@@ -41,6 +41,8 @@ Building on Debian/*buntu and Debian like Linux distributions:
   $ sudo apt-get install fakeroot debhelper cdbs cmake stormlib-dev kdelibs5-dev
   $ dpkg-buildpackage -b -rfakeroot
   $ sudo dpkg -i ../*.deb
+
+  Ubuntu packages are builded in SMPQ PPA on https://launchpad.net/~pali/+archive/smpq
 
 Building on other *nix:
 
@@ -76,7 +78,7 @@ Building on Windows:
   C:\smpq> del /r /q build && md build && cd build
   C:\smpq\build> cmake -DWITH_KDE=OFF -DWITH_NSIS=ON ..
   C:\smpq\build> make
-  This will build installer executable C:\smpq\build\SMPQ-1.0.exe
+  This will build installer executable C:\smpq\build\SMPQ-<VERSION>.exe
 
 Note:
  Sometimes after (re)installing KDE4 KIO plugin is needed to restart KDE4.
@@ -92,6 +94,12 @@ SMPQ command line utility:
 
 KDE4 KIO plugin:
  Open Konqueror, Dolphin or other KDE4 file manager and simply open MPQ archive
+
+================
+   Changelog
+================
+
+See file debian/changelog
 
 ================
      Links

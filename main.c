@@ -26,8 +26,6 @@
 
 #include "common.h"
 
-#define VERSION "1.0"
-
 #define HELP \
 	"Usage: %s [action] [options] [archive] [files]\n" \
 	"\n" \
@@ -455,10 +453,10 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	int hashTableSize = 16;
+	int hashTableSize = 0;
 
-	if ( action == 'a' )
-		hashTableSize = 0;
+	if ( flags & CREATE )
+		hashTableSize = 16;
 	
 	if ( flags & HASH_SIZE ) {
 
@@ -471,7 +469,7 @@ int main(int argc, char * argv[]) {
 
 		hashTableSize = atoi(argv[skipArg[HASH_SIZE_ARG]]);
 
-		if ( hashTableSize < 4 || hashTableSize > 524288 ) {
+		if ( ( flags & CREATE && hashTableSize == 0 ) || ( hashTableSize != 0 && ( hashTableSize < 4 || hashTableSize > 524288 ) ) ) {
 
 			fprintf(stderr, "%s Error: Unsupported hash table size %d\n", app, hashTableSize);
 			return -1;

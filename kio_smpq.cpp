@@ -284,7 +284,7 @@ void SMPQSlave::get(const KUrl &url) {
 	totalSize(((KIO::filesize_t)t_high << 31) | t_low);
 
 	bool eof = false;
-	size_t bytes = 1024;
+	unsigned int bytes = 1024;
 	QVarLengthArray <char> buffer(bytes);
 
 	if ( QString::fromUtf8(archivePath).endsWith(".mpq", Qt::CaseInsensitive) )
@@ -1014,7 +1014,7 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 			mimeType("application/x-mpqe");
 		else {
 
-			size_t bytes = 1024;
+			unsigned int bytes = 1024;
 			QVarLengthArray <char> buffer(bytes);
 
 			SFileReadFile(p->SFile, buffer.data(), buffer.size(), &bytes, NULL);
@@ -1061,7 +1061,7 @@ void SMPQSlave::read(KIO::filesize_t size) {
 	kDebug(KIO_SMPQ);
 
 	bool eof = false;
-	size_t bytes = size;
+	unsigned int bytes = size;
 	QVarLengthArray <char> buffer(bytes);
 
 	if ( ! SFileReadFile(p->SFile, buffer.data(), buffer.size(), &bytes, NULL) ) {

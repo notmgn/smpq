@@ -41,7 +41,7 @@ char * dirname(char *);
 
 #include "common.h"
 
-void systemListfiles(HANDLE SArchive, const char * archive, int flags) {
+void systemListfiles(void * SArchive, const char * archive, int flags) {
 
 #if defined(WIN32) || defined(_MSC_VER)
 
@@ -71,7 +71,7 @@ void systemListfiles(HANDLE SArchive, const char * archive, int flags) {
 		if ( flags & VERBOSE )
 			printVerbose(archive, "Loading system listfile", listfile);
 
-		SFileAddListFile(SArchive, listfile);
+		SFileAddListFile((HANDLE)SArchive, listfile);
 
 		if ( ! FindNextFile(hFind, &FindFileData) )
 			break;
@@ -112,7 +112,7 @@ void systemListfiles(HANDLE SArchive, const char * archive, int flags) {
 		if ( flags & VERBOSE )
 			printVerbose(archive, "Loading system listfile", listfile);
 
-		SFileAddListFile(SArchive, listfile);
+		SFileAddListFile((HANDLE)SArchive, listfile);
 
 	}
 

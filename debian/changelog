@@ -1,3 +1,10 @@
+smpq (1.1-1) unstable; urgency=low
+
+  * Fixed compilation on target x86_64
+  * Fixed default value of Hash Table Size
+
+ -- Pali Rohár <pali.rohar@gmail.com>  Sun, 17 Apr 2011 04:10:21 +0200
+
 smpq (1.0-1) unstable; urgency=low
 
   * Final release 1.0

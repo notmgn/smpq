@@ -21,12 +21,6 @@
 #define inline __inline__
 #endif
 
-#if defined(WIN32) || defined(_MSC_VER)
-#include <windows.h>
-#else
-typedef void * HANDLE;
-#endif
-
 #define append _smpq_append
 #define extract _smpq_extract
 #define info _smpq_info
@@ -144,7 +138,7 @@ int rename(const char * archive, const char * oldName, const char * newName, int
  * Internaly this function looks for all *.txt files in system StormLib directory and tries load all text list files to memory
  * by calling SFileAddListFile. On Windows is this directory same with directory where are smpq executable.
  */
-void systemListfiles(HANDLE SArchive, const char * archive, int flags);
+void systemListfiles(void * SArchive, const char * archive, int flags);
 
 /************************
  * Functions for output *
@@ -171,6 +165,10 @@ void printVerbose(const char * archive, const char * message, const char * file)
 #define OFFSET 116444736000000000ULL /* Number of 100 ns units between 01/01/1601 and 01/01/1970 */
 #define NSEC 10000000ULL /* Convert 100 ns to sec */
 
+#define TYPE_SIGNED(TYPE) ( (TYPE) 0 > (TYPE) -1 )
+#define TYPE_SHIFT(TYPE) ( sizeof(TYPE) * 8 - TYPE_SIGNED(TYPE) - 1 )
+#define TYPE_MAX(TYPE) ( (TYPE)( ~( 1LL << TYPE_SHIFT(TYPE) ) << 1 ) + 1 )
+
 /* Convert time_t to FILETIME */
 static inline void toFileTime(unsigned long long int * to, time_t from) {
 
@@ -187,7 +185,7 @@ static inline int fromFileTime(time_t * to, unsigned long long int from) {
         if ( from < OFFSET )
                 return 0;
 
-        if ( ( from - OFFSET ) / NSEC > ( 1ULL << sizeof(time_t) * 8 ) ) 
+        if ( ( from - OFFSET ) / NSEC > TYPE_MAX(time_t) )
                 return 1;
 
         *to = ( from - OFFSET ) / NSEC;
@@ -195,6 +193,10 @@ static inline int fromFileTime(time_t * to, unsigned long long int from) {
         return 1;
 
 }
+
+#undef TYPE_SIGNED
+#undef TYPE_LEN
+#undef TYPE_MAX
 
 #undef OFFSET
 #undef NSEC
