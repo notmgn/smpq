@@ -276,12 +276,11 @@ void SMPQSlave::get(const KUrl &url) {
 
 	}
 
-	// TODO: rename
-	unsigned int t_low;
-	unsigned int t_high;
-	t_low = SFileGetFileSize(p->SFile, &t_high);
+	unsigned int low;
+	unsigned int high;
+	low = SFileGetFileSize(p->SFile, &high);
 
-	totalSize(((KIO::filesize_t)t_high << 31) | t_low);
+	totalSize(((KIO::filesize_t)high << 31) | low);
 
 	bool eof = false;
 	unsigned int bytes = 1024;
@@ -301,10 +300,8 @@ void SMPQSlave::get(const KUrl &url) {
 
 	}
 
-	// TODO: signed or unsigned? SFileSetFilePointer needs LONG
-	int low = 0;
-	int high = 0;
-	SFileSetFilePointer(SFile, low, &high, FILE_BEGIN);
+	int dummy = 0;
+	SFileSetFilePointer(SFile, 0, &dummy, FILE_BEGIN);
 
 	buffer.resize(0x10000);
 
@@ -339,7 +336,6 @@ void SMPQSlave::get(const KUrl &url) {
 	SFileCloseFile(SFile);
 
 	data(QByteArray());
-	processedSize(((KIO::filesize_t)t_high << 31) | t_low);
 	finished();
 
 }
@@ -840,7 +836,7 @@ void SMPQSlave::stat(const KUrl &url) {
 			unsigned int high = 0;
 			unsigned int low = SFileGetFileSize(SFile, &high);
 
-			SFileFindData.dwFileSize = low | ( (unsigned long long int)high << 32 );
+			SFileFindData.dwFileSize = low | ( (quint64)high << 32 );
 
 			SFileCloseFile(SFile);
 
@@ -1023,10 +1019,8 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 			KMimeType::Ptr fileMimeType = KMimeType::findByNameAndContent(url.fileName(), fileData);
 			mimeType(fileMimeType->name());
 
-			// TODO: signed or unsigned? SFileSetFilePointer needs LONG
-			int low = 0;
-			int high = 0;
-			SFileSetFilePointer(p->SFile, low, &high, FILE_BEGIN);
+			int dummy = 0;
+			SFileSetFilePointer(p->SFile, 0, &dummy, FILE_BEGIN);
 
 		}
 
@@ -1097,19 +1091,18 @@ void SMPQSlave::seek(KIO::filesize_t offset) {
 
 	kDebug(KIO_SMPQ);
 
-	// TODO: signed or unsigned? SFileSetFilePointer needs LONG
-	int low = offset;
+	int low = offset & ( ( 1ULL << 32 ) - 1 );
 	int high = offset >> 32;
 
-	unsigned int low_ret;
+	unsigned int ret;
 
-	if ( ( low_ret = SFileSetFilePointer(p->SFile, low, &high, FILE_BEGIN) ) == SFILE_INVALID_SIZE ) {
+	if ( ( ret = SFileSetFilePointer(p->SFile, low, &high, FILE_BEGIN) ) == SFILE_INVALID_SIZE ) {
 
 		error(KIO::ERR_COULD_NOT_SEEK, p->url.prettyUrl());
 		return;
 
 	}
 
-	position(((KIO::filesize_t)high << 31) | low_ret);
+	position(((KIO::filesize_t)high << 32) | ret);
 
 }

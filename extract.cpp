@@ -123,11 +123,15 @@ static void trie_free(const struct trie * t) {
 
 	unsigned int i;
 
+	if ( ! t )
+		return;
+
 	for ( i = 0; i < 255; ++i )
 		if ( t->t[i] )
 			trie_free(t->t[i]);
 
 	free((struct trie *)t);
+	t = NULL;
 
 }
 
@@ -169,12 +173,12 @@ static int trie_find(const struct trie * tr, const char * str) {
 
 }
 
-int extract(const char * archive, const char * const files[], int flags, const char * listfile, int locale, const char * const parchives[]) {
+int extract(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale, const char * const parchives[]) {
 
 	int i, j;
 	HANDLE SArchive = NULL;
 
-	int SFlags = MPQ_OPEN_READ_ONLY;
+	unsigned int SFlags = MPQ_OPEN_READ_ONLY;
 
 	if ( flags & NO_LISTFILE )
 		SFlags |= MPQ_OPEN_NO_LISTFILE;

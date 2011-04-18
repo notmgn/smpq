@@ -61,7 +61,7 @@
 	"          For all locale id see: http://msdn.microsoft.com/en-us/library/0h88fahh(v=VS.85).aspx\n" \
 	"\n" \
 	"Options for appending file(s) to archive:\n" \
-	"     -H, --hash-table-size <size>  Set/Change hash table size in archive: between 4 and 524288; 0 - do not change when not set -c (default: 0 or 16)\n" \
+	"     -m, --max-file-count <count>  Set maximum file count of archive (power of 2, 0 - autodetect) (default: 0)\n" \
 	"     -E, --encrypt                 Store as encrypted\n" \
 	"     -F, --fix-key                 Encryption key will be adjusted according to file size in the archive (need -E)\n" \
 	"     -D, --deletion-marker         Set deletion marker\n" \
@@ -119,9 +119,9 @@
 
 char * app;
 
-static int skip = 0;
-static int action = 0;
-static int flags = 0;
+static char action = 0;
+static unsigned int flags = 0;
+static unsigned int skip = 0;
 
 static void parse(char c) {
 
@@ -173,9 +173,9 @@ static void parse(char c) {
 			skip = LOCALE_ARG;
 			break;
 
-		case 'H':
-			flags |= HASH_SIZE;
-			skip = HASH_SIZE_ARG;
+		case 'm':
+			flags |= MAX_FILE_COUNT;
+			skip = MAX_FILE_COUNT_ARG;
 			break;
 
 		case 'E':
@@ -332,8 +332,8 @@ int main(int argc, char * argv[]) {
 				parse('v');
 			else if ( strcmp(argv[i], "--locale") == 0 )
 				parse('O');
-			else if ( strcmp(argv[i], "--hash-table-size") == 0 )
-				parse('H');
+			else if ( strcmp(argv[i], "--max-file-count") == 0 )
+				parse('m');
 			else if ( strcmp(argv[i], "--encrypt") == 0 )
 				parse('E');
 			else if ( strcmp(argv[i], "--fix-key") == 0 )
@@ -376,7 +376,7 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	int mpq_version = 4;
+	unsigned int mpq_version = 4;
 
 	if ( flags & MPQ_VERSION ) {
 
@@ -438,7 +438,7 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	int locale = 0;
+	unsigned int locale = 0;
 
 	if ( flags & LOCALE ) {
 
@@ -453,28 +453,18 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	int hashTableSize = 0;
+	unsigned int maxFileCount = 0;
 
-	if ( flags & CREATE )
-		hashTableSize = 16;
-	
-	if ( flags & HASH_SIZE ) {
+	if ( flags & MAX_FILE_COUNT ) {
 
-		if ( skipArg[HASH_SIZE_ARG] > argc-1 || skipArg[HASH_SIZE_ARG] == 0 ) {
+		if ( skipArg[MAX_FILE_COUNT_ARG] > argc-1 || skipArg[MAX_FILE_COUNT_ARG] == 0 ) {
 
-			fprintf(stderr, "%s Error: No hash table size specified\n", app);
+			fprintf(stderr, "%s Error: No maximum file count specified\n", app);
 			return -1;
 
 		}
 
-		hashTableSize = atoi(argv[skipArg[HASH_SIZE_ARG]]);
-
-		if ( ( flags & CREATE && hashTableSize == 0 ) || ( hashTableSize != 0 && ( hashTableSize < 4 || hashTableSize > 524288 ) ) ) {
-
-			fprintf(stderr, "%s Error: Unsupported hash table size %d\n", app, hashTableSize);
-			return -1;
-
-		}
+		maxFileCount = atoi(argv[skipArg[MAX_FILE_COUNT_ARG]]);
 
 	}
 
@@ -586,7 +576,7 @@ int main(int argc, char * argv[]) {
 	switch ( action ) {
 
 		case 'a':
-			return append(archive, (const char * const *)files, flags, locale, hashTableSize, compression);
+			return append(archive, (const char * const *)files, flags, locale, maxFileCount, compression);
 
 		case 'x':
 			return extract(archive, (const char * const *)files, flags, listfile, locale, (const char * const *)parchives);

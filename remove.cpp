@@ -25,13 +25,13 @@ extern "C" {
 
 #include "common.h"
 
-int remove(const char * archive, const char * const files[], int flags, const char * listfile, int locale) {
+int remove(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale) {
 
 	int i;
 	int needCompact = 0;
 	HANDLE SArchive = NULL;
 
-	int SFlags = 0;
+	unsigned int SFlags = 0;
 
 	if ( flags & NO_LISTFILE )
 		SFlags |= MPQ_OPEN_NO_LISTFILE;

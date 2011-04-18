@@ -22,11 +22,11 @@
 #undef main
 
 char StormLibCopyright[] = { 0 };
-int append(const char * archive, const char * const files[], int flags, int locale, int hashTableSize, const char * compression) { (void)archive; (void)files; (void)flags; (void)locale; (void)hashTableSize; (void)compression; return 0; }
-int extract(const char * archive, const char * const files[], int flags, const char * listfile, int locale, const char * const parchives[]) { (void)archive; (void)files; (void)flags; (void)listfile; (void)locale; (void)parchives; return 0; }
-int info(const char * archive, int flags) { (void)archive; (void)flags; return 0; }
-int remove(const char * archive, const char * const files[], int flags, const char * listfile, int locale) { (void)archive; (void)files; (void)flags; (void)listfile; (void)locale; return 0; }
-int rename(const char * archive, const char * oldName, const char * newName, int flags, const char * listfile, int locale) { (void)archive; (void)oldName; (void)newName; (void)newName; (void)flags; (void)listfile; (void)locale; return 0; }
+int append(const char * archive, const char * const files[], unsigned int flags, unsigned int locale, unsigned int maxFileCount, const char * compression) { (void)archive; (void)files; (void)flags; (void)locale; (void)maxFileCount; (void)compression; return 0; }
+int extract(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale, const char * const parchives[]) { (void)archive; (void)files; (void)flags; (void)listfile; (void)locale; (void)parchives; return 0; }
+int info(const char * archive, unsigned int flags) { (void)archive; (void)flags; return 0; }
+int remove(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale) { (void)archive; (void)files; (void)flags; (void)listfile; (void)locale; return 0; }
+int rename(const char * archive, const char * oldName, const char * newName, unsigned int flags, const char * listfile, unsigned int locale) { (void)archive; (void)oldName; (void)newName; (void)newName; (void)flags; (void)listfile; (void)locale; return 0; }
 
 #include <stdio.h>
 #include <string.h>

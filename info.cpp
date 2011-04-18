@@ -25,22 +25,22 @@ extern "C" {
 
 #include "common.h"
 
-static inline unsigned int GetInfo(HANDLE archive, unsigned int info) {
+static inline unsigned int GetInfo(HANDLE SArchive, unsigned int info) {
 	
 	unsigned int ret;
 
-	if ( SFileGetFileInfo(archive, info, &ret, sizeof(ret), NULL) )
+	if ( SFileGetFileInfo(SArchive, info, &ret, sizeof(ret), NULL) )
 		return ret;
 	else
 		return 0;
 
 }
 
-int info(const char * archive, int flags) {
+int info(const char * archive, unsigned int flags) {
 
 	HANDLE SArchive = NULL;
 
-	int SFlags = MPQ_OPEN_READ_ONLY;
+	unsigned int SFlags = MPQ_OPEN_READ_ONLY;
 
 	if ( flags & MPQ_VERSION_1 )
 		SFlags |= MPQ_OPEN_FORCE_MPQ_V1;
@@ -57,12 +57,25 @@ int info(const char * archive, int flags) {
 
 	printMessage("Archive name: %s", archive);
 	printMessage("Archive size: %u", GetInfo(SArchive, SFILE_INFO_ARCHIVE_SIZE));
+	printMessage("Number of files in archive: %u", GetInfo(SArchive, SFILE_INFO_NUM_FILES));
+	printMessage("Maximum file count of archive: %u", GetInfo(SArchive, SFILE_INFO_MAX_FILE_COUNT));
 	printMessage("Hash table size: %u", GetInfo(SArchive, SFILE_INFO_HASH_TABLE_SIZE));
 	printMessage("Block table size: %u", GetInfo(SArchive, SFILE_INFO_BLOCK_TABLE_SIZE));
 	printMessage("Sector size: %u", GetInfo(SArchive, SFILE_INFO_SECTOR_SIZE));
-	printMessage("Number of files in archive: %u", GetInfo(SArchive, SFILE_INFO_NUM_FILES));
 
-	int verify = SFileVerifyArchive(SArchive);
+	unsigned int streamFlags = GetInfo(SArchive, SFILE_INFO_STREAM_FLAGS);
+
+	if ( streamFlags & STREAM_FLAG_PART_FILE )
+		printMessage("Archive partial: Yes");
+	else
+		printMessage("Archive partial: No");
+
+	if ( streamFlags & STREAM_FLAG_ENCRYPTED_FILE )
+		printMessage("Archive encryped: Yes");
+	else
+		printMessage("Archive encryped: No");
+
+	unsigned int verify = SFileVerifyArchive(SArchive);
 
 	if ( verify == ERROR_NO_SIGNATURE )
 		printMessage("Archive signature: No signature");

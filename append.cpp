@@ -36,10 +36,10 @@ extern "C" {
 
 #include "common.h"
 
-int append(const char * archive, const char * const files[], int flags, int locale, int hashTableSize, const char * compression) {
+int append(const char * archive, const char * const files[], unsigned int flags, unsigned int locale, unsigned int maxFileCount, const char * compression) {
 
-	int SFlags = 0;
-	int SCompFlags = 0;
+	unsigned int SFlags = 0;
+	unsigned int SCompFlags = 0;
 
 	if ( flags & ENCRYPT )
 		SFlags |= MPQ_FILE_ENCRYPTED;
@@ -151,7 +151,7 @@ int append(const char * archive, const char * const files[], int flags, int loca
 		if ( flags & VERBOSE )
 			printVerbose(archive, "Create new archive", archive);
 
-		int SOpenFlags = 0;
+		unsigned int SOpenFlags = 0;
 
 		if ( flags & MPQ_VERSION_1 )
 			SOpenFlags |= MPQ_CREATE_ARCHIVE_V1;
@@ -165,7 +165,11 @@ int append(const char * archive, const char * const files[], int flags, int loca
 		if ( ! ( flags & NO_ATTRIBUTES ) )
 			SOpenFlags |= MPQ_CREATE_ATTRIBUTES;
 
-		if ( ! SFileCreateArchive(archive, SOpenFlags, hashTableSize, &SArchive) ) {
+		if ( maxFileCount == 0 )
+			for ( i = 0; files[i]; ++i )
+				++maxFileCount;
+
+		if ( ! SFileCreateArchive(archive, SOpenFlags, maxFileCount, &SArchive) ) {
 
 			if ( ! ( flags & QUIET ) )
 				printError(archive, "Cannot create archive", archive, GetLastError());
@@ -176,7 +180,7 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 	} else {
 
-		int SOpenFlags = 0;
+		unsigned int SOpenFlags = 0;
 
 		if ( flags & NO_LISTFILE )
 			SOpenFlags |= MPQ_OPEN_NO_LISTFILE;
@@ -196,13 +200,33 @@ int append(const char * archive, const char * const files[], int flags, int loca
 
 		}
 
-		if ( hashTableSize != 0 ) {
+		if ( maxFileCount == 0 ) {
 
-			printVerbose(archive, "Change hash table size", archive);
+			unsigned int fileCount;
 
-			if ( ! SFileSetMaxFileCount(SArchive, hashTableSize) ) {
+			if ( ! SFileGetFileInfo(SArchive, SFILE_INFO_NUM_FILES, &fileCount, sizeof(fileCount), 0) )
+				fileCount = 0;
 
-				printError(archive, "Cannot change hash table size", archive, GetLastError());
+			for ( i = 0; files[i]; ++i )
+				++fileCount;
+
+			if ( ! SFileGetFileInfo(SArchive, SFILE_INFO_MAX_FILE_COUNT, &maxFileCount, sizeof(maxFileCount), 0) )
+				maxFileCount = 0;
+
+			if ( maxFileCount < fileCount )
+				maxFileCount = fileCount;
+			else
+				maxFileCount = 0;
+
+		}
+
+		if ( maxFileCount != 0 ) {
+
+			printVerbose(archive, "Change maximum file count", archive);
+
+			if ( ! SFileSetMaxFileCount(SArchive, maxFileCount) ) {
+
+				printError(archive, "Cannot change maximum file count", archive, GetLastError());
 				return -1;
 
 			}

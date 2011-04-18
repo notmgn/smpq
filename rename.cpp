@@ -25,11 +25,11 @@ extern "C" {
 
 #include "common.h"
 
-int rename(const char * archive, const char * oldName, const char * newName, int flags, const char * listfile, int locale) {
+int rename(const char * archive, const char * oldName, const char * newName, unsigned int flags, const char * listfile, unsigned int locale) {
 
 	HANDLE SArchive = NULL;
 
-	int SFlags = 0;
+	unsigned int SFlags = 0;
 
 	if ( flags & NO_LISTFILE )
 		SFlags |= MPQ_OPEN_NO_LISTFILE;

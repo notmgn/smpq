@@ -1,3 +1,12 @@
+smpq (1.2-1) unstable; urgency=low
+
+  * Fixed using signed/unsigned integers
+  * Replaced option for setting hash table size by setting maximum file count
+  * Rewrited hash table size to maximum file count (deleted from StromLib)
+  * Autodetect maximum file count of archive when appending files
+
+ -- Pali Rohár <pali.rohar@gmail.com>  Mon, 18 Apr 2011 16:39:07 +0200
+
 smpq (1.1-1) unstable; urgency=low
 
   * Fixed compilation on target x86_64

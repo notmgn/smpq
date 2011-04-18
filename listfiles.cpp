@@ -41,7 +41,7 @@ char * dirname(char *);
 
 #include "common.h"
 
-void systemListfiles(void * SArchive, const char * archive, int flags) {
+void systemListfiles(void * SArchive, const char * archive, unsigned int flags) {
 
 #if defined(WIN32) || defined(_MSC_VER)
 
