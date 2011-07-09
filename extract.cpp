@@ -346,7 +346,7 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 
 				char strtime[80];
 				strftime(strtime, 80, "%Y-%m-%d %H:%M", localtime(&fileTime));
-				printMessage("%12u %s %s", fileSize, strtime, fileName);
+				printMessage("%12zu %s %s", fileSize, strtime, fileName);
 
 			}
 

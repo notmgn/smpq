@@ -17,7 +17,7 @@ how to integrate MPQ support on KDE4 desktop (There is no need to use some MPQ
 viewer/editor. All KDE4 application can open MPQ archives in read/write mode).
 
 Author: Pali Rohár <pali.rohar@gmail.com>
-Version: 1.2
+Version: 1.3
 License: GNU GPL v3
 Homepage: https://launchpad.net/smpq
 
@@ -27,7 +27,7 @@ Homepage: https://launchpad.net/smpq
 
 Dependencies for SMPQ:
  * C and C++ compiler (gcc/g++ works fine)
- * StormLib (minimal version 8.01) from http://www.zezula.net/en/mpq/download.html#StormLib
+ * StormLib (minimal version 8.02) from http://www.zezula.net/en/mpq/download.html#StormLib
  * CMake (minimal version 2.6) from http://www.cmake.org/cmake/resources/software.html
 
 Additional dependencies for KDE4 KIO plugin:

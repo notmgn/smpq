@@ -1,3 +1,13 @@
+smpq (1.3-1) unstable; urgency=low
+
+  * Cleaned CMakeLists.txt
+  * Fixed printing verbose message
+  * Fixed multiplatform using size_t
+  * Decrease MPQ max file count after deleting file
+  * Depends on StormLib version 8.02
+
+ -- Pali Rohár <pali.rohar@gmail.com>  Sat, 09 Jul 2011 10:50:16 +0200
+
 smpq (1.2-1) unstable; urgency=low
 
   * Fixed using signed/unsigned integers

@@ -222,11 +222,14 @@ int append(const char * archive, const char * const files[], unsigned int flags,
 
 		if ( maxFileCount != 0 ) {
 
-			printVerbose(archive, "Change maximum file count", archive);
+			if ( flags & VERBOSE )
+				printVerbose(archive, "Change maximum file count", archive);
 
 			if ( ! SFileSetMaxFileCount(SArchive, maxFileCount) ) {
 
-				printError(archive, "Cannot change maximum file count", archive, GetLastError());
+				if ( ! ( flags & QUIET ) )
+					printError(archive, "Cannot change maximum file count", archive, GetLastError());
+
 				return -1;
 
 			}

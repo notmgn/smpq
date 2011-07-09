@@ -104,6 +104,26 @@ int remove(const char * archive, const char * const files[], unsigned int flags,
 
 	if ( needCompact ) {
 
+		unsigned int fileCount;
+		unsigned int maxFileCount;
+
+		if ( ! SFileGetFileInfo(SArchive, SFILE_INFO_NUM_FILES, &fileCount, sizeof(fileCount), 0) )
+			fileCount = 0;
+
+		if ( ! SFileGetFileInfo(SArchive, SFILE_INFO_MAX_FILE_COUNT, &maxFileCount, sizeof(maxFileCount), 0) )
+			maxFileCount = 0;
+
+		if ( fileCount * 2 <= maxFileCount ) {
+
+			if ( flags & VERBOSE )
+				printVerbose(archive, "Change maximum file count", archive);
+
+			if ( ! SFileSetMaxFileCount(SArchive, fileCount) )
+				if ( ! ( flags & QUIET ) )
+					printError(archive, "Cannot change maximum file count", archive, GetLastError());
+
+		}
+
 		if ( flags & VERBOSE )
 			printVerbose(archive, "Compact archive", archive);
 

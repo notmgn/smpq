@@ -18,7 +18,7 @@
 #
 
 project(SMPQ)
-set(VERSION 1.2)
+set(VERSION 1.3)
 cmake_minimum_required(VERSION 2.6)
 
 option(WITH_CMD "Enable smpq console application" ON)
@@ -109,19 +109,7 @@ if(WITH_CMD)
 
 	if(WIN32 AND WITH_NSIS)
 
-		if(NOT UPX)
-
-			find_program(UPX upx)
-
-			if(NOT UPX)
-				message(FATAL_ERROR "upx not found")
-			else(NOT UPX)
-				message(STATUS "Found upx: ${UPX}")
-			endif(NOT UPX)
-
-			mark_as_advanced(UPX)
-
-		endif(NOT UPX)
+		find_package(SelfPackers REQUIRED)
 
 		if(NOT MAKENSIS)
 
@@ -136,8 +124,6 @@ if(WITH_CMD)
 			mark_as_advanced(MAKENSIS)
 
 		endif(NOT MAKENSIS)
-
-		set(UPX_FLAGS ${UPX_FLAGS} -qq -9)
 
 		if(CMAKE_SIZEOF_VOID_P STREQUAL 4)
 
@@ -154,12 +140,15 @@ if(WITH_CMD)
 			set(MAKENSIS_FLAGS -V2 -DQUIET ${MAKENSIS_FLAGS})
 		endif(NOT CMAKE_VERBOSE_MAKEFILE)
 
-		set(MAKENSIS_FLAGS ${MAKENSIS_FLAGS} -DUPX="${UPX}" -DVERSION="${VERSION}" -NOCD)
+		set(MAKENSIS_FLAGS ${MAKENSIS_FLAGS} -DUPX="${SELF_PACKER_FOR_EXECUTABLE}" -DVERSION="${VERSION}" -NOCD)
 
 		file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/COPYING DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 		if(CMAKE_SIZEOF_VOID_P STREQUAL 4)
-			add_custom_command(TARGET smpq POST_BUILD COMMAND ${UPX} ARGS ${UPX_FLAGS} smpq${CMAKE_EXECUTABLE_SUFFIX})
+			add_custom_command(TARGET smpq POST_BUILD
+				COMMAND ${SELF_PACKER_FOR_EXECUTABLE}
+				ARGS ${SELF_PACKER_FOR_EXECUTABLE_FLAGS} -qq -9 smpq${CMAKE_EXECUTABLE_SUFFIX}
+			)
 		endif(CMAKE_SIZEOF_VOID_P STREQUAL 4)
 
 		add_custom_command(OUTPUT ${MAKENSIS_OUTPUT} COMMAND ${MAKENSIS} ARGS ${MAKENSIS_FLAGS} ${SMPQ_NSIS} DEPENDS smpq smpq.nsi COPYING)
