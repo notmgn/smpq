@@ -1,6 +1,6 @@
 /*
     main.c - StormLib MPQ archiving utility
-    Copyright (C) 2010  Pali Rohár <pali.rohar@gmail.com>
+    Copyright (C) 2010 - 2011  Pali Rohár <pali.rohar@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -88,11 +88,7 @@
 	"          SPARSE+ZLIB+PKWARE     Together SPARSE, ZLIB and Pkware Data compression\n" \
 	"          SPARSE+BZIP2+PKWARE    Together SPARSE. BZIP2 and Pkware Data compression\n" \
 	"\n" \
-	"Options for deleting file(s) from archive:\n" \
-	"     -I, --index                   Specify file(s) by index(es) (not by name)\n" \
-	"\n" \
 	"Options for extracting file(s) from archive:\n" \
-	"     -I, --index                   Specify file(s) by index(es) (not by name)\n" \
 	"     -X, --not-encrypted           Archive is not encrypted (default: autodetect) (Encrypted archives have Starcraft II installation)\n" \
 	"     -p                            Open more (patched) archives with directory prefix (prefix:archive), when file is in more archives, will be extracted from last\n" \
 	"          Usage with more (patched) archives:\n" \
@@ -101,7 +97,7 @@
 
 #define LICENSE \
 	"SMPQ - StormLib MPQ archiving utility, version " VERSION "\n" \
-	"Copyright (C) 2010  Pali Rohár <pali.rohar@gmail.com>\n" \
+	"Copyright (C) 2010 - 2011  Pali Rohár <pali.rohar@gmail.com>\n" \
 	"\n" \
 	"This program is free software: you can redistribute it and/or modify\n" \
 	"it under the terms of the GNU General Public License as published by\n" \
@@ -197,10 +193,6 @@ static void parse(char c) {
 		case 'C':
 			flags |= COMPRESSION;
 			skip = COMPRESSION_ARG;
-
-		case 'I':
-			flags |= INDEX;
-			break;
 
 		case 'p':
 			flags |= MPQ_PATCHED;
@@ -344,8 +336,6 @@ int main(int argc, char * argv[]) {
 				parse('U');
 			else if ( strcmp(argv[i], "--compression") == 0 )
 				parse('C');
-			else if ( strcmp(argv[i], "--index") == 0 )
-				parse('I');
 			else if ( strcmp(argv[i], "--not-encrypted") == 0 )
 				parse('X');
 			else {
@@ -381,12 +371,12 @@ int main(int argc, char * argv[]) {
 	if ( flags & MPQ_VERSION ) {
 
 		if ( skipArg[MPQ_VERSION_ARG] > argc-1 || skipArg[MPQ_VERSION_ARG] == 0 ) {
- 
+
 			fprintf(stderr, "%s Error: No MPQ archive version specified\n", app);
 			return -1;
- 
+
 		}
- 
+
 		mpq_version = atoi(argv[skipArg[MPQ_VERSION_ARG]]);
 
 		if ( mpq_version < 1 || mpq_version > 4 ) {

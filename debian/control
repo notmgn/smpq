@@ -2,8 +2,8 @@ Source: smpq
 Section: utils
 Priority: extra
 Maintainer: Pali Rohár <pali.rohar@gmail.com>
-Build-Depends: debhelper (>= 7), cdbs, cmake, stormlib-dev (>= 8.02), kdelibs5-dev
-Standards-Version: 3.8.4
+Build-Depends: debhelper (>= 7), cmake, stormlib-dev (>= 8.02), kdelibs5-dev
+Standards-Version: 3.9.2
 Homepage: https://launchpad.net/smpq
 Vcs-Bzr: lp:smpq
 Vcs-Browser: https://code.launchpad.net/smpq

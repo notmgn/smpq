@@ -1,6 +1,5 @@
 #!/usr/bin/make -f
-
-export DH_OPTIONS
+# -*- makefile -*-
 
 %:
 	dh $@

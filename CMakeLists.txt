@@ -1,6 +1,6 @@
 #
 #    CMakeLists.txt - cmake for StormLib MPQ archiving utility
-#    Copyright (C) 2010  Pali Rohár <pali.rohar@gmail.com>
+#    Copyright (C) 2010 - 2011  Pali Rohár <pali.rohar@gmail.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 #
 
 project(SMPQ)
-set(VERSION 1.3)
+set(VERSION 1.4)
 cmake_minimum_required(VERSION 2.6)
 
 option(WITH_CMD "Enable smpq console application" ON)
@@ -143,6 +143,7 @@ if(WITH_CMD)
 		set(MAKENSIS_FLAGS ${MAKENSIS_FLAGS} -DUPX="${SELF_PACKER_FOR_EXECUTABLE}" -DVERSION="${VERSION}" -NOCD)
 
 		file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/COPYING DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+		file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/README DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 		if(CMAKE_SIZEOF_VOID_P STREQUAL 4)
 			add_custom_command(TARGET smpq POST_BUILD

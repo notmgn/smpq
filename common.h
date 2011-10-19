@@ -1,6 +1,6 @@
 /*
     common.h - StormLib MPQ archiving utility
-    Copyright (C) 2010  Pali Rohár <pali.rohar@gmail.com>
+    Copyright (C) 2010 - 2011  Pali Rohár <pali.rohar@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -59,12 +59,11 @@
 
 /* Options - file */
 #define LOCALE			1 << 20
-#define INDEX			1 << 21
-#define ENCRYPT			1 << 22
-#define FIX_KEY			1 << 23
-#define DELETE_MARKER		1 << 24
-#define SINGLE_UNIT		1 << 25
-#define COMPRESSION		1 << 26
+#define ENCRYPT			1 << 21
+#define FIX_KEY			1 << 22
+#define DELETE_MARKER		1 << 23
+#define SINGLE_UNIT		1 << 24
+#define COMPRESSION		1 << 25
 
 /* Options - with arguments */
 #define MPQ_VERSION_ARG		1
@@ -172,25 +171,25 @@ void printVerbose(const char * archive, const char * message, const char * file)
 /* Convert time_t to FILETIME */
 static inline void toFileTime(unsigned long long int * to, time_t from) {
 
-        if ( from == 0 ) 
-                *to = 0;
-        else
-                *to = from * NSEC + OFFSET;
+	if ( from == 0 )
+		*to = 0;
+	else
+		*to = from * NSEC + OFFSET;
 
 }
 
 /* Convert FILETIME to time_t */
 static inline int fromFileTime(time_t * to, unsigned long long int from) {
 
-        if ( from < OFFSET )
-                return 0;
+	if ( from < OFFSET )
+		return 0;
 
-        if ( ( from - OFFSET ) / NSEC > TYPE_MAX(time_t) )
-                return 1;
+	if ( ( from - OFFSET ) / NSEC > TYPE_MAX(time_t) )
+		return 1;
 
-        *to = ( from - OFFSET ) / NSEC;
+	*to = ( from - OFFSET ) / NSEC;
 
-        return 1;
+	return 1;
 
 }
 

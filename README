@@ -17,7 +17,7 @@ how to integrate MPQ support on KDE4 desktop (There is no need to use some MPQ
 viewer/editor. All KDE4 application can open MPQ archives in read/write mode).
 
 Author: Pali Rohár <pali.rohar@gmail.com>
-Version: 1.3
+Version: 1.4
 License: GNU GPL v3
 Homepage: https://launchpad.net/smpq
 
@@ -38,7 +38,7 @@ Additional dependencies for Windows NSIS Installer:
  * UPX from http://upx.sourceforge.net/
 
 Building on Debian/*buntu and Debian like Linux distributions:
-  $ sudo apt-get install fakeroot debhelper cdbs cmake stormlib-dev kdelibs5-dev
+  $ sudo apt-get install fakeroot debhelper cmake stormlib-dev kdelibs5-dev
   $ dpkg-buildpackage -b -rfakeroot
   $ sudo dpkg -i ../*.deb
 
@@ -89,8 +89,8 @@ Note:
 
 SMPQ command line utility:
  For detailed info see
- * user manpage: $ man smpq
- * run: $ smpq --help
+ * user manpage: $ man 1 smpq
+ * runtime help: $ smpq --help
 
 KDE4 KIO plugin:
  Open Konqueror, Dolphin or other KDE4 file manager and simply open MPQ archive

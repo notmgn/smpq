@@ -1,6 +1,6 @@
 ;
 ;    smpq.nsi - Windows NSIS Installer for StormLib MPQ archiving utility
-;    Copyright (C) 2010  Pali Rohár <pali.rohar@gmail.com>
+;    Copyright (C) 2010 - 2011  Pali Rohár <pali.rohar@gmail.com>
 ;
 ;    This program is free software: you can redistribute it and/or modify
 ;    it under the terms of the GNU General Public License as published by
@@ -40,11 +40,13 @@
 !define VIVERSION "${VERSION}.0.0"
 !define HOMEPAGE "https://launchpad.net/smpq"
 !define LICENSE "GPL v3"
-!define COPYRIGHT "Copyright (c) 2010 by Pali Rohar"
+!define COPYRIGHT "Copyright (c) 2010 - 2011 by Pali Rohar"
 
 ;--------------------------------
 
 !define EXE "smpq.exe"
+!define README "README"
+!define COPYING "COPYING"
 !define UNINSTALL "uninstall.exe"
 !define INSTALLER "${NAME}-${VERSION}.exe"
 !define INSTALLDIR "$PROGRAMFILES\${NAME}\"
@@ -77,7 +79,7 @@ SetCompressor lzma
 !define MUI_UNFINISHPAGE_NOAUTOCLOSE
 
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "COPYING"
+!insertmacro MUI_PAGE_LICENSE "${COPYING}"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -161,6 +163,8 @@ Section "${NAME}"
 
 	SetOutPath $INSTDIR
 	File "${EXE}"
+	File "${README}"
+	File "${COPYING}"
 	WriteRegStr HKLM "${REGKEY}" "DisplayName" "${NAME} - ${DESCRIPTION}"
 	WriteRegStr HKLM "${REGKEY}" "UninstallString" "$\"$INSTDIR\${UNINSTALL}$\""
 	WriteRegStr HKLM "${REGKEY}" "QuietUninstallString" "$\"$INSTDIR\${UNINSTALL}$\" /S"
@@ -183,9 +187,11 @@ Section "un.${NAME}" Executable
 	SectionIn RO
 
 	Delete "$INSTDIR\${EXE}"
+	Delete "$INSTDIR\${README}"
+	Delete "$INSTDIR\${COPYING}"
+	DeleteRegKey /ifempty HKLM "${REGKEY}"
 	Delete "$INSTDIR\${UNINSTALL}"
 	RMDir "$INSTDIR"
-	DeleteRegKey /ifempty HKLM "${REGKEY}"
 
 SectionEnd
 

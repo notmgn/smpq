@@ -1,6 +1,6 @@
 /*
     mangen.c - StormLib MPQ archiving utility
-    Copyright (C) 2010  Pali Rohár <pali.rohar@gmail.com>
+    Copyright (C) 2010 - 2011  Pali Rohár <pali.rohar@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #undef main
 
 char StormLibCopyright[] = { 0 };
+char * app = (char *)"smpq";
 int append(const char * archive, const char * const files[], unsigned int flags, unsigned int locale, unsigned int maxFileCount, const char * compression) { (void)archive; (void)files; (void)flags; (void)locale; (void)maxFileCount; (void)compression; return 0; }
 int extract(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale, const char * const parchives[]) { (void)archive; (void)files; (void)flags; (void)listfile; (void)locale; (void)parchives; return 0; }
 int info(const char * archive, unsigned int flags) { (void)archive; (void)flags; return 0; }
@@ -33,9 +34,9 @@ int rename(const char * archive, const char * oldName, const char * newName, uns
 
 #define prints(s, e) do { char * _c; for ( _c = s; _c < e; ++_c ) putchar(*_c); } while (0)
 
-int main() {
+int main(void) {
 
-	printf(".TH SMPQ 1 \"Dec 2010\" \"SMPQ - StormLib MPQ archiving utility, version " VERSION "\"\n");
+	printf(".TH SMPQ 1 \"Oct 2011\" \"SMPQ - StormLib MPQ archiving utility, version " VERSION "\"\n");
 
 	char * start = (char *)HELP;
 	char * end = start;

@@ -1,6 +1,6 @@
 /*
     extract.cpp - StormLib MPQ archiving utility
-    Copyright (C) 2010  Pali Rohár <pali.rohar@gmail.com>
+    Copyright (C) 2010 - 2011  Pali Rohár <pali.rohar@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ out:
 	free(q);
 	free(path);
 
-        return rv;
+	return rv;
 
 }
 
@@ -112,7 +112,7 @@ struct trie {
 
 };
 
-static const struct trie * trie_alloc() {
+static const struct trie * trie_alloc(void) {
 
 	struct trie * t = (struct trie *)calloc(1, sizeof(struct trie));
 	return t;
@@ -131,17 +131,17 @@ static void trie_free(const struct trie * t) {
 			trie_free(t->t[i]);
 
 	free((struct trie *)t);
-	t = NULL;
 
 }
 
 static void trie_add(const struct trie * tr, const char * str) {
 
 	unsigned int i;
+	unsigned int len = strlen(str);
 
 	struct trie * t = (struct trie *)tr;
 
-	for ( i = 0; i < strlen(str); ++i ) {
+	for ( i = 0; i < len; ++i ) {
 
 		if ( ! t->t[(int)str[i]] )
 			t->t[(int)str[i]] = (struct trie *)trie_alloc();
@@ -157,10 +157,11 @@ static void trie_add(const struct trie * tr, const char * str) {
 static int trie_find(const struct trie * tr, const char * str) {
 
 	unsigned int i;
+	unsigned int len = strlen(str);
 
 	struct trie * t = (struct trie *)tr;
 
-	for ( i = 0; i < strlen(str); ++i ) {
+	for ( i = 0; i < len; ++i ) {
 
 		t = t->t[(int)str[i]];
 
@@ -243,23 +244,19 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 
 	SFileSetLocale(locale);
 
-	SFlags = SFILE_OPEN_PATCHED_FILE;
-
-	if ( flags & INDEX )
-		SFlags |= SFILE_OPEN_BY_INDEX;
-	else
-		SFlags |= SFILE_OPEN_FROM_MPQ;
+	SFlags = SFILE_OPEN_PATCHED_FILE | SFILE_OPEN_FROM_MPQ;
 
 	for ( i = 0; files[i]; ++i ) {
 
+		const struct trie * t;
 		char mask[512];
+
 		toArchivePath(mask, files[i]);
 
 		SFILE_FIND_DATA SFileFindData;
 		HANDLE SFileFind = NULL;
-		
-		if ( ! ( flags & INDEX ) )
-			SFileFind = SFileFindFirstFile(SArchive, mask, &SFileFindData, listfile);
+
+		SFileFind = SFileFindFirstFile(SArchive, mask, &SFileFindData, listfile);
 
 		if ( ! SFileFind ) {
 
@@ -286,7 +283,7 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 
 		}
 
-		const struct trie * t = trie_alloc();
+		t = trie_alloc();
 
 		while ( SFileFind ) {
 
@@ -320,14 +317,8 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 
 			if ( ! SFileOpenFileEx(SArchive, SFileName, SFlags, &SFile) ) {
 
-				if ( ! ( flags & QUIET ) ) {
-
-					if ( flags & INDEX )
-						printError(archive, "Cannot open file in archive with index", SFileName, GetLastError());
-					else
-						printError(archive, "Cannot open file in archive", SFileName, GetLastError());
-
-				}
+				if ( ! ( flags & QUIET ) )
+					printError(archive, "Cannot open file in archive", SFileName, GetLastError());
 
 				goto next;
 
@@ -424,8 +415,8 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 
 				if ( ! SFileReadFile(SFile, buffer, sizeof(buffer), (DWORD *)&bytes, NULL) ) {
 
-					eof = GetLastError() == ERROR_HANDLE_EOF;
-				       
+					eof = ( GetLastError() == ERROR_HANDLE_EOF );
+
 					if ( ! eof ) {
 
 						if ( ! ( flags & QUIET ) )

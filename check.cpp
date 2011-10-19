@@ -4,4 +4,4 @@
 #error You have old Stormlib version
 #endif
 
-int main() {}
+int main(void) {}

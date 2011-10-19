@@ -1,6 +1,6 @@
 /*
     remove.cpp - StormLib MPQ archiving utility
-    Copyright (C) 2010  Pali Rohár <pali.rohar@gmail.com>
+    Copyright (C) 2010 - 2011  Pali Rohár <pali.rohar@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -66,30 +66,15 @@ int remove(const char * archive, const char * const files[], unsigned int flags,
 
 		toArchivePath(SFileName, fileName);
 
-		if ( flags & VERBOSE ) {
+		if ( flags & VERBOSE )
+			printVerbose(archive, "Remove file", SFileName);
 
-			if ( flags & INDEX )
-				printVerbose(archive, "Remove file wich index", SFileName);
-			else
-				printVerbose(archive, "Remove file", SFileName);
-
-		}
-
-		if ( flags & INDEX )
-			SFlags = SFILE_OPEN_BY_INDEX;
-		else
-			SFlags = SFILE_OPEN_FROM_MPQ;
+		SFlags = SFILE_OPEN_FROM_MPQ;
 
 		if ( ! SFileRemoveFile(SArchive, SFileName, SFlags) ) {
 
-			if ( ! ( flags & QUIET ) ) {
-
-				if ( flags & INDEX )
-					printError(archive, "Cannot remove existing file with index", SFileName, GetLastError());
-				else
-					printError(archive, "Cannot remove existing file", SFileName, GetLastError());
-
-			}
+			if ( ! ( flags & QUIET ) )
+				printError(archive, "Cannot remove existing file", SFileName, GetLastError());
 
 			continue;
 

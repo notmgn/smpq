@@ -1,6 +1,6 @@
 /*
     listfiles.cpp - StormLib MPQ archiving utility
-    Copyright (C) 2010  Pali Rohár <pali.rohar@gmail.com>
+    Copyright (C) 2010 - 2011  Pali Rohár <pali.rohar@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ extern "C" {
 
 #ifdef _MSC_VER
 
-char * dirname(char *); 
+char * dirname(char *);
 
 #else
 

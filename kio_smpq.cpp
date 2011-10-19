@@ -1,6 +1,6 @@
 /*
     kio_smpq.cpp - KDE4 KIO plugin for StormLib MPQ archiving utility
-    Copyright (C) 2010  Pali Rohár <pali.rohar@gmail.com>
+    Copyright (C) 2010 - 2011  Pali Rohár <pali.rohar@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -771,7 +771,7 @@ void SMPQSlave::stat(const KUrl &url) {
 
 	if ( archivePath.isEmpty() )
 		archivePath = "*";
-		
+
 	if ( archivePath.at(archivePath.size() - 1) == '\\' )
 		archivePath.append('*');
 

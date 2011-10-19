@@ -1,3 +1,11 @@
+smpq (1.4-1) unstable; urgency=low
+
+  * Remove option -I (--index) - not used in new version of stormlib library
+  * Some minor and code style fixes
+  * Update debian files, fixed lintian warnings/errors
+
+ -- Pali Rohár <pali.rohar@gmail.com>  Wed, 19 Oct 2011 17:20:55 +0200
+
 smpq (1.3-1) unstable; urgency=low
 
   * Cleaned CMakeLists.txt

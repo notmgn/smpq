@@ -1,6 +1,6 @@
 /*
     info.cpp - StormLib MPQ archiving utility
-    Copyright (C) 2010  Pali Rohár <pali.rohar@gmail.com>
+    Copyright (C) 2010 - 2011  Pali Rohár <pali.rohar@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ extern "C" {
 #include "common.h"
 
 static inline unsigned int GetInfo(HANDLE SArchive, unsigned int info) {
-	
+
 	unsigned int ret;
 
 	if ( SFileGetFileInfo(SArchive, info, &ret, sizeof(ret), NULL) )
@@ -39,6 +39,9 @@ static inline unsigned int GetInfo(HANDLE SArchive, unsigned int info) {
 int info(const char * archive, unsigned int flags) {
 
 	HANDLE SArchive = NULL;
+
+	unsigned int streamFlags;
+	unsigned int verify;
 
 	unsigned int SFlags = MPQ_OPEN_READ_ONLY;
 
@@ -63,7 +66,7 @@ int info(const char * archive, unsigned int flags) {
 	printMessage("Block table size: %u", GetInfo(SArchive, SFILE_INFO_BLOCK_TABLE_SIZE));
 	printMessage("Sector size: %u", GetInfo(SArchive, SFILE_INFO_SECTOR_SIZE));
 
-	unsigned int streamFlags = GetInfo(SArchive, SFILE_INFO_STREAM_FLAGS);
+	streamFlags = GetInfo(SArchive, SFILE_INFO_STREAM_FLAGS);
 
 	if ( streamFlags & STREAM_FLAG_PART_FILE )
 		printMessage("Archive partial: Yes");
@@ -75,7 +78,7 @@ int info(const char * archive, unsigned int flags) {
 	else
 		printMessage("Archive encryped: No");
 
-	unsigned int verify = SFileVerifyArchive(SArchive);
+	verify = SFileVerifyArchive(SArchive);
 
 	if ( verify == ERROR_NO_SIGNATURE )
 		printMessage("Archive signature: No signature");
