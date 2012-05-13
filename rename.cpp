@@ -55,6 +55,9 @@ int rename(const char * archive, const char * oldName, const char * newName, uns
 	if ( ! ( flags & NO_SYSTEM_LF ) )
 		systemListfiles(SArchive, archive, flags);
 
+	if ( ! ( flags & NO_LISTFILE ) )
+		SFileAddListFile(SArchive, NULL);
+
 	SFileAddListFile(SArchive, listfile);
 
 	SFileSetLocale(locale);

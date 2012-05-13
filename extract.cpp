@@ -242,6 +242,9 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 	if ( ! ( flags & NO_SYSTEM_LF ) )
 		systemListfiles(SArchive, archive, flags);
 
+	if ( ! ( flags & NO_LISTFILE ) )
+		SFileAddListFile(SArchive, NULL);
+
 	SFileSetLocale(locale);
 
 	SFlags = SFILE_OPEN_PATCHED_FILE | SFILE_OPEN_FROM_MPQ;

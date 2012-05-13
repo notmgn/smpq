@@ -57,6 +57,9 @@ int remove(const char * archive, const char * const files[], unsigned int flags,
 	if ( ! ( flags & NO_SYSTEM_LF ) )
 		systemListfiles(SArchive, archive, flags);
 
+	if ( ! ( flags & NO_LISTFILE ) )
+		SFileAddListFile(SArchive, NULL);
+
 	SFileSetLocale(locale);
 
 	for ( i = 0; files[i]; ++i ) {
