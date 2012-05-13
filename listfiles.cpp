@@ -46,8 +46,10 @@ void systemListfiles(void * SArchive, const char * archive, unsigned int flags) 
 #if defined(WIN32) || defined(_MSC_VER)
 
 	char processPath[512];
+	const char * LISTPATH;
+
 	GetModuleFileName(GetModuleHandle(NULL), processPath, sizeof(processPath));
-	const char * LISTPATH = dirname(processPath);
+	LISTPATH = dirname(processPath);
 
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
@@ -59,10 +61,10 @@ void systemListfiles(void * SArchive, const char * archive, unsigned int flags) 
 
 	do {
 
+		char listfile[strlen(LISTPATH) + strlen(FindFileData.cFileName) + 2];
+
 		if ( FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
 			continue;
-
-		char listfile[strlen(LISTPATH) + strlen(FindFileData.cFileName) + 2];
 
 		strcpy(listfile, LISTPATH);
 		strcpy(listfile+strlen(LISTPATH) + 1, FindFileData.cFileName);
@@ -80,25 +82,23 @@ void systemListfiles(void * SArchive, const char * archive, unsigned int flags) 
 
 #define LISTPATH "/usr/share/stormlib"
 
+	struct dirent * ent;
 	DIR * dir = opendir(LISTPATH);
 
 	if ( ! dir )
 		return;
 
-	struct dirent * ent;
-
 	while ( ( ent = readdir(dir) ) ) {
+
+		struct stat st;
+		char listfile[strlen(LISTPATH)+strlen(ent->d_name)+2];
 
 		if ( strcasecmp(ent->d_name+strlen(ent->d_name)-4, ".txt") != 0 )
 			continue;
 
-		char listfile[strlen(LISTPATH)+strlen(ent->d_name)+2];
-
 		strcpy(listfile, LISTPATH);
 		strcpy(listfile+strlen(LISTPATH)+1, ent->d_name);
 		listfile[strlen(LISTPATH)] = '/';
-
-		struct stat st;
 
 		if ( stat(listfile, &st) == -1 )
 			continue;

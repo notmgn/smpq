@@ -41,6 +41,9 @@ int append(const char * archive, const char * const files[], unsigned int flags,
 	unsigned int SFlags = 0;
 	unsigned int SCompFlags = 0;
 
+	int i;
+	HANDLE SArchive = NULL;
+
 	if ( flags & ENCRYPT )
 		SFlags |= MPQ_FILE_ENCRYPTED;
 
@@ -125,12 +128,10 @@ int append(const char * archive, const char * const files[], unsigned int flags,
 
 	}
 
-	int i;
-	HANDLE SArchive = NULL;
-
 	if ( flags & CREATE ) {
 
 		struct stat st;
+		unsigned int SOpenFlags = 0;
 
 		if ( ( flags & OVERWRITE ) && stat(archive, &st) == 0 ) {
 
@@ -150,8 +151,6 @@ int append(const char * archive, const char * const files[], unsigned int flags,
 
 		if ( flags & VERBOSE )
 			printVerbose(archive, "Create new archive", archive);
-
-		unsigned int SOpenFlags = 0;
 
 		if ( flags & MPQ_VERSION_1 )
 			SOpenFlags |= MPQ_CREATE_ARCHIVE_V1;

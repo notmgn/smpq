@@ -78,7 +78,7 @@ static int mkpath(const char * s) {
 	if ( ( q = strdup(s) ) == NULL )
 		return -1;
 
-	if ( ( r = (char *)dirname(q) ) == NULL )
+	if ( ( r = dirname(q) ) == NULL )
 		goto out;
 
 	if ( ( up = strdup(r) ) == NULL )
@@ -208,18 +208,18 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 	for ( i = 0; parchives[i]; ++i ) {
 
 		char * parchive;
-		char * prefix;
+		const char * prefix;
 
 		if ( ( parchive = strchr((char *)parchives[i], ':') ) ) {
 
 			*parchive = 0;
 			++parchive;
-			prefix = (char *)parchives[i];
+			prefix = parchives[i];
 
 		} else {
 
 			parchive = (char *)parchives[i];
-			prefix = (char *)"";
+			prefix = "";
 
 		}
 

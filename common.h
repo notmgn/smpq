@@ -77,10 +77,10 @@
  *************/
 
 /* StormLib copyright stored in StormLib library */
-extern char StormLibCopyright[];
+extern const char StormLibCopyright[];
 
 /* Application name */
-extern char * app;
+extern const char * app;
 
 /***********************************************
  * Functions for manipulating with MPQ archive *

@@ -21,8 +21,8 @@
 #include "main.c"
 #undef main
 
-char StormLibCopyright[] = { 0 };
-char * app = (char *)"smpq";
+const char StormLibCopyright[] = { 0 };
+const char * app = "smpq";
 int append(const char * archive, const char * const files[], unsigned int flags, unsigned int locale, unsigned int maxFileCount, const char * compression) { (void)archive; (void)files; (void)flags; (void)locale; (void)maxFileCount; (void)compression; return 0; }
 int extract(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale, const char * const parchives[]) { (void)archive; (void)files; (void)flags; (void)listfile; (void)locale; (void)parchives; return 0; }
 int info(const char * archive, unsigned int flags) { (void)archive; (void)flags; return 0; }
@@ -32,21 +32,21 @@ int rename(const char * archive, const char * oldName, const char * newName, uns
 #include <stdio.h>
 #include <string.h>
 
-#define prints(s, e) do { char * _c; for ( _c = s; _c < e; ++_c ) putchar(*_c); } while (0)
+#define prints(s, e) do { const char * _c; for ( _c = s; _c < e; ++_c ) putchar(*_c); } while (0)
 
 int main(void) {
 
-	printf(".TH SMPQ 1 \"Oct 2011\" \"SMPQ - StormLib MPQ archiving utility, version " VERSION "\"\n");
+	const char * start = HELP;
+	const char * end = start;
+	const char * len = start + strlen(HELP) + 1;
 
-	char * start = (char *)HELP;
-	char * end = start;
-	char * len = start + strlen(HELP) + 1;
+	printf(".TH SMPQ 1 \"Oct 2011\" \"SMPQ - StormLib MPQ archiving utility, version " VERSION "\"\n");
 
 	while ( start < len && ( end = strchr(start, '\n') ) != NULL ) {
 
 		if ( strncmp(start, "Usage:", 6) == 0 ) {
 
-			char * next = strstr(start, "%s");
+			const char * next = strstr(start, "%s");
 			if ( next == NULL || next > end )
 				next = start;
 			else
@@ -70,7 +70,7 @@ int main(void) {
 
 		} else if ( strncmp(start, "       ", 7) == 0 ) {
 
-			char * next = start;
+			const char * next = start;
 			while ( *(++next) == ' ' && next < end );
 
 			putchar('\n');
@@ -79,14 +79,18 @@ int main(void) {
 
 		} else if ( *start == ' ' ) {
 
-			char * next = start;
+			const char * next;
+			const char * next2;
+			const char * next3;
+
+			next = start;
 			while ( *(++next) == ' ' && next < end );
 
-			char * next2 = strstr(next, "  ");
+			next2 = strstr(next, "  ");
 			if ( next2 == NULL || next2 > end )
 				next2 = next;
 
-			char * next3 = next2;
+			next3 = next2;
 			while ( *(++next3) == ' ' && next3 < end );
 
 			printf(".TP\n.B ");

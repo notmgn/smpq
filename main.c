@@ -58,7 +58,7 @@
 	"     -f, -o, --force, --overwrite  Enable overwrite file(s)\n" \
 	"     -v, --verbose                 Enable verbose output\n" \
 	"     -O, --locale <id>             Set locale id (default: neutral=0)\n" \
-	"          For all locale id see: http://msdn.microsoft.com/en-us/library/0h88fahh(v=VS.85).aspx\n" \
+	"          For all locale id see: http://msdn.microsoft.com/en-us/library/ms912047(WinEmbedded.10).aspx\n" \
 	"\n" \
 	"Options for appending file(s) to archive:\n" \
 	"     -m, --max-file-count <count>  Set maximum file count of archive (power of 2, 0 - autodetect) (default: 0)\n" \
@@ -113,7 +113,7 @@
 	"along with this program.  If not, see <http://www.gnu.org/licenses/>.\n" \
 	""
 
-char * app;
+const char * app;
 
 static char action = 0;
 static unsigned int flags = 0;
@@ -266,10 +266,23 @@ static void parse(char c) {
 
 int main(int argc, char * argv[]) {
 
-	app = argv[0];
-
 	int i, j;
 	int skipArg[10] = { 0 };
+
+	unsigned int mpq_version = 4;
+	const char * listfile = NULL;
+	unsigned int locale = 0;
+	unsigned int maxFileCount = 0;
+	const char * compression = "ZLIB";
+	const char * archive;
+
+	int parchivesc;
+	const char * parchives[argc];
+
+	int filesc;
+	const char * files[argc];
+
+	app = argv[0];
 
 	for ( i = 1; i < argc; ++i ) {
 
@@ -366,8 +379,6 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	unsigned int mpq_version = 4;
-
 	if ( flags & MPQ_VERSION ) {
 
 		if ( skipArg[MPQ_VERSION_ARG] > argc-1 || skipArg[MPQ_VERSION_ARG] == 0 ) {
@@ -397,9 +408,9 @@ int main(int argc, char * argv[]) {
 	else if ( mpq_version == 4 )
 		flags |= MPQ_VERSION_4;
 
-	char * listfile = NULL;
-
 	if ( flags & LISTFILE ) {
+
+		struct stat st;
 
 		if ( skipArg[LISTFILE_ARG] > argc-1 || skipArg[LISTFILE_ARG] == 0 ) {
 
@@ -409,8 +420,6 @@ int main(int argc, char * argv[]) {
 		}
 
 		listfile = argv[skipArg[LISTFILE_ARG]];
-
-		struct stat st;
 
 		if ( stat(listfile, &st) == -1 ) {
 
@@ -428,8 +437,6 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	unsigned int locale = 0;
-
 	if ( flags & LOCALE ) {
 
 		if ( skipArg[LOCALE_ARG] > argc-1 || skipArg[LOCALE_ARG] == 0 ) {
@@ -442,8 +449,6 @@ int main(int argc, char * argv[]) {
 		locale = atoi(argv[skipArg[LOCALE_ARG]]);
 
 	}
-
-	unsigned int maxFileCount = 0;
 
 	if ( flags & MAX_FILE_COUNT ) {
 
@@ -458,8 +463,6 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	char * compression = (char *)"ZLIB";
-
 	if ( flags & COMPRESSION ) {
 
 		if ( skipArg[COMPRESSION_ARG] > argc-1 || skipArg[COMPRESSION_ARG] == 0 ) {
@@ -473,7 +476,7 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	char * archive = argv[i++];
+	archive = argv[i++];
 
 	if ( ! ( flags & MPQ_NOT_ENCRYPTED ) && strlen(archive) > 5 && strcasecmp(archive+strlen(archive)-5, ".mpqe") == 0 )
 		flags |= MPQ_ENCRYPTED;
@@ -504,8 +507,7 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	int parchivesc = argc - i - 1;
-	char * parchives[parchivesc + 2];
+	parchivesc = argc - i - 1;
 
 	if ( action == 'x' && i < argc && strcmp(argv[i], "-p") == 0 ) {
 
@@ -535,8 +537,7 @@ int main(int argc, char * argv[]) {
 
 	}
 
-	int filesc = argc - i;
-	char * files[filesc + 2];
+	filesc = argc - i;
 
 	for ( ; i < argc; ++i )
 		files[filesc - argc + i] = argv[i];
@@ -546,7 +547,7 @@ int main(int argc, char * argv[]) {
 		if ( filesc == 0 ) {
 
 			filesc = 1;
-			files[0] = (char *)"*";
+			files[0] = "*";
 
 		}
 
@@ -566,13 +567,13 @@ int main(int argc, char * argv[]) {
 	switch ( action ) {
 
 		case 'a':
-			return append(archive, (const char * const *)files, flags, locale, maxFileCount, compression);
+			return append(archive, files, flags, locale, maxFileCount, compression);
 
 		case 'x':
-			return extract(archive, (const char * const *)files, flags, listfile, locale, (const char * const *)parchives);
+			return extract(archive, files, flags, listfile, locale, parchives);
 
 		case 'r':
-			return remove(archive, (const char * const *)files, flags, listfile, locale);
+			return remove(archive, files, flags, listfile, locale);
 
 	}
 

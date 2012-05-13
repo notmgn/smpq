@@ -25,20 +25,20 @@
 
 void printError(const char * archive, const char * message, const char * file, int errnum) {
 
-	char * error = NULL;
+	const char * error = NULL;
 
 	if ( errnum < 105 )
 		error = strerror(errnum);
 	else if ( errnum == 105 )
-		error = (char *)"Bad format";
+		error = "Bad format";
 	else if ( errnum == 106 )
-		error = (char *)"No more files";
+		error = "No more files";
 	else if ( errnum == 107 )
-		error = (char *)"Handle EOF";
+		error = "Handle EOF";
 	else if ( errnum == 108 )
-		error = (char *)"Cannot compile";
+		error = "Cannot compile";
 	else if ( errnum == 109 )
-		error = (char *)"File corrupted";
+		error = "File corrupted";
 
 	fprintf(stderr, "%s: %s: Error: %s `%s': %s\n", app, archive, message, file, error);
 	fflush(stderr);
