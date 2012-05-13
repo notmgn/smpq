@@ -57,7 +57,7 @@ void systemListfiles(void * SArchive, const char * archive, unsigned int flags) 
 	if ( hFind == INVALID_HANDLE_VALUE )
 		return;
 
-	while ( true ) {
+	do {
 
 		if ( FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
 			continue;
@@ -73,10 +73,7 @@ void systemListfiles(void * SArchive, const char * archive, unsigned int flags) 
 
 		SFileAddListFile((HANDLE)SArchive, listfile);
 
-		if ( ! FindNextFile(hFind, &FindFileData) )
-			break;
-
-	}
+	} while ( FindNextFile(hFind, &FindFileData) );
 
 
 #else

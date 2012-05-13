@@ -65,12 +65,12 @@ static int mkpath(const char * s) {
 	int rv = -1;
 
 #if defined(WIN32) || defined(_MSC_VER)
-	if ( strcmp(s, ".") == 0 || strcmp(s, "\\") == 0 )
-		return 0;
-#else
-	if ( strcmp(s, ".") == 0 || strcmp(s, "/") == 0 )
+	if ( strcmp(s, "\\") == 0 )
 		return 0;
 #endif
+
+	if ( strcmp(s, ".") == 0 || strcmp(s, "/") == 0 )
+		return 0;
 
 	if ( ( path = strdup(s) ) == NULL )
 		return -1;
@@ -291,7 +291,7 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 			FILE * file = NULL;
 			char fileName[strlen(SFileFindData.cFileName)+1];
 			char fileDir[strlen(SFileFindData.cFileName)+1];
-			size_t fileSize = SFileFindData.dwFileSize;
+			unsigned int fileSize = SFileFindData.dwFileSize;
 			time_t fileTime = 0;
 
 			HANDLE SFile = NULL;
@@ -337,7 +337,7 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 
 				char strtime[80];
 				strftime(strtime, 80, "%Y-%m-%d %H:%M", localtime(&fileTime));
-				printMessage("%12zu %s %s", fileSize, strtime, fileName);
+				printMessage("%12u %s %s", fileSize, strtime, fileName);
 
 			}
 
