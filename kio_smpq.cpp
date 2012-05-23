@@ -163,13 +163,15 @@ bool SMPQSlave::openArchive(const QString &archive, unsigned int flags) {
 		p->flags = flags;
 		p->modified = QFileInfo(archive).lastModified();
 
-	        QDir dir(LISTPATH);
+		QDir dir(LISTPATH);
 		dir.setFilter(QDir::Files | QDir::Hidden);
 		dir.setNameFilters(QStringList() << "*.txt" << "*.TXT");
 		QStringList files = dir.entryList();
 
 		for ( QStringList::Iterator it = files.begin(); it != files.end(); ++it )
 			SFileAddListFile(p->SArchive, dir.absoluteFilePath(*it).toUtf8());
+
+		SFileAddListFile(p->SArchive, NULL);
 
 	}
 
