@@ -551,7 +551,7 @@ int main(int argc, char * argv[]) {
 
 		}
 
-	} else {
+	} else if ( action != 'a' || ! ( flags & CREATE ) ) {
 
 		if ( filesc == 0 ) {
 
