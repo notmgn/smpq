@@ -61,7 +61,10 @@ int remove(const char * archive, const char * const files[], unsigned int flags,
 	for ( i = 0; files[i]; ++i ) {
 
 		const char * fileName = files[i];
-		char SFileName[strlen(fileName)+1];
+		char SFileName[1024];
+
+		if ( strlen(fileName)+1 > 1024 )
+			continue;
 
 		toArchivePath(SFileName, fileName);
 

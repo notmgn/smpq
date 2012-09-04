@@ -91,7 +91,10 @@ void systemListfiles(void * SArchive, const char * archive, unsigned int flags) 
 	while ( ( ent = readdir(dir) ) ) {
 
 		struct stat st;
-		char listfile[strlen(LISTPATH)+strlen(ent->d_name)+2];
+		char listfile[1024];
+
+		if ( strlen(LISTPATH)+strlen(ent->d_name)+2 > 1024 )
+			continue;
 
 		if ( strcasecmp(ent->d_name+strlen(ent->d_name)-4, ".txt") != 0 )
 			continue;

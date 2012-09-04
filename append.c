@@ -245,11 +245,20 @@ int append(const char * archive, const char * const files[], unsigned int flags,
 		size_t fileSize = 0;
 
 		HANDLE SFile = NULL;
-		char SFileName[strlen(fileName) + 1];
+		char SFileName[1024];
 		unsigned long long int SFileTime = 0;
 
 		char buffer[0x10000];
 		size_t bytes = 0;
+
+		if ( strlen(fileName) + 1 > 1024 ) {
+
+			if ( ! ( flags & QUIET ) )
+				printError(archive, "File `%s' has too long path. Cannot create new file", SFileName, EPERM);
+
+			continue;
+
+		}
 
 		toArchivePath(SFileName, fileName);
 

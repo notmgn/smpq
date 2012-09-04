@@ -251,14 +251,16 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 		const struct trie * t;
 		char mask[512];
 
-		toArchivePath(mask, files[i]);
-
 		SFILE_FIND_DATA SFileFindData;
 		HANDLE SFileFind = NULL;
+
+		toArchivePath(mask, files[i]);
 
 		SFileFind = SFileFindFirstFile(SArchive, mask, &SFileFindData, listfile);
 
 		if ( ! SFileFind ) {
+
+			HANDLE SFile;
 
 			SFileFind = (HANDLE)0xFFFFFFFF;
 			SFileFindData.dwFileTimeLo = 0;
@@ -266,14 +268,12 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 
 			strcpy(SFileFindData.cFileName, mask);
 
-			HANDLE SFile;
-
 			if ( SFileOpenFileEx(SArchive, mask, SFlags, &SFile) ) {
-
-				SFileGetFileName(SFile, mask);
 
 				unsigned int high = 0;
 				unsigned int low = SFileGetFileSize(SFile, (DWORD*)&high);
+
+				SFileGetFileName(SFile, mask);
 
 				SFileFindData.dwFileSize = low | ( (unsigned long long int)high << 32 );
 
@@ -289,8 +289,8 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 
 			struct stat st;
 			FILE * file = NULL;
-			char fileName[strlen(SFileFindData.cFileName)+1];
-			char fileDir[strlen(SFileFindData.cFileName)+1];
+			char fileName[1024];
+			char fileDir[1024];
 			unsigned int fileSize = SFileFindData.dwFileSize;
 			time_t fileTime = 0;
 
@@ -301,6 +301,9 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 			int last = 0;
 			char buffer[0x10000];
 			size_t bytes = 1;
+
+			if ( strlen(SFileFindData.cFileName)+1 > 1024 )
+				goto next;
 
 			if ( strcmp(SFileName, "(listfile)") == 0 || strcmp(SFileName, "(signature)") == 0 || strcmp(SFileName, "(attributes)") == 0 || strstr(SFileName, "(patch_metadata)") != NULL )
 				goto next;

@@ -17,6 +17,8 @@
 
 */
 
+#include <time.h>
+
 #ifdef __STRICT_ANSI__
 #define inline __inline__
 #endif
@@ -151,7 +153,7 @@ void printError(const char * archive, const char * file, const char * message, i
 void printVerbose(const char * archive, const char * message, const char * file);
 
 /* Print normal message */
-#define printMessage(message, ...) do { printf(message "\n", ##__VA_ARGS__); fflush(stdout); } while (0)
+void printMessage(const char * message, ...);
 
 /*************************************
  * Functions for FILETIME conversion *

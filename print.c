@@ -19,7 +19,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
+#include <stdarg.h>
 
 #include "common.h"
 
@@ -48,6 +48,18 @@ void printError(const char * archive, const char * message, const char * file, i
 void printVerbose(const char * archive, const char * message, const char * file) {
 
 	printf("%s: %s: %s `%s' ...\n", app, archive, message, file);
+	fflush(stdout);
+
+}
+
+void printMessage(const char * message, ...) {
+
+	va_list ap;
+
+	va_start(ap, message);
+	vprintf(message, ap);
+	va_end(ap);
+	putchar('\n');
 	fflush(stdout);
 
 }
