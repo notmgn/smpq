@@ -24,6 +24,10 @@
 #include <string.h>
 #include <errno.h>
 
+#if defined(WIN32) || defined(_MSC_VER)
+#define strcasecmp _stricmp
+#endif
+
 #include "common.h"
 
 #define HELP \

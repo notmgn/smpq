@@ -39,8 +39,6 @@ extern "C" {
 
 #define mkdir _mkdir
 #define stat _stat
-#define strcasecmp _stricmp
-#define strcasestr strstr
 
 #endif
 
@@ -305,7 +303,7 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 			char buffer[0x10000];
 			size_t bytes = 1;
 
-			if ( strcasecmp(SFileName, "(listfile)") == 0 || strcasecmp(SFileName, "(signature)") == 0 || strcasecmp(SFileName, "(attributes)") == 0 || strcasestr(SFileName, "(patch_metadata)") != NULL )
+			if ( strcmp(SFileName, "(listfile)") == 0 || strcmp(SFileName, "(signature)") == 0 || strcmp(SFileName, "(attributes)") == 0 || strstr(SFileName, "(patch_metadata)") != NULL )
 				goto next;
 
 			fromArchivePath(fileName, SFileName);

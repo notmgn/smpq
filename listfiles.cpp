@@ -28,6 +28,10 @@ extern "C" {
 #include <string.h>
 #include <stdlib.h>
 
+#if defined(WIN32) || defined(_MSC_VER)
+#define strcasecmp _stricmp
+#endif
+
 #ifdef _MSC_VER
 
 char * dirname(char *);

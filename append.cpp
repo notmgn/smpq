@@ -31,7 +31,6 @@ extern "C" {
 
 #if defined(WIN32) || defined(_MSC_VER)
 #define strcasecmp _stricmp
-#define strcasestr strstr
 #endif
 
 #include "common.h"
@@ -168,6 +167,9 @@ int append(const char * archive, const char * const files[], unsigned int flags,
 			for ( i = 0; files[i]; ++i )
 				++maxFileCount;
 
+		if ( maxFileCount < 4 )
+			maxFileCount = 4;
+
 		if ( ! SFileCreateArchive(archive, SOpenFlags, maxFileCount, &SArchive) ) {
 
 			if ( ! ( flags & QUIET ) )
@@ -264,7 +266,7 @@ int append(const char * archive, const char * const files[], unsigned int flags,
 
 		}
 
-		if ( strcasecmp(SFileName, "(listfile)") == 0 || strcasecmp(SFileName, "(signature)") == 0 || strcasecmp(SFileName, "(attributes)") == 0 || strcasestr(SFileName, "(patch_metadata)") != NULL ) {
+		if ( strcmp(SFileName, "(listfile)") == 0 || strcmp(SFileName, "(signature)") == 0 || strcmp(SFileName, "(attributes)") == 0 || strstr(SFileName, "(patch_metadata)") != NULL ) {
 
 			if ( ! ( flags & QUIET ) )
 				printError(archive, "Files `(listfile)' `(signature)' `(attributes)' `(patch_metadata)' are for internal usage. Cannot create new file", SFileName, EPERM);
