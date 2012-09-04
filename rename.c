@@ -19,10 +19,6 @@
 
 #include <StormLib.h>
 
-///
-extern "C" {
-///
-
 #include "common.h"
 
 int rename(const char * archive, const char * oldName, const char * newName, unsigned int flags, const char * listfile, unsigned int locale) {
@@ -81,7 +77,3 @@ int rename(const char * archive, const char * oldName, const char * newName, uns
 	return 0;
 
 }
-
-///
-}
-///

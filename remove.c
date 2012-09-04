@@ -19,10 +19,6 @@
 
 #include <StormLib.h>
 
-///
-extern "C" {
-///
-
 #include "common.h"
 
 int remove(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale) {
@@ -128,7 +124,3 @@ int remove(const char * archive, const char * const files[], unsigned int flags,
 	return 0;
 
 }
-
-///
-}
-///

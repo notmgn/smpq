@@ -31,13 +31,17 @@ endif(WIN32)
 if(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
 
 	find_path(STORMLIB_INCLUDE_DIR StormLib.h)
-	find_library(STORMLIB_LIBRARY NAMES StormLib)
+	find_library(STORMLIB_LIBRARY NAMES StormLib storm)
 
-	if(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
-		message(FATAL_ERROR "StormLib header or library not found")
-	endif(NOT STORMLIB_INCLUDE_DIR OR NOT STORMLIB_LIBRARY)
+	if(NOT STORMLIB_INCLUDE_DIR)
+		message(FATAL_ERROR "StormLib.h header file not found")
+	endif(NOT STORMLIB_INCLUDE_DIR)
 
-	try_compile(CHECK ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/check.cpp COMPILE_DEFINITIONS -I${STORMLIB_INCLUDE_DIR})
+	if(NOT STORMLIB_LIBRARY)
+		message(FATAL_ERROR "StormLib or storm library not found")
+	endif(NOT STORMLIB_LIBRARY)
+
+	try_compile(CHECK ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/check.c COMPILE_DEFINITIONS -I${STORMLIB_INCLUDE_DIR})
 
 	if(NOT CHECK)
 		message(FATAL_ERROR "Found old StormLib version")
@@ -55,14 +59,14 @@ include_directories(${STORMLIB_INCLUDE_DIR})
 add_definitions(-DVERSION="${VERSION}")
 
 set(SMPQ_SRCS
-	append.cpp
-	extract.cpp
-	info.cpp
-	listfiles.cpp
+	append.c
+	extract.c
+	info.c
+	listfiles.c
 	main.c
 	print.c
-	remove.cpp
-	rename.cpp
+	remove.c
+	rename.c
 )
 
 if(MSVC)

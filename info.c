@@ -19,10 +19,6 @@
 
 #include <StormLib.h>
 
-///
-extern "C" {
-///
-
 #include "common.h"
 
 static inline unsigned int GetInfo(HANDLE SArchive, unsigned int info) {
@@ -98,7 +94,3 @@ int info(const char * archive, unsigned int flags) {
 	return 0;
 
 }
-
-///
-}
-///

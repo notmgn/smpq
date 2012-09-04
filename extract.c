@@ -19,10 +19,6 @@
 
 #include <StormLib.h>
 
-///
-extern "C" {
-///
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -477,7 +473,3 @@ next:
 	return 0;
 
 }
-
-///
-}
-///

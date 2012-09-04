@@ -19,10 +19,6 @@
 
 #include <StormLib.h>
 
-///
-extern "C" {
-///
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <utime.h>
@@ -356,7 +352,3 @@ int append(const char * archive, const char * const files[], unsigned int flags,
 	return 0;
 
 }
-
-///
-}
-///

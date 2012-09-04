@@ -19,10 +19,6 @@
 
 #include <StormLib.h>
 
-///
-extern "C" {
-///
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -122,7 +118,3 @@ void systemListfiles(void * SArchive, const char * archive, unsigned int flags) 
 #endif
 
 }
-
-///
-}
-///
