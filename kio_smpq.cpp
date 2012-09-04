@@ -154,7 +154,7 @@ bool SMPQSlave::openArchive(const QString &archive, unsigned int flags) {
 		closeArchive();
 
 		if ( archive.endsWith(".mpqe", Qt::CaseInsensitive) )
-			flags |= MPQ_OPEN_ENCRYPTED;
+			flags |= STREAM_PROVIDER_ENCRYPTED;
 
 		if ( ! SFileOpenArchive(archive.toUtf8(), 0, flags, &p->SArchive) )
 			return false;
@@ -262,7 +262,7 @@ void SMPQSlave::get(const KUrl &url) {
 
 	}
 
-	if ( ! openArchive(fileName, MPQ_OPEN_READ_ONLY) ) {
+	if ( ! openArchive(fileName, STREAM_FLAG_READ_ONLY) ) {
 
 		error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 		return;
@@ -941,7 +941,7 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 
 	if ( mode == 0 ) {
 
-		flags |= MPQ_OPEN_READ_ONLY;
+		flags |= STREAM_FLAG_READ_ONLY;
 
 	} else if ( mode == 1 ) {
 
@@ -959,7 +959,7 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 
 		// TODO: Add support for read + write mode
 		// Currently read mode is used
-		flags |= MPQ_OPEN_READ_ONLY;
+		flags |= STREAM_FLAG_READ_ONLY;
 
 	} else {
 

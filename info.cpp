@@ -43,13 +43,13 @@ int info(const char * archive, unsigned int flags) {
 	unsigned int streamFlags;
 	unsigned int verify;
 
-	unsigned int SFlags = MPQ_OPEN_READ_ONLY;
+	unsigned int SFlags = STREAM_FLAG_READ_ONLY;
 
 	if ( flags & MPQ_VERSION_1 )
 		SFlags |= MPQ_OPEN_FORCE_MPQ_V1;
 
 	if ( flags & MPQ_ENCRYPTED )
-		SFlags |= MPQ_OPEN_ENCRYPTED;
+		SFlags |= STREAM_PROVIDER_ENCRYPTED;
 
 	if ( ! SFileOpenArchive(archive, 0, SFlags, &SArchive) ) {
 
@@ -68,12 +68,12 @@ int info(const char * archive, unsigned int flags) {
 
 	streamFlags = GetInfo(SArchive, SFILE_INFO_STREAM_FLAGS);
 
-	if ( streamFlags & STREAM_FLAG_PART_FILE )
+	if ( streamFlags & STREAM_PROVIDER_PARTIAL )
 		printMessage("Archive partial: Yes");
 	else
 		printMessage("Archive partial: No");
 
-	if ( streamFlags & STREAM_FLAG_ENCRYPTED_FILE )
+	if ( streamFlags & STREAM_PROVIDER_ENCRYPTED )
 		printMessage("Archive encryped: Yes");
 	else
 		printMessage("Archive encryped: No");

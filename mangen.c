@@ -46,11 +46,11 @@ int main(void) {
 
 		if ( strncmp(start, "Usage:", 6) == 0 ) {
 
-			const char * next = strstr(start, "%s");
+			const char * next = strstr(start+6, "smpq");
 			if ( next == NULL || next > end )
-				next = start;
+				next = start+6;
 			else
-				next += 2;
+				next += strlen("smpq");
 
 			printf("\n.SH SYNOPSIS\n.B smpq\n.I ");
 			prints(next, end);
@@ -90,7 +90,7 @@ int main(void) {
 			if ( next2 == NULL || next2 > end )
 				next2 = next;
 
-			next3 = next2;
+			next3 = next2-1;
 			while ( *(++next3) == ' ' && next3 < end );
 
 			printf(".TP\n.B ");

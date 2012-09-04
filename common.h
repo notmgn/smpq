@@ -46,16 +46,17 @@
 #define MPQ_VERSION_3		1 << 7
 #define MPQ_VERSION_4		1 << 8
 #define MPQ_PATCHED		1 << 9
-#define MPQ_ENCRYPTED		1 << 10
-#define MPQ_NOT_ENCRYPTED	1 << 11
+#define MPQ_PARTIAL		1 << 10
+#define MPQ_ENCRYPTED		1 << 11
+#define MPQ_NOT_ENCRYPTED	1 << 12
 
 /* Options - archive open/create */
-#define NO_SYSTEM_LF		1 << 12
-#define NO_LISTFILE		1 << 13
-#define LISTFILE		1 << 14
-#define NO_ATTRIBUTES		1 << 15
-#define SECTOR_CRC		1 << 16
-#define MAX_FILE_COUNT		1 << 17
+#define NO_SYSTEM_LF		1 << 14
+#define NO_LISTFILE		1 << 15
+#define LISTFILE		1 << 16
+#define NO_ATTRIBUTES		1 << 17
+#define SECTOR_CRC		1 << 18
+#define MAX_FILE_COUNT		1 << 19
 
 /* Options - file */
 #define LOCALE			1 << 20

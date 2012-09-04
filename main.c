@@ -31,7 +31,7 @@
 #include "common.h"
 
 #define HELP \
-	"Usage: %s [action] [options] [archive] [files]\n" \
+	"Usage: smpq [action] [options] [archive] [files]\n" \
 	"\n" \
 	"SMPQ - StormLib MPQ archiving utility, version " VERSION "\n" \
 	"\n" \
@@ -93,10 +93,23 @@
 	"          SPARSE+BZIP2+PKWARE    Together SPARSE. BZIP2 and Pkware Data compression\n" \
 	"\n" \
 	"Options for extracting file(s) from archive:\n" \
+	"     -P, --partial                 Archive is partial (default: autodetect) (Partial archives were used by trial version of World of Warcraft)\n" \
 	"     -X, --not-encrypted           Archive is not encrypted (default: autodetect) (Encrypted archives have Starcraft II installation)\n" \
 	"     -p                            Open more (patched) archives with directory prefix (prefix:archive), when file is in more archives, will be extracted from last\n" \
 	"          Usage with more (patched) archives:\n" \
-	"            %s -l|-x [options] [archive] -p [prefix1:parchive1] [prefix2:archive2] ... -- [files]\n" \
+	"            smpq -l|-x [options] [archive] -p [prefix1:parchive1] [prefix2:archive2] ... -- [files]\n" \
+	"\n" \
+	"Examples:\n" \
+	"       Create empty archive `archive.mpq'\n" \
+	"         smpq -c archive.mpq\n" \
+	"       Create archive `archive.mpq' with two files `file1.txt' and `file2.txt'\n" \
+	"         smpq -c archive.mpq file1.txt file2.txt\n" \
+	"       Extract all files from archive `archive.mpq' to current directory\n" \
+	"         smpq -x archive.mpq\n" \
+	"       Extract files with extension .txt from archive `archive.mpq'\n" \
+	"         smpq -x archive.mpq '*.txt'\n" \
+	"       Show informations about archive `archive.mpq'\n" \
+	"         smpq -i archive.mpq\n" \
 	""
 
 #define LICENSE \
@@ -202,6 +215,10 @@ static void parse(char c) {
 			flags |= MPQ_PATCHED;
 			break;
 
+		case 'P':
+			flags |= MPQ_PARTIAL;
+			break;
+
 		case 'X':
 			flags |= MPQ_NOT_ENCRYPTED;
 			break;
@@ -250,7 +267,7 @@ static void parse(char c) {
 		case 'h':
 		case 'u':
 
-			printf(HELP, app, app);
+			printf(HELP);
 			exit(0);
 
 		case 'V':
@@ -353,6 +370,8 @@ int main(int argc, char * argv[]) {
 				parse('U');
 			else if ( strcmp(argv[i], "--compression") == 0 )
 				parse('C');
+			else if ( strcmp(argv[i], "--partial") == 0 )
+				parse('P');
 			else if ( strcmp(argv[i], "--not-encrypted") == 0 )
 				parse('X');
 			else {

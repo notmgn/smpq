@@ -177,7 +177,7 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 	int i, j;
 	HANDLE SArchive = NULL;
 
-	unsigned int SFlags = MPQ_OPEN_READ_ONLY;
+	unsigned int SFlags = STREAM_FLAG_READ_ONLY;
 
 	if ( flags & NO_LISTFILE )
 		SFlags |= MPQ_OPEN_NO_LISTFILE;
@@ -191,8 +191,11 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 	if ( flags & SECTOR_CRC )
 		SFlags |= MPQ_OPEN_CHECK_SECTOR_CRC;
 
+	if ( flags & MPQ_PARTIAL )
+		SFlags |= STREAM_PROVIDER_PARTIAL;
+
 	if ( flags & MPQ_ENCRYPTED )
-		SFlags |= MPQ_OPEN_ENCRYPTED;
+		SFlags |= STREAM_PROVIDER_ENCRYPTED;
 
 	if ( ! SFileOpenArchive(archive, 0, SFlags, &SArchive) ) {
 
