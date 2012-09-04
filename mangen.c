@@ -40,7 +40,7 @@ int main(void) {
 	const char * end = start;
 	const char * len = start + strlen(HELP) + 1;
 
-	printf(".TH SMPQ 1 \"Oct 2011\" \"SMPQ - StormLib MPQ archiving utility, version " VERSION "\"\n");
+	printf(".TH SMPQ 1 \"" __DATE__ "\" \"SMPQ - StormLib MPQ archiving utility, version " VERSION "\"\n");
 
 	while ( start < len && ( end = strchr(start, '\n') ) != NULL ) {
 
