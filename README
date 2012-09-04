@@ -26,11 +26,12 @@ Homepage: https://launchpad.net/smpq
 ================
 
 Dependencies for SMPQ:
- * C and C++ compiler (gcc/g++ works fine)
- * StormLib (minimal version 8.02) from http://www.zezula.net/en/mpq/download.html#StormLib
+ * ANSI C90 compiler (gcc works fine)
+ * StormLib (minimal version 8.20) from http://www.zezula.net/en/mpq/download.html#StormLib
  * CMake (minimal version 2.6) from http://www.cmake.org/cmake/resources/software.html
 
 Additional dependencies for KDE4 KIO plugin:
+ * C++ 98 compiler (g++ works fine)
  * KDE4 libs headers (part of kdelibs packgage) from http://www.kde.org/download/
 
 Additional dependencies for Windows NSIS Installer:
@@ -38,7 +39,7 @@ Additional dependencies for Windows NSIS Installer:
  * UPX from http://upx.sourceforge.net/
 
 Building on Debian/*buntu and Debian like Linux distributions:
-  $ sudo apt-get install fakeroot debhelper cmake stormlib-dev kdelibs5-dev
+  $ sudo apt-get install fakeroot debhelper cmake libstorm-dev libstorm-listfiles kdelibs5-dev
   $ dpkg-buildpackage -b -rfakeroot
   $ sudo dpkg -i ../*.deb
 
