@@ -1,12 +1,13 @@
 Format: http://dep.debian.net/deps/dep5
 Upstream-Name: smpq
+Source: <https://launchpad.net/smpq>
 
 Files: *
-Copyright: 2010-2011 Pali Rohár <pali.rohar@gmail.com>
+Copyright: 2010-2012 Pali Rohár <pali.rohar@gmail.com>
 License: GPL-3.0+
 
 Files: debian/*
-Copyright: 2010-2011 Pali Rohár <pali.rohar@gmail.com>
+Copyright: 2010-2012 Pali Rohár <pali.rohar@gmail.com>
 License: GPL-3.0+
 
 Files: dirname.c

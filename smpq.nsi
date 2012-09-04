@@ -1,6 +1,6 @@
 ;
 ;    smpq.nsi - Windows NSIS Installer for StormLib MPQ archiving utility
-;    Copyright (C) 2010 - 2011  Pali Rohár <pali.rohar@gmail.com>
+;    Copyright (C) 2010 - 2012  Pali Rohár <pali.rohar@gmail.com>
 ;
 ;    This program is free software: you can redistribute it and/or modify
 ;    it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@
 !define VIVERSION "${VERSION}.0.0"
 !define HOMEPAGE "https://launchpad.net/smpq"
 !define LICENSE "GPL v3"
-!define COPYRIGHT "Copyright (c) 2010 - 2011 by Pali Rohar"
+!define COPYRIGHT "Copyright (c) 2010 - 2012 by Pali Rohar"
 
 ;--------------------------------
 
