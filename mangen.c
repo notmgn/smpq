@@ -17,17 +17,17 @@
 
 */
 
-#define main _main
+#define main main_unused
 #include "main.c"
 #undef main
 
 const char StormLibCopyright[] = { 0 };
 const char * app = "smpq";
-int append(const char * archive, const char * const files[], unsigned int flags, unsigned int locale, unsigned int maxFileCount, const char * compression) { (void)archive; (void)files; (void)flags; (void)locale; (void)maxFileCount; (void)compression; return 0; }
-int extract(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale, const char * const parchives[]) { (void)archive; (void)files; (void)flags; (void)listfile; (void)locale; (void)parchives; return 0; }
-int info(const char * archive, unsigned int flags) { (void)archive; (void)flags; return 0; }
-int remove(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale) { (void)archive; (void)files; (void)flags; (void)listfile; (void)locale; return 0; }
-int rename(const char * archive, const char * oldName, const char * newName, unsigned int flags, const char * listfile, unsigned int locale) { (void)archive; (void)oldName; (void)newName; (void)newName; (void)flags; (void)listfile; (void)locale; return 0; }
+int smpq_append(const char * archive, const char * const files[], unsigned int flags, unsigned int locale, unsigned int maxFileCount, const char * compression) { (void)archive; (void)files; (void)flags; (void)locale; (void)maxFileCount; (void)compression; return 0; }
+int smpq_extract(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale, const char * const parchives[]) { (void)archive; (void)files; (void)flags; (void)listfile; (void)locale; (void)parchives; return 0; }
+int smpq_info(const char * archive, unsigned int flags) { (void)archive; (void)flags; return 0; }
+int smpq_remove(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale) { (void)archive; (void)files; (void)flags; (void)listfile; (void)locale; return 0; }
+int smpq_rename(const char * archive, const char * oldName, const char * newName, unsigned int flags, const char * listfile, unsigned int locale) { (void)archive; (void)oldName; (void)newName; (void)newName; (void)flags; (void)listfile; (void)locale; return 0; }
 
 #include <stdio.h>
 #include <string.h>

@@ -31,7 +31,7 @@
 
 #include "common.h"
 
-int append(const char * archive, const char * const files[], unsigned int flags, unsigned int locale, unsigned int maxFileCount, const char * compression) {
+int smpq_append(const char * archive, const char * const files[], unsigned int flags, unsigned int locale, unsigned int maxFileCount, const char * compression) {
 
 	unsigned int SFlags = 0;
 	unsigned int SCompFlags = 0;

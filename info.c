@@ -32,7 +32,7 @@ static inline unsigned int GetInfo(HANDLE SArchive, unsigned int info) {
 
 }
 
-int info(const char * archive, unsigned int flags) {
+int smpq_info(const char * archive, unsigned int flags) {
 
 	HANDLE SArchive = NULL;
 

@@ -21,7 +21,7 @@
 
 #include "common.h"
 
-int rename(const char * archive, const char * oldName, const char * newName, unsigned int flags, const char * listfile, unsigned int locale) {
+int smpq_rename(const char * archive, const char * oldName, const char * newName, unsigned int flags, const char * listfile, unsigned int locale) {
 
 	HANDLE SArchive = NULL;
 
@@ -49,7 +49,7 @@ int rename(const char * archive, const char * oldName, const char * newName, uns
 	}
 
 	if ( ! ( flags & NO_SYSTEM_LF ) )
-		systemListfiles(SArchive, archive, flags);
+		smpq_systemlistfiles(SArchive, archive, flags);
 
 	if ( ! ( flags & NO_LISTFILE ) )
 		SFileAddListFile(SArchive, NULL);

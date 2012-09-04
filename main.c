@@ -513,7 +513,7 @@ int main(int argc, char * argv[]) {
 
 		}
 
-		return info(archive, flags);
+		return smpq_info(archive, flags);
 
 	}
 
@@ -526,7 +526,7 @@ int main(int argc, char * argv[]) {
 
 		}
 
-		return rename(archive, argv[i], argv[i+1], flags, listfile, locale);
+		return smpq_rename(archive, argv[i], argv[i+1], flags, listfile, locale);
 
 	}
 
@@ -590,13 +590,13 @@ int main(int argc, char * argv[]) {
 	switch ( action ) {
 
 		case 'a':
-			return append(archive, files, flags, locale, maxFileCount, compression);
+			return smpq_append(archive, files, flags, locale, maxFileCount, compression);
 
 		case 'x':
-			return extract(archive, files, flags, listfile, locale, parchives);
+			return smpq_extract(archive, files, flags, listfile, locale, parchives);
 
 		case 'r':
-			return remove(archive, files, flags, listfile, locale);
+			return smpq_remove(archive, files, flags, listfile, locale);
 
 	}
 

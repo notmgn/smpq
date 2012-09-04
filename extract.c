@@ -168,7 +168,7 @@ static int trie_find(const struct trie * tr, const char * str) {
 
 }
 
-int extract(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale, const char * const parchives[]) {
+int smpq_extract(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale, const char * const parchives[]) {
 
 	int i, j;
 	HANDLE SArchive = NULL;
@@ -237,7 +237,7 @@ int extract(const char * archive, const char * const files[], unsigned int flags
 	}
 
 	if ( ! ( flags & NO_SYSTEM_LF ) )
-		systemListfiles(SArchive, archive, flags);
+		smpq_systemlistfiles(SArchive, archive, flags);
 
 	if ( ! ( flags & NO_LISTFILE ) )
 		SFileAddListFile(SArchive, NULL);

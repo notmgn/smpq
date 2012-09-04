@@ -23,12 +23,6 @@
 #define inline __inline__
 #endif
 
-#define append _smpq_append
-#define extract _smpq_extract
-#define info _smpq_info
-#define remove _smpq_remove
-#define rename _smpq_rename
-
 /*********
  * Flags *
  *********/
@@ -95,7 +89,7 @@ extern const char * app;
  * Internaly this function calls SFileCreateArchive or SFileOpenArchive for getting access to archive.
  * For each file check if it has correct name and calls SFileCreateFile. Next it uses SFileWriteFile for writing file data to archive.
  */
-int append(const char * archive, const char * const files[], unsigned int flags, unsigned int locale, unsigned int maxFileCount, const char * compression);
+int smpq_append(const char * archive, const char * const files[], unsigned int flags, unsigned int locale, unsigned int maxFileCount, const char * compression);
 
 /**
  * Extract or print list files from archive
@@ -111,28 +105,28 @@ int append(const char * archive, const char * const files[], unsigned int flags,
  * (if file was extracted). When is needed to extract file with long path and subdirs does not exist, smpq will use function mkpath,
  * which recursive create needed directories (find separator '/').
  */
-int extract(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale, const char * const parchives[]);
+int smpq_extract(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale, const char * const parchives[]);
 
 /**
  * Show info about archive
  *
  * Internaly this function only calls StormLib GetInfo function.
  */
-int info(const char * archive, unsigned int flags);
+int smpq_info(const char * archive, unsigned int flags);
 
 /**
  * Remove file(s) from archive
  *
  * Internaly this function only calls for each specified file SFileRemoveFile if exist.
  */
-int remove(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale);
+int smpq_remove(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale);
 
 /**
  * Rename file in archive
  *
  * Internaly this function only calls for each specified file SFileRenameFile if exist.
  */
-int rename(const char * archive, const char * oldName, const char * newName, unsigned int flags, const char * listfile, unsigned int locale);
+int smpq_rename(const char * archive, const char * oldName, const char * newName, unsigned int flags, const char * listfile, unsigned int locale);
 
 /**
  * Load system listfiles for archive to memory
@@ -140,7 +134,7 @@ int rename(const char * archive, const char * oldName, const char * newName, uns
  * Internaly this function looks for all *.txt files in system StormLib directory and tries load all text list files to memory
  * by calling SFileAddListFile. On Windows is this directory same with directory where are smpq executable.
  */
-void systemListfiles(void * SArchive, const char * archive, unsigned int flags);
+void smpq_systemlistfiles(void * SArchive, const char * archive, unsigned int flags);
 
 /************************
  * Functions for output *
