@@ -2,15 +2,15 @@ Source: smpq
 Section: utils
 Priority: extra
 Maintainer: Pali Rohár <pali.rohar@gmail.com>
-Build-Depends: debhelper (>= 7), cmake, stormlib-dev (>= 8.02), kdelibs5-dev
-Standards-Version: 3.9.2
+Build-Depends: debhelper (>= 7), cmake, libstorm-dev (>= 8.20), kdelibs5-dev
+Standards-Version: 3.9.3
 Homepage: https://launchpad.net/smpq
 Vcs-Bzr: lp:smpq
 Vcs-Browser: https://code.launchpad.net/smpq
 
 Package: smpq
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, stormlib-listfiles
+Depends: ${shlibs:Depends}, ${misc:Depends}, libstorm-listfiles
 Description: StormLib MPQ archiving utility
  SMPQ is StormLib MPQ archiving utility. This utility is designed for full
  manipulating with Blizzard MPQ archives. It supports extracting, appending,
@@ -22,7 +22,7 @@ Description: StormLib MPQ archiving utility
 
 Package: kio-smpq
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, stormlib-listfiles
+Depends: ${shlibs:Depends}, ${misc:Depends}, libstorm-listfiles
 Description: KDE4 kio plugin for StormLib MPQ archiving utility
  This is KDE4 KIO plugin which add support for all KDE4 applications
  (e.g. Konqueror, Dolphin, Kate, ... and all KDE4 open/save dialogs) access to
