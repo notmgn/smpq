@@ -24,27 +24,31 @@
 #include <errno.h>
 #include <string.h>
 #include <time.h>
-#include <utime.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 #if defined(WIN32) || defined(_MSC_VER)
 
+#include <sys/utime.h>
 #include <direct.h>
 #include <io.h>
 
 #define mkdir _mkdir
 #define stat _stat
+#define utime _utime
+#define utimbuf _utimbuf
 
 #endif
 
 #ifdef _MSC_VER
 
+#define S_ISDIR(x) ((x) & _S_IFDIR)
 char * dirname(char *);
 
 #else
 
 #include <libgen.h>
+#include <utime.h>
 
 #endif
 
@@ -244,7 +248,7 @@ int smpq_extract(const char * archive, const char * const files[], unsigned int 
 
 	SFileSetLocale(locale);
 
-	SFlags = SFILE_OPEN_PATCHED_FILE | SFILE_OPEN_FROM_MPQ;
+	SFlags = SFILE_OPEN_FROM_MPQ;
 
 	for ( i = 0; files[i]; ++i ) {
 

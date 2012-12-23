@@ -46,13 +46,13 @@ void smpq_systemlistfiles(void * SArchive, const char * archive, unsigned int fl
 #if defined(WIN32) || defined(_MSC_VER)
 
 	char processPath[512];
+	char * listfile;
 	const char * LISTPATH;
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hFind;
 
 	GetModuleFileName(GetModuleHandle(NULL), processPath, sizeof(processPath));
 	LISTPATH = dirname(processPath);
-
-	WIN32_FIND_DATA FindFileData;
-	HANDLE hFind;
 
 	hFind = FindFirstFile(LISTPATH, &FindFileData);
 
@@ -61,9 +61,12 @@ void smpq_systemlistfiles(void * SArchive, const char * archive, unsigned int fl
 
 	do {
 
-		char listfile[strlen(LISTPATH) + strlen(FindFileData.cFileName) + 2];
-
 		if ( FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
+			continue;
+
+		listfile = (char *)malloc(strlen(LISTPATH) + strlen(FindFileData.cFileName) + 2);
+
+		if ( ! listfile )
 			continue;
 
 		strcpy(listfile, LISTPATH);
@@ -75,8 +78,11 @@ void smpq_systemlistfiles(void * SArchive, const char * archive, unsigned int fl
 
 		SFileAddListFile((HANDLE)SArchive, listfile);
 
+		free(listfile);
+
 	} while ( FindNextFile(hFind, &FindFileData) );
 
+	FindClose(hFind);
 
 #else
 
@@ -115,6 +121,8 @@ void smpq_systemlistfiles(void * SArchive, const char * archive, unsigned int fl
 		SFileAddListFile((HANDLE)SArchive, listfile);
 
 	}
+
+	closedir(dir);
 
 #undef LISTPATH
 

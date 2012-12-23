@@ -72,7 +72,7 @@ set(SMPQ_SRCS
 if(MSVC)
 
 	set(SMPQ_SRCS
-		${smpq_SRCS}
+		${SMPQ_SRCS}
 		dirname.c
 	)
 

@@ -17,6 +17,8 @@
 
 */
 
+#include <StormLib.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -26,6 +28,10 @@
 
 #if defined(WIN32) || defined(_MSC_VER)
 #define strcasecmp _stricmp
+#endif
+
+#ifdef _MSC_VER
+#define S_ISDIR(x) ((x) & _S_IFDIR)
 #endif
 
 #include "common.h"
@@ -272,7 +278,7 @@ static void parse(char c) {
 
 		case 'V':
 
-			printf(LICENSE "\n\nSMPQ use %s\n", StormLibCopyright);
+			printf(LICENSE "\n\nSMPQ use %s\n", STORMLIB_VERSION_STRING);
 			exit(0);
 
 		default:
@@ -287,7 +293,7 @@ static void parse(char c) {
 
 int main(int argc, char * argv[]) {
 
-	int i, j;
+	int ret, i, j;
 	int skipArg[10] = { 0 };
 
 	unsigned int mpq_version = 4;
@@ -298,10 +304,10 @@ int main(int argc, char * argv[]) {
 	const char * archive;
 
 	int parchivesc;
-	const char * parchives[argc];
+	const char ** parchives;
 
 	int filesc;
-	const char * files[argc];
+	const char ** files;
 
 	app = argv[0];
 
@@ -531,6 +537,7 @@ int main(int argc, char * argv[]) {
 	}
 
 	parchivesc = argc - i - 1;
+	parchives = (const char **)malloc(argc * sizeof(const char *));
 
 	if ( action == 'x' && i < argc && strcmp(argv[i], "-p") == 0 ) {
 
@@ -561,6 +568,7 @@ int main(int argc, char * argv[]) {
 	}
 
 	filesc = argc - i;
+	files = (const char **)malloc(argc * sizeof(const char *));
 
 	for ( ; i < argc; ++i )
 		files[filesc - argc + i] = argv[i];
@@ -579,6 +587,8 @@ int main(int argc, char * argv[]) {
 		if ( filesc == 0 ) {
 
 			fprintf(stderr, "%s Error: No file(s) specified\n", app);
+			free((void *)parchives);
+			free((void *)files);
 			return -1;
 
 		}
@@ -590,16 +600,25 @@ int main(int argc, char * argv[]) {
 	switch ( action ) {
 
 		case 'a':
-			return smpq_append(archive, files, flags, locale, maxFileCount, compression);
+			ret = smpq_append(archive, files, flags, locale, maxFileCount, compression);
+			break;
 
 		case 'x':
-			return smpq_extract(archive, files, flags, listfile, locale, parchives);
+			ret = smpq_extract(archive, files, flags, listfile, locale, parchives);
+			break;
 
 		case 'r':
-			return smpq_remove(archive, files, flags, listfile, locale);
+			ret = smpq_remove(archive, files, flags, listfile, locale);
+			break;
+
+		default:
+			ret = 1;
+			break;
 
 	}
 
-	return 0;
+	free((void *)parchives);
+	free((void *)files);
+	return ret;
 
 }

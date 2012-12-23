@@ -19,7 +19,9 @@
 
 #include <time.h>
 
-#ifdef __STRICT_ANSI__
+#if defined(_MSC_VER)
+#define inline __inline
+#elif defined(__STRICT_ANSI__)
 #define inline __inline__
 #endif
 
@@ -72,9 +74,6 @@
 /*************
  * Variables *
  *************/
-
-/* StormLib copyright stored in StormLib library */
-extern const char StormLibCopyright[];
 
 /* Application name */
 extern const char * app;
@@ -231,9 +230,8 @@ static inline void fromArchivePath(char * to, const char * from) {
 #if defined(WIN32) || defined(_MSC_VER)
 
 	strcpy(to, from);
-	return;
 
-#endif
+#else
 
 	int i = -1;
 
@@ -247,5 +245,7 @@ static inline void fromArchivePath(char * to, const char * from) {
 	}
 
 	to[i] = 0;
+
+#endif
 
 }

@@ -21,12 +21,12 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <utime.h>
 #include <errno.h>
 #include <string.h>
 
 #if defined(WIN32) || defined(_MSC_VER)
 #define strcasecmp _stricmp
+#define strncasecmp _strnicmp
 #endif
 
 #include "common.h"
@@ -227,6 +227,7 @@ int smpq_append(const char * archive, const char * const files[], unsigned int f
 				if ( ! ( flags & QUIET ) )
 					printError(archive, "Cannot change maximum file count", archive, GetLastError());
 
+				SFileCloseArchive(SArchive);
 				return -1;
 
 			}
