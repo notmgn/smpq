@@ -67,7 +67,7 @@ LangString REMOVEPREVIOUS ${LANG_ENGLISH} "Removing previous installation"
 LangString DESC_REMOVEEXE ${LANG_ENGLISH} "Remove ${NAME} executable"
 
 !ifdef x86_64
-LangString x86_64_ONLY ${LANG_ENGLISH} "This version is for 64 bits computers only."
+LangString x86_64_ONLY ${LANG_ENGLISH} "This version is for 64 bits computers only"
 !endif
 
 ;--------------------------------
