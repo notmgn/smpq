@@ -332,7 +332,7 @@ void SMPQSlave::get(const KUrl &url) {
 
 		if ( eof )
 			break;
-	
+
 	}
 
 	SFileCloseFile(SFile);
@@ -887,7 +887,7 @@ void SMPQSlave::stat(const KUrl &url) {
 void SMPQSlave::mkdir(const KUrl &, int) { 
 
 	kDebug(KIO_SMPQ);
-	
+
 	// MPQ archives does not support directory structure
 	// Only simulate creating directory
 
@@ -939,23 +939,23 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 	else if ( mode & QIODevice::WriteOnly )
 		myMode = 1;
 
-	if ( mode == 0 ) {
+	if ( myMode == 0 ) {
 
 		flags |= STREAM_FLAG_READ_ONLY;
 
-	} else if ( mode == 1 ) {
+	} else if ( myMode == 1 ) {
 
 		// TODO: Add support for write only mode
 		error(KIO::ERR_CANNOT_OPEN_FOR_WRITING, url.prettyUrl());
 		return;
 
-	} else if ( mode == 2 ) {
+	} else if ( myMode == 2 ) {
 
 		// TODO: Add support for append mode
 		error(KIO::ERR_CANNOT_OPEN_FOR_WRITING, url.prettyUrl());
 		return;
 
-	} else if ( mode == 3 ) {
+	} else if ( myMode == 3 ) {
 
 		// TODO: Add support for read + write mode
 		// Currently read mode is used
@@ -977,7 +977,7 @@ void SMPQSlave::open(const KUrl &url, QIODevice::OpenMode mode) {
 
 	// Skip internal files in MPQ archive
 	if ( myMode != 0 ) {
-		
+
 		if ( archivePath == "(listfile)" || archivePath == "(signature)" || archivePath == "(attributes)" || archivePath.contains("(patch_metadata)") ||
 			( archivePath.size() == 16 && archivePath.left(4) == "File" && archivePath.at(12) == '.' ) ) {
 
