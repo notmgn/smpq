@@ -114,7 +114,7 @@
 	"         smpq -x archive.mpq\n" \
 	"       Extract files with extension .txt from archive `archive.mpq'\n" \
 	"         smpq -x archive.mpq '*.txt'\n" \
-	"       Show informations about archive `archive.mpq'\n" \
+	"       Show information about archive `archive.mpq'\n" \
 	"         smpq -i archive.mpq\n" \
 	""
 
