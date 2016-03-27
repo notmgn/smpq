@@ -28,6 +28,6 @@ Description: KDE4 kio plugin for StormLib MPQ archiving utility
  (e.g. Konqueror, Dolphin, Kate, ... and all KDE4 open/save dialogs) access to
  MPQ archives like to directory or network drive (or FTP). This is simple way
  how to integrate MPQ support on KDE4 desktop (There is no need to use some MPQ
- viewer/editor. All KDE4 application can open MPQ archvies in read/write mode).
+ viewer/editor. All KDE4 application can open MPQ archives in read/write mode).
  .
  This plugin is part of SMPQ. But it does not depend on SMPQ application binary.
