@@ -195,7 +195,7 @@ int smpq_extract(const char * archive, const char * const files[], unsigned int 
 		SFlags |= STREAM_PROVIDER_PARTIAL;
 
 	if ( flags & MPQ_ENCRYPTED )
-		SFlags |= STREAM_PROVIDER_ENCRYPTED;
+		SFlags |= STREAM_PROVIDER_MPQE;
 
 	if ( ! SFileOpenArchive(archive, 0, SFlags, &SArchive) ) {
 

@@ -201,13 +201,13 @@ int smpq_append(const char * archive, const char * const files[], unsigned int f
 
 			unsigned int fileCount;
 
-			if ( ! SFileGetFileInfo(SArchive, SFILE_INFO_NUM_FILES, &fileCount, sizeof(fileCount), 0) )
+			if ( ! SFileGetFileInfo(SArchive, SFileMpqNumberOfFiles, &fileCount, sizeof(fileCount), 0) )
 				fileCount = 0;
 
 			for ( i = 0; files[i]; ++i )
 				++fileCount;
 
-			if ( ! SFileGetFileInfo(SArchive, SFILE_INFO_MAX_FILE_COUNT, &maxFileCount, sizeof(maxFileCount), 0) )
+			if ( ! SFileGetFileInfo(SArchive, SFileMpqMaxFileCount, &maxFileCount, sizeof(maxFileCount), 0) )
 				maxFileCount = 0;
 
 			if ( maxFileCount < fileCount )

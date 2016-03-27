@@ -154,7 +154,7 @@ bool SMPQSlave::openArchive(const QString &archive, unsigned int flags) {
 		closeArchive();
 
 		if ( archive.endsWith(".mpqe", Qt::CaseInsensitive) )
-			flags |= STREAM_PROVIDER_ENCRYPTED;
+			flags |= STREAM_PROVIDER_MPQE;
 
 		if ( ! SFileOpenArchive(archive.toUtf8(), 0, flags, &p->SArchive) )
 			return false;

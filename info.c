@@ -21,7 +21,7 @@
 
 #include "common.h"
 
-static inline unsigned int GetInfo(HANDLE SArchive, unsigned int info) {
+static inline unsigned int GetInfo(HANDLE SArchive, SFileInfoClass info) {
 
 	unsigned int ret;
 
@@ -45,7 +45,7 @@ int smpq_info(const char * archive, unsigned int flags) {
 		SFlags |= MPQ_OPEN_FORCE_MPQ_V1;
 
 	if ( flags & MPQ_ENCRYPTED )
-		SFlags |= STREAM_PROVIDER_ENCRYPTED;
+		SFlags |= STREAM_PROVIDER_MPQE;
 
 	if ( ! SFileOpenArchive(archive, 0, SFlags, &SArchive) ) {
 
@@ -55,21 +55,21 @@ int smpq_info(const char * archive, unsigned int flags) {
 	}
 
 	printMessage("Archive name: %s", archive);
-	printMessage("Archive size: %u", GetInfo(SArchive, SFILE_INFO_ARCHIVE_SIZE));
-	printMessage("Number of files in archive: %u", GetInfo(SArchive, SFILE_INFO_NUM_FILES));
-	printMessage("Maximum file count of archive: %u", GetInfo(SArchive, SFILE_INFO_MAX_FILE_COUNT));
-	printMessage("Hash table size: %u", GetInfo(SArchive, SFILE_INFO_HASH_TABLE_SIZE));
-	printMessage("Block table size: %u", GetInfo(SArchive, SFILE_INFO_BLOCK_TABLE_SIZE));
-	printMessage("Sector size: %u", GetInfo(SArchive, SFILE_INFO_SECTOR_SIZE));
+	printMessage("Archive size: %u", GetInfo(SArchive, SFileMpqArchiveSize));
+	printMessage("Number of files in archive: %u", GetInfo(SArchive, SFileMpqNumberOfFiles));
+	printMessage("Maximum file count of archive: %u", GetInfo(SArchive, SFileMpqMaxFileCount));
+	printMessage("Hash table size: %u", GetInfo(SArchive, SFileMpqHashTableSize));
+	printMessage("Block table size: %u", GetInfo(SArchive, SFileMpqBlockTableSize));
+	printMessage("Sector size: %u", GetInfo(SArchive, SFileMpqSectorSize));
 
-	streamFlags = GetInfo(SArchive, SFILE_INFO_STREAM_FLAGS);
+	streamFlags = GetInfo(SArchive, SFileMpqStreamFlags);
 
 	if ( streamFlags & STREAM_PROVIDER_PARTIAL )
 		printMessage("Archive partial: Yes");
 	else
 		printMessage("Archive partial: No");
 
-	if ( streamFlags & STREAM_PROVIDER_ENCRYPTED )
+	if ( streamFlags & STREAM_PROVIDER_MPQE )
 		printMessage("Archive encryped: Yes");
 	else
 		printMessage("Archive encryped: No");
