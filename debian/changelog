@@ -1,3 +1,19 @@
+smpq (1.5-1) unstable; urgency=low
+
+  * Use archive list file if -N is not specified
+  * Added support to only create empty mpq archive without any files
+  * Use strcasecmp only where is needed (winapi alternative is _stricmp)
+  * Added support for partial archives, Add examples to help
+  * Rewrite smpq to C - StormLib 8.20 has finally C compatible header files
+  * Use build date instead hardcoded in man page
+  * Do not use variable length arrays and anonymous variadic macros
+  * Set max file count to at least 6
+  * Better support for Windows and MSVC compiler
+  * kio_smpq - Do not ignore internal listfile
+  * Use StormLib 9.20
+
+ -- Pali Rohár <pali.rohar@gmail.com>  Sun, 27 Mar 2016 21:32:06 +0200
+
 smpq (1.4-1) unstable; urgency=low
 
   * Remove option -I (--index) - not used in new version of stormlib library

@@ -1,0 +1,2 @@
+version=3
+https://launchpad.net/smpq/+download https://launchpad.net/smpq/trunk/([0-9\.]+)/\+download/smpq.*\.tar\.gz

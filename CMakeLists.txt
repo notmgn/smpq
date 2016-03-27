@@ -18,7 +18,7 @@
 #
 
 project(SMPQ)
-set(VERSION 1.4)
+set(VERSION 1.5)
 cmake_minimum_required(VERSION 2.6)
 
 option(WITH_CMD "Enable smpq console application" ON)

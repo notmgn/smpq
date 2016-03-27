@@ -1,18 +1,19 @@
-Format: http://dep.debian.net/deps/dep5
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: smpq
-Source: <https://launchpad.net/smpq>
+Upstream-Contact: Pali Rohár <pali.rohar@gmail.com>
+Source: https://launchpad.net/smpq
 
 Files: *
-Copyright: 2010-2012 Pali Rohár <pali.rohar@gmail.com>
+Copyright: 2010-2016 Pali Rohár <pali.rohar@gmail.com>
 License: GPL-3.0+
 
 Files: debian/*
-Copyright: 2010-2012 Pali Rohár <pali.rohar@gmail.com>
+Copyright: 2010-2016 Pali Rohár <pali.rohar@gmail.com>
 License: GPL-3.0+
 
 Files: dirname.c
 Copyright: 2007 Keith Marshall <keithmarshall@users.sourceforge.net>
-License:
+License: public-domain
  This is free software.  You may redistribute and/or modify it as you
  see fit, without restriction of copyright.
 
