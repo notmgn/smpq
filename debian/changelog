@@ -1,55 +1,5 @@
 smpq (1.5-1) unstable; urgency=low
 
-  * Use archive list file if -N is not specified
-  * Added support to only create empty mpq archive without any files
-  * Use strcasecmp only where is needed (winapi alternative is _stricmp)
-  * Added support for partial archives, Add examples to help
-  * Rewrite smpq to C - StormLib 8.20 has finally C compatible header files
-  * Use build date instead hardcoded in man page
-  * Do not use variable length arrays and anonymous variadic macros
-  * Set max file count to at least 6
-  * Better support for Windows and MSVC compiler
-  * kio_smpq - Do not ignore internal listfile
-  * Use StormLib 9.20
+  * Initial release (Closes: #633931)
 
- -- Pali Rohár <pali.rohar@gmail.com>  Sun, 27 Mar 2016 21:32:06 +0200
-
-smpq (1.4-1) unstable; urgency=low
-
-  * Remove option -I (--index) - not used in new version of stormlib library
-  * Some minor and code style fixes
-  * Update debian files, fixed lintian warnings/errors
-
- -- Pali Rohár <pali.rohar@gmail.com>  Wed, 19 Oct 2011 17:20:55 +0200
-
-smpq (1.3-1) unstable; urgency=low
-
-  * Cleaned CMakeLists.txt
-  * Fixed printing verbose message
-  * Fixed multiplatform using size_t
-  * Decrease MPQ max file count after deleting file
-  * Depends on StormLib version 8.02
-
- -- Pali Rohár <pali.rohar@gmail.com>  Sat, 09 Jul 2011 10:50:16 +0200
-
-smpq (1.2-1) unstable; urgency=low
-
-  * Fixed using signed/unsigned integers
-  * Replaced option for setting hash table size by setting maximum file count
-  * Rewrited hash table size to maximum file count (deleted from StromLib)
-  * Autodetect maximum file count of archive when appending files
-
- -- Pali Rohár <pali.rohar@gmail.com>  Mon, 18 Apr 2011 16:39:07 +0200
-
-smpq (1.1-1) unstable; urgency=low
-
-  * Fixed compilation on target x86_64
-  * Fixed default value of Hash Table Size
-
- -- Pali Rohár <pali.rohar@gmail.com>  Sun, 17 Apr 2011 04:10:21 +0200
-
-smpq (1.0-1) unstable; urgency=low
-
-  * Final release 1.0
-
- -- Pali Rohár <pali.rohar@gmail.com>  Sat, 19 Mar 2011 01:36:45 +0100
+ -- Pali Rohár <pali.rohar@gmail.com>  Sat, 02 Jul 2016 19:29:12 +0200
