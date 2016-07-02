@@ -97,6 +97,7 @@ if(WITH_CMD)
 
 	if(WIN32 AND NOT MSVC)
 		set_target_properties(smpq PROPERTIES LINK_FLAGS -static)
+		target_link_libraries(smpq wininet stdc++)
 	endif(WIN32 AND NOT MSVC)
 
 	install(TARGETS smpq DESTINATION bin)
