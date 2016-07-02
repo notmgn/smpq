@@ -32,7 +32,7 @@ Dependencies for SMPQ:
 
 Additional dependencies for KDE4 KIO plugin:
  * C++ 98 compiler (g++ works fine)
- * KDE4 libs headers (part of kdelibs packgage) from http://www.kde.org/download/
+ * KDE4 libs headers (part of kdelibs package) from http://www.kde.org/download/
 
 Additional dependencies for Windows NSIS Installer:
  * NSIS from http://nsis.sourceforge.net/
@@ -43,7 +43,7 @@ Building on Debian/*buntu and Debian like Linux distributions:
   $ dpkg-buildpackage -b -rfakeroot
   $ sudo dpkg -i ../*.deb
 
-  Ubuntu packages are builded in SMPQ PPA on https://launchpad.net/~pali/+archive/smpq
+  Ubuntu packages are built in SMPQ PPA on https://launchpad.net/~pali/+archive/smpq
 
 Building on other *nix:
 
