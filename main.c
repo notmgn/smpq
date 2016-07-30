@@ -78,7 +78,7 @@
 	"     -U, --single-unit             Add file as single unit, cannot be encrypted\n" \
 	"     -C, --compression <method>    Compression method: (default: ZLIB)\n" \
 	"          none                   None compression\n" \
-	"          IMPLODE                Pkware Data Compression IMPLODE method - OBSOLATE (It was used only in Diablo I)\n" \
+	"          IMPLODE                Pkware Data Compression IMPLODE method - OBSOLETE (It was used only in Diablo I)\n" \
 	"          PKWARE                 Pkware Data compression\n" \
 	"          HUFFMANN               Huffmann compression (Introduced in Starcraft I)\n" \
 	"          ADPCM_MONO             IMA ADPCM compression for 1-channel (mono) WAVE files - Lossy compression, only for WAVE files (Now it is not used)\n" \
@@ -96,14 +96,14 @@
 	"          SPARSE+PKWARE          Together SPARSE and Pkware Data compression\n" \
 	"          SPARSE+BZIP2           Together SPARSE and BZIP2 compression\n" \
 	"          SPARSE+ZLIB+PKWARE     Together SPARSE, ZLIB and Pkware Data compression\n" \
-	"          SPARSE+BZIP2+PKWARE    Together SPARSE. BZIP2 and Pkware Data compression\n" \
+	"          SPARSE+BZIP2+PKWARE    Together SPARSE, BZIP2 and Pkware Data compression\n" \
 	"\n" \
 	"Options for extracting file(s) from archive:\n" \
 	"     -P, --partial                 Archive is partial (default: autodetect) (Partial archives were used by trial version of World of Warcraft)\n" \
 	"     -X, --not-encrypted           Archive is not encrypted (default: autodetect) (Encrypted archives have Starcraft II installation)\n" \
 	"     -p                            Open more (patched) archives with directory prefix (prefix:archive), when file is in more archives, will be extracted from last\n" \
 	"          Usage with more (patched) archives:\n" \
-	"            smpq -l|-x [options] [archive] -p [prefix1:parchive1] [prefix2:archive2] ... -- [files]\n" \
+	"            smpq -l|-x [options] [archive] -p [prefix1:archive1] [prefix2:archive2] ... -- [files]\n" \
 	"\n" \
 	"Examples:\n" \
 	"       Create empty archive `archive.mpq'\n" \
