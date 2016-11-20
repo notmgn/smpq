@@ -120,7 +120,7 @@
 
 #define LICENSE \
 	"SMPQ - StormLib MPQ archiving utility, version " VERSION "\n" \
-	"Copyright (C) 2010 - 2016  Pali Rohár <pali.rohar@gmail.com>\n" \
+	"Copyright (C) 2010 - 2016  Pali Rohar <pali.rohar@gmail.com>\n" \
 	"\n" \
 	"This program is free software: you can redistribute it and/or modify\n" \
 	"it under the terms of the GNU General Public License as published by\n" \
