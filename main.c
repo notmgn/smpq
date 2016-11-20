@@ -136,6 +136,8 @@
 	"along with this program.  If not, see <http://www.gnu.org/licenses/>.\n" \
 	""
 
+extern char StormLibCopyright[];
+
 const char * app;
 
 static char action = 0;
@@ -278,7 +280,7 @@ static void parse(char c) {
 
 		case 'V':
 
-			printf(LICENSE "\n\nSMPQ use %s\n", STORMLIB_VERSION_STRING);
+			printf(LICENSE "\n\nSMPQ use %s\n", StormLibCopyright);
 			exit(0);
 
 		default:

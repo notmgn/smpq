@@ -21,7 +21,7 @@
 #include "main.c"
 #undef main
 
-const char StormLibCopyright[] = { 0 };
+char StormLibCopyright[] = { 0 };
 const char * app = "smpq";
 int smpq_append(const char * archive, const char * const files[], unsigned int flags, unsigned int locale, unsigned int maxFileCount, const char * compression) { (void)archive; (void)files; (void)flags; (void)locale; (void)maxFileCount; (void)compression; return 0; }
 int smpq_extract(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale, const char * const parchives[]) { (void)archive; (void)files; (void)flags; (void)listfile; (void)locale; (void)parchives; return 0; }
