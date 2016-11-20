@@ -5,11 +5,11 @@ Source: https://launchpad.net/smpq
 
 Files: *
 Copyright: 2010-2016 Pali Rohár <pali.rohar@gmail.com>
-License: GPL-3.0+
+License: GPL-3+
 
 Files: debian/*
 Copyright: 2010-2016 Pali Rohár <pali.rohar@gmail.com>
-License: GPL-3.0+
+License: GPL-3+
 
 Files: dirname.c
 Copyright: 2007 Keith Marshall <keithmarshall@users.sourceforge.net>
@@ -17,7 +17,7 @@ License: public-domain
  This is free software.  You may redistribute and/or modify it as you
  see fit, without restriction of copyright.
 
-License: GPL-3.0+
+License: GPL-3+
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
