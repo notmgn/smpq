@@ -91,7 +91,7 @@ Note:
 SMPQ command line utility:
  For detailed info see
  * user manpage: $ man 1 smpq
- * runtime help: $ smpq --help
+ * runtime help: $ smpq --help
 
 KDE4 KIO plugin:
  Open Konqueror, Dolphin or other KDE4 file manager and simply open MPQ archive
