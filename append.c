@@ -113,7 +113,7 @@ int smpq_append(const char * archive, const char * const files[], unsigned int f
 			} else {
 
 				if ( ! ( flags & QUIET ) )
-					printError(archive, "Specified unknow compression method", compression, EINVAL);
+					printError(archive, "Specified unknown compression method", compression, EINVAL);
 
 				return -1;
 
