@@ -18,6 +18,7 @@
 */
 
 #include <time.h>
+#include <limits.h>
 
 #if defined(_MSC_VER)
 #define inline __inline
@@ -161,8 +162,8 @@ void printMessage(const char * message, ...);
 #define NSEC 10000000ULL /* Convert 100 ns to sec */
 
 #define TYPE_SIGNED(TYPE) ( (TYPE) 0 > (TYPE) -1 )
-#define TYPE_SHIFT(TYPE) ( sizeof(TYPE) * 8 - TYPE_SIGNED(TYPE) - 1 )
-#define TYPE_MAX(TYPE) ( (TYPE)( ~( 1LL << TYPE_SHIFT(TYPE) ) << 1 ) + 1 )
+#define TYPE_SHIFT(TYPE) ( sizeof(TYPE) * CHAR_BIT - TYPE_SIGNED(TYPE) - 1 )
+#define TYPE_MAX(TYPE) ( (TYPE)( ~( 1ULL << TYPE_SHIFT(TYPE) ) << 1 ) + 1 )
 
 /* Convert time_t to FILETIME */
 static inline void toFileTime(unsigned long long int * to, time_t from) {
