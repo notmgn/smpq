@@ -1,3 +1,12 @@
+smpq 1.6
+  * Fix spelling
+  * Check for StromLib version before building
+  * Show StormLibCopyright in --version and --license
+  * Use only ASCII characters on console
+  * Set correct manpage encoding (UTF-8)
+  * Replace no-break space by normal space
+  * Fix TYPE_MAX macro
+
 smpq 1.5
   * Use archive list file if -N is not specified
   * Added support to only create empty mpq archive without any files
