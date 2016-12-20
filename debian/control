@@ -2,7 +2,7 @@ Source: smpq
 Section: utils
 Priority: optional
 Maintainer: Pali Rohár <pali.rohar@gmail.com>
-Build-Depends: debhelper (>= 9), cmake, libstorm-dev (>= 9.20), kdelibs5-dev
+Build-Depends: debhelper (>= 10), cmake, libstorm-dev, kdelibs5-dev
 Standards-Version: 3.9.8
 Homepage: https://launchpad.net/smpq
 Vcs-Bzr: lp:smpq

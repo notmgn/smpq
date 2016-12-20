@@ -3,7 +3,8 @@ smpq (1.6-1) unstable; urgency=low
   * New upstream release 1.6
   * Fix license name from GPL-3.0+ to GPL-3+
   * Update upstream signing-key
-  * Install upstream CHANGELOG file
+  * Bump compat level to 10
+  * Stop installing README file
 
  -- Pali Rohár <pali.rohar@gmail.com>  Tue, 13 Dec 2016 02:00:23 +0100
 
@@ -11,4 +12,4 @@ smpq (1.5-1) unstable; urgency=low
 
   * Initial release (Closes: #633931)
 
- -- Pali Rohár <pali.rohar@gmail.com>  Sat, 02 Jul 2016 19:29:12 +0200
+ -- Pali Rohár <pali.rohar@gmail.com>  Fri, 29 Jul 2016 00:03:25 +0200
