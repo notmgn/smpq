@@ -1,7 +1,10 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
 
-export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all future=+lfs
 
 %:
 	dh $@
+
+override_dh_auto_configure:
+	dh_auto_configure -- -DWITH_KDE=OFF
