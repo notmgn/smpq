@@ -25,10 +25,33 @@ static inline unsigned int GetInfo(HANDLE SArchive, SFileInfoClass info) {
 
 	unsigned int ret;
 
-	if ( SFileGetFileInfo(SArchive, info, &ret, sizeof(ret), NULL) )
-		return ret;
-	else
+	if ( ! SFileGetFileInfo(SArchive, info, &ret, sizeof(ret), NULL) )
 		return 0;
+
+	if ( info == SFileMpqNumberOfFiles ) {
+
+		static const char * internalFiles[] = { "(listfile)", "(signature)", "(attributes)", "(patch_metadata)" };
+		int i;
+
+		for ( i = 0; i < sizeof(internalFiles) / sizeof(internalFiles[0]); ++i ) {
+
+			SFILE_FIND_DATA SFileFindData;
+			HANDLE SFileFind;
+
+			SFileFind = SFileFindFirstFile(SArchive, internalFiles[i], &SFileFindData, NULL);
+
+			if ( SFileFind ) {
+
+				--ret;
+				SFileFindClose(SFileFind);
+
+			}
+
+		}
+
+	}
+
+	return ret;
 
 }
 
