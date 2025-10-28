@@ -36,6 +36,10 @@
 
 #include <StormLib.h>
 
+#if !defined(WIN32) && !defined(_MSC_VER) && STORMLIB_VERSION > 0x091E
+#define GetLastError SErrGetLastError
+#endif
+
 #include "kio_smpq.h"
 
 #ifdef Q_OS_UNIX

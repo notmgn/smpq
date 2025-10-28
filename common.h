@@ -250,3 +250,7 @@ static inline void fromArchivePath(char * to, const char * from) {
 #endif
 
 }
+
+#if !defined(WIN32) && !defined(_MSC_VER) && STORMLIB_VERSION > 0x091E
+#define GetLastError SErrGetLastError
+#endif
