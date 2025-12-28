@@ -68,7 +68,7 @@
 	"     -f, -o, --force, --overwrite  Enable overwrite file(s)\n" \
 	"     -v, --verbose                 Enable verbose output\n" \
 	"     -O, --locale <id>             Set locale id (default: neutral=0)\n" \
-	"          For all locale id see: http://msdn.microsoft.com/en-us/library/ms912047(WinEmbedded.10).aspx\n" \
+	"          For all locale id see [MS-LCID] section 2.2: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/\n" \
 	"\n" \
 	"Options for appending file(s) to archive:\n" \
 	"     -m, --max-file-count <count>  Set maximum file count of archive (power of 2, 0 - autodetect) (default: 0)\n" \
