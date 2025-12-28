@@ -477,7 +477,7 @@ int main(int argc, char * argv[]) {
 
 		}
 
-		locale = atoi(argv[skipArg[LOCALE_ARG]]);
+		locale = strtol(argv[skipArg[LOCALE_ARG]], NULL, 0);
 
 	}
 
