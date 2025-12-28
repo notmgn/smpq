@@ -1,2 +1,0 @@
-version=3
-opts=pgpsigurlmangle=s/$/.asc/ https://launchpad.net/smpq/+download https://launchpad.net/smpq/trunk/([0-9\.]+)/\+download/smpq.*\.tar\.gz debian uupdate
