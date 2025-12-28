@@ -1,3 +1,10 @@
+smpq 1.7
+  * Fix compilation with cmake 4.x
+  * Fix compilation with StormLib > 9.30
+  * Exclude internal files from --info count "Number of files in archive:"
+  * Accept locale id in hex notation
+  * Fix URL to locale id documentation
+
 smpq 1.6
   * Fix spelling
   * Check for StromLib version before building

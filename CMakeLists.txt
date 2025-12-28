@@ -19,7 +19,7 @@
 
 cmake_minimum_required(VERSION 2.6...4.0)
 project(SMPQ)
-set(VERSION 1.6)
+set(VERSION 1.7)
 
 option(WITH_CMD "Enable smpq console application" ON)
 option(WITH_KDE "Enable KDE4 kio_smpq plugin" ON)
