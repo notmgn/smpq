@@ -19,6 +19,8 @@
 
 #include <StormLib.h>
 
+#include <string.h>
+
 #include "common.h"
 
 int smpq_remove(const char * archive, const char * const files[], unsigned int flags, const char * listfile, unsigned int locale) {
