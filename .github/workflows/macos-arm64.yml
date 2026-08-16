@@ -1,0 +1,61 @@
+name: macOS arm64 build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout smpq
+        uses: actions/checkout@v4
+
+      - name: Build and install libtommath (static)
+        run: |
+          git clone --depth 1 --branch v1.2.1 https://github.com/libtom/libtommath.git
+          make -C libtommath -f makefile.unix
+          sudo make -C libtommath -f makefile.unix install PREFIX=/usr/local
+
+      - name: Build and install libtomcrypt (static)
+        run: |
+          git clone --depth 1 --branch v1.18.2 https://github.com/libtom/libtomcrypt.git
+          make -C libtomcrypt -f makefile.unix \
+            CFLAGS="-O2 -DUSE_LTM -DLTM_DESC -I$(pwd)/libtommath" \
+            EXTRALIBS="$(pwd)/libtommath/libtommath.a"
+          sudo make -C libtomcrypt -f makefile.unix install PREFIX=/usr/local
+
+      - name: Build and install StormLib
+        run: |
+          git clone --depth 1 https://github.com/ladislav-zezula/StormLib.git
+          cmake -S StormLib -B StormLib/build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DCMAKE_INSTALL_PREFIX=/usr/local
+          cmake --build StormLib/build --config Release
+          sudo cmake --install StormLib/build --config Release
+
+      - name: Configure smpq
+        run: |
+          STORMLIB_DEPS="-lz -lbz2 -lc++ $(pkg-config --libs libtomcrypt libtommath)"
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DWITH_CMD=ON \
+            -DWITH_KDE=OFF \
+            -DCMAKE_EXE_LINKER_FLAGS="${STORMLIB_DEPS}"
+
+      - name: Build smpq
+        run: cmake --build build --config Release
+
+      - name: Verify architecture
+        run: file build/smpq
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: smpq-macos-arm64
+          path: build/smpq
