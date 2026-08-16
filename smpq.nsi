@@ -37,7 +37,7 @@
 
 !define NAME "SMPQ"
 !define DESCRIPTION "StormLib MPQ archiving utility"
-!define VIVERSION "${VERSION}.0.0"
+!define VIVERSION "${VERSION_WINDOWS}"
 !define HOMEPAGE "https://launchpad.net/smpq"
 !define LICENSE "GPL v3"
 !define COPYRIGHT "Copyright (c) 2010 - 2016 by Pali Rohar"

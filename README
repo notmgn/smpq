@@ -17,7 +17,7 @@ how to integrate MPQ support on KDE4 desktop (There is no need to use some MPQ
 viewer/editor. All KDE4 application can open MPQ archives in read/write mode).
 
 Author: Pali Rohár <pali.rohar@gmail.com>
-Version: 1.7
+Version: 1.7+notmgn.1
 License: GNU GPL v3
 Homepage: https://launchpad.net/smpq
 

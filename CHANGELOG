@@ -1,3 +1,6 @@
+smpq 1.7+notmgn.1
+  * Recurse into directories when appending on POSIX systems
+
 smpq 1.7
   * Fix compilation with cmake 4.x
   * Fix compilation with StormLib > 9.30
