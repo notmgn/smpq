@@ -23,6 +23,11 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
+
+#if !defined(WIN32) && !defined(_MSC_VER)
+#include <dirent.h>
+#endif
 
 #if defined(WIN32) || defined(_MSC_VER)
 #define strcasecmp _stricmp
@@ -30,6 +35,81 @@
 #endif
 
 #include "common.h"
+
+#if !defined(WIN32) && !defined(_MSC_VER)
+
+static int smpq_add_file_to_list(char ***list, unsigned int *count, unsigned int *capacity, const char *path) {
+	char **newList;
+	char *copy;
+
+	if (*count >= *capacity) {
+		unsigned int newCapacity = (*capacity == 0) ? 256 : (*capacity * 2);
+
+		newList = (char **)realloc(*list, newCapacity * sizeof(char *));
+		if (newList == NULL)
+			return -1;
+
+		*list = newList;
+		*capacity = newCapacity;
+	}
+
+	copy = strdup(path);
+	if (copy == NULL)
+		return -1;
+
+	(*list)[*count] = copy;
+	++(*count);
+
+	return 0;
+}
+
+static int smpq_collect_files(const char *path, char ***list, unsigned int *count, unsigned int *capacity) {
+	struct stat st;
+
+	if (lstat(path, &st) != 0)
+		return -1;
+
+	if (!S_ISDIR(st.st_mode))
+		return smpq_add_file_to_list(list, count, capacity, path);
+
+	{
+		DIR *dir;
+		struct dirent *entry;
+
+		dir = opendir(path);
+		if (dir == NULL)
+			return -1;
+
+		while ((entry = readdir(dir)) != NULL) {
+			char child[1024];
+
+			if (strcmp(entry->d_name, ".") == 0 ||
+			    strcmp(entry->d_name, "..") == 0)
+				continue;
+
+			if (strcmp(path, ".") == 0)
+				snprintf(child, sizeof(child), "./%s", entry->d_name);
+			else
+				snprintf(child, sizeof(child), "%s/%s", path, entry->d_name);
+
+			if (strlen(child) + 1 > sizeof(child)) {
+				closedir(dir);
+				return -1;
+			}
+
+			if (smpq_collect_files(child, list, count, capacity) != 0) {
+				closedir(dir);
+				return -1;
+			}
+		}
+
+		closedir(dir);
+	}
+
+	return 0;
+}
+
+#endif
 
 int smpq_append(const char * archive, const char * const files[], unsigned int flags, unsigned int locale, unsigned int maxFileCount, const char * compression) {
 
@@ -39,6 +119,73 @@ int smpq_append(const char * archive, const char * const files[], unsigned int f
 	int i;
 	HANDLE SArchive = NULL;
 
+#if !defined(WIN32) && !defined(_MSC_VER)
+
+	char **expanded_files = NULL;
+	unsigned int expanded_count = 0;
+	unsigned int expanded_capacity = 0;
+	const char * const *input_files = files;
+
+	for (i = 0; files[i]; ++i) {
+		struct stat st;
+
+		if (lstat(files[i], &st) != 0) {
+			if ( ! ( flags & QUIET ) )
+				printError(archive, "Cannot stat file", files[i], errno);
+			continue;
+		}
+
+		if (S_ISDIR(st.st_mode)) {
+			if (smpq_collect_files(files[i], &expanded_files,
+			                       &expanded_count, &expanded_capacity) != 0) {
+				if ( ! ( flags & QUIET ) )
+					printError(archive, "Cannot recursively enumerate directory",
+					           files[i], errno);
+
+				for (i = 0; i < expanded_count; ++i)
+					free(expanded_files[i]);
+
+				free(expanded_files);
+				return -1;
+			}
+		} else {
+			if (smpq_add_file_to_list(&expanded_files, &expanded_count,
+			                          &expanded_capacity, files[i]) != 0) {
+				for (i = 0; i < expanded_count; ++i)
+					free(expanded_files[i]);
+
+				free(expanded_files);
+				return -1;
+			}
+		}
+	}
+
+	if (expanded_count >= expanded_capacity) {
+		char **newList;
+		unsigned int newCapacity =
+			(expanded_capacity == 0) ? 1 : expanded_capacity + 1;
+
+		newList = (char **)realloc(expanded_files,
+		                           newCapacity * sizeof(char *));
+		if (newList == NULL) {
+			for (i = 0; i < expanded_count; ++i)
+				free(expanded_files[i]);
+
+			free(expanded_files);
+			return -1;
+		}
+
+		expanded_files = newList;
+		expanded_capacity = newCapacity;
+	}
+
+	expanded_files[expanded_count] = NULL;
+	input_files = (const char * const *)expanded_files;
+
+	files = input_files;
+
+#endif
+	
 	if ( flags & ENCRYPT )
 		SFlags |= MPQ_FILE_ENCRYPTED;
 
@@ -243,6 +390,12 @@ int smpq_append(const char * archive, const char * const files[], unsigned int f
 		struct stat st;
 		FILE * file = NULL;
 		const char * fileName = files[i];
+
+#if !defined(WIN32) && !defined(_MSC_VER)
+		if (strncmp(fileName, "./", 2) == 0)
+			fileName += 2;
+#endif
+
 		size_t fileSize = 0;
 
 		HANDLE SFile = NULL;
@@ -359,6 +512,13 @@ int smpq_append(const char * archive, const char * const files[], unsigned int f
 
 	SFileCloseArchive(SArchive);
 
+#if !defined(WIN32) && !defined(_MSC_VER)
+	for (i = 0; expanded_files && expanded_files[i]; ++i)
+		free(expanded_files[i]);
+
+	free(expanded_files);
+#endif
+	
 	return 0;
 
 }
