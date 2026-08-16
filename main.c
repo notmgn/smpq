@@ -71,6 +71,7 @@
 	"          For all locale id see [MS-LCID] section 2.2: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/\n" \
 	"\n" \
 	"Options for appending file(s) to archive:\n" \
+	"     On POSIX systems, directories are recursed into and their contents appended\n" \
 	"     -m, --max-file-count <count>  Set maximum file count of archive (power of 2, 0 - autodetect) (default: 0)\n" \
 	"     -E, --encrypt                 Store as encrypted\n" \
 	"     -F, --fix-key                 Encryption key will be adjusted according to file size in the archive (need -E)\n" \
@@ -110,6 +111,8 @@
 	"         smpq -c archive.mpq\n" \
 	"       Create archive `archive.mpq' with two files `file1.txt' and `file2.txt'\n" \
 	"         smpq -c archive.mpq file1.txt file2.txt\n" \
+	"       Append directory `mydir' to archive `archive.mpq' recursively\n" \
+	"         smpq -a archive.mpq mydir\n" \
 	"       Extract all files from archive `archive.mpq' to current directory\n" \
 	"         smpq -x archive.mpq\n" \
 	"       Extract files with extension .txt from archive `archive.mpq'\n" \
